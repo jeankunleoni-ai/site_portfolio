@@ -1,27 +1,21 @@
 <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="jl-site-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#10b981" /> <stop offset="50%" style="stop-color:#06b6d4" /> <stop offset="100%" style="stop-color:#3b82f6" /> </linearGradient>
-    
-    <linearGradient id="jl-site-gradient-soft" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#10b981;stop-opacity:0.1" />
-      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0.1" />
+    <linearGradient id="jl-gradient-stroke" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981" />
+      <stop offset="50%" style="stop-color:#06b6d4" />
+      <stop offset="100%" style="stop-color:#3b82f6" />
     </linearGradient>
   </defs>
-
-  <path 
-    d="M12 32 H42 M42 32 L28 18 M42 32 L28 46" 
-    stroke="url(#jl-site-gradient)" 
-    stroke-width="5" 
-    stroke-linecap="round" 
-    stroke-linejoin="round"
-  />
   
-  <circle cx="12" cy="32" r="5" fill="url(#jl-site-gradient)" />
-  <circle cx="42" cy="32" r="5" fill="url(#jl-site-gradient)" />
-  <circle cx="28" cy="18" r="4" fill="url(#jl-site-gradient)" />
-  <circle cx="28" cy="46" r="4" fill="url(#jl-site-gradient)" />
-
-  <circle cx="32" cy="32" r="30" stroke="url(#jl-site-gradient-soft)" stroke-width="2" />
-
+  <path d="M24 14 V42 C24 50 18 52 12 52" 
+        stroke="url(#jl-gradient-stroke)" 
+        stroke-width="8" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"/>
+        
+  <path d="M40 14 V52 H56" 
+        stroke="url(#jl-gradient-stroke)" 
+        stroke-width="8" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"/>
 </svg>
