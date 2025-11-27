@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { 
-  Menu, X, Linkedin, Mail, ArrowUpRight, 
+  Menu, X, Linkedin, Mail, ArrowUpRight, ArrowLeft,
   Github, Phone, Globe, ChevronDown, Play, MousePointer2, ArrowDown,
   CheckCircle, Layers, PenTool, Cpu, Award, Users
 } from 'lucide-react';
@@ -27,7 +27,8 @@ const translations = {
     work: {
       title: "Selected Work",
       subtitle: "Showcase of digital learning experiences, simulations, and interactive storytelling.",
-      viewDetails: "View Details"
+      viewDetails: "View Details",
+      backToWork: "Back to Portfolio"
     },
     contact: {
       title: "Let's work together.",
@@ -41,7 +42,7 @@ const translations = {
       rights: "All rights reserved.",
       privacy: "Privacy Policy"
     },
-    modal: {
+    modal: { // Mantido como referência para as chaves usadas na ProjectPage
       challenge: "The Challenge",
       solution: "The Solution",
       results: "Results",
@@ -69,7 +70,8 @@ const translations = {
     work: {
       title: "Trabalhos Selecionados",
       subtitle: "Mostruário de experiências de aprendizagem digital, simulações e storytelling interativo.",
-      viewDetails: "Ver Detalhes"
+      viewDetails: "Ver Detalhes",
+      backToWork: "Voltar ao Portfólio"
     },
     contact: {
       title: "Vamos trabalhar juntos.",
@@ -90,90 +92,138 @@ const translations = {
       tools: "Ferramentas Usadas",
       launch: "Ver Projeto"
     }
+  },
+  es: {
+    nav: { home: "Inicio", about: "Sobre mí", portfolio: "Portafolio", contact: "Contacto" },
+    hero: {
+      hello: "Hola,",
+      myName: "Mi nombre es",
+      role: ["Diseño Instruccional", "Diseño de Experiencias de Aprendizaje", "Producción VR y AR", "Desarrollo Front-end (HTML5, CSS, React)", "Estrategia de Aprendizaje", "ADDIE", "SCORM", "LMS"],
+      cta: "Ver mi portafolio",
+      badge1: "Diseñador",
+      badge2: "Instruccional"
+    },
+    about: {
+      title: "Sobre Mí",
+      p1: "Diseñador Instruccional con más de 10 años de experiencia creando experiencias de aprendizaje visuales e inmersivas. Combino formación en diseño 3D, animación y medios digitales con estrategia instruccional para hacer que contenidos complejos sean atractivos y fáciles de entender.",
+      p2: "Apasionado por explorar la IA, la narración y las tecnologías emergentes para diseñar aprendizajes que conecten, inspiren y generen un impacto real.",
+      p3: "Mi experiencia abarca desde la gestión de pipelines completos de producción de e-learning hasta el diseño de personajes y entornos para aplicaciones inmersivas.",
+      skillsTitle: "Competencias Principales"
+    },
+    work: {
+      title: "Trabajos Seleccionados",
+      subtitle: "Muestra de experiencias de aprendizaje digital, simulaciones y narración interactiva.",
+      viewDetails: "Ver Detalles",
+      backToWork: "Volver al Portafolio"
+    },
+    contact: {
+      title: "Trabajemos juntos.",
+      subtitle: "Si tienes un proyecto específico en mente o simplemente quieres conversar sobre tecnología educativa y diseño, me encantaría escucharte.",
+      email: "Correo",
+      linkedin: "LinkedIn",
+      github: "GitHub",
+      phone: "Teléfono"
+    },
+    footer: {
+      rights: "Todos los derechos reservados.",
+      privacy: "Política de Privacidad"
+    },
+    modal: {
+      challenge: "El Desafío",
+      solution: "La Solución",
+      results: "Resultados",
+      tools: "Herramientas",
+      launch: "Ver Proyecto"
+    }
   }
 };
 
-// --- PROJECTS DATA (Function to handle translation) ---
-const getProjects = (lang) => [
-  {
-    id: 1,
-    title: lang === 'pt' ? "Tour Interativo 3D em Restaurante" : "Interactive 3D Restaurant Tour",
-    category: lang === 'pt' ? "Aprendizagem Imersiva" : "Immersive Learning",
-    image: "https://placehold.co/800x600/f59e0b/white?text=Restaurant+Tour",
-    tags: ["Three.js", "Blender", "Interactive"],
-    desc: lang === 'pt' ? "Um tour 3D baseado em navegador para integração de funcionários." : "A browser-based 3D walkthrough for staff onboarding.",
-    details: {
-      challenge: lang === 'pt' ? "Alta rotatividade e tempo limitado para orientação no local dificultavam o treinamento de segurança." : "High turnover and limited time for on-site orientation made safety training difficult.",
-      solution: lang === 'pt' ? "Criação de um gêmeo digital 3D da cozinha do restaurante onde os usuários podem clicar em hotspots para aprender protocolos." : "Created a web-based 3D twin of the restaurant kitchen where users can click hotspots to learn safety protocols.",
-      result: lang === 'pt' ? "Redução de 40% no tempo de orientação e melhoria nas pontuações de conformidade de segurança." : "Reduced on-site orientation time by 40% and improved safety compliance scores."
+// --- PROJECTS DATA ---
+const getProjects = (lang) => {
+  const isPt = lang === 'pt';
+  const isEs = lang === 'es';
+
+  return [
+    {
+      id: 1,
+      title: isPt ? "Tour Interativo 3D em Restaurante" : isEs ? "Recorrido Interactivo 3D en Restaurante" : "Interactive 3D Restaurant Tour",
+      category: isPt ? "Aprendizagem Imersiva" : isEs ? "Aprendizaje Inmersivo" : "Immersive Learning",
+      image: "https://placehold.co/1920x1080/f59e0b/white?text=Restaurant+Tour",
+      tags: ["Three.js", "Blender", "Interactive"],
+      desc: isPt ? "Um tour 3D baseado em navegador para integração de funcionários." : isEs ? "Un recorrido 3D basado en navegador para la incorporación de personal." : "A browser-based 3D walkthrough for staff onboarding.",
+      details: {
+        challenge: isPt ? "Alta rotatividade e tempo limitado para orientação no local dificultavam o treinamento de segurança." : isEs ? "La alta rotación y el tiempo limitado dificultaban la capacitación en seguridad." : "High turnover and limited time for on-site orientation made safety training difficult.",
+        solution: isPt ? "Criação de um gêmeo digital 3D da cozinha do restaurante onde os usuários podem clicar em hotspots para aprender protocolos." : isEs ? "Creación de un gemelo digital 3D de la cocina donde los usuarios aprenden protocolos." : "Created a web-based 3D twin of the restaurant kitchen where users can click hotspots to learn safety protocols.",
+        result: isPt ? "Redução de 40% no tempo de orientação e melhoria nas pontuações de conformidade de segurança." : isEs ? "Reducción del 40% en el tiempo de orientación y mejora en el cumplimiento." : "Reduced on-site orientation time by 40% and improved safety compliance scores."
+      }
+    },
+    {
+      id: 2,
+      title: isPt ? "Simulação 3D de Higiene das Mãos" : isEs ? "Simulación 3D de Higiene de Manos" : "3D Hand Hygiene Simulation",
+      category: isPt ? "Treinamento em Saúde" : isEs ? "Formación Sanitaria" : "Healthcare Training",
+      image: "https://placehold.co/1920x1080/10b981/white?text=Hand+Hygiene",
+      tags: ["Simulation", "3D Animation", "Gamification"],
+      desc: isPt ? "Simulação 3D interativa para técnicas de higiene das mãos da OMS." : isEs ? "Simulación interactiva 3D para técnicas de higiene de manos de la OMS." : "Interactive 3D simulation for WHO hand hygiene techniques.",
+      details: {
+        challenge: isPt ? "Conformidade inconsistente da equipe hospitalar com protocolos de higiene." : isEs ? "Cumplimiento inconsistente de los protocolos por parte del personal." : "Inconsistent compliance with protocols.",
+        solution: isPt ? "Simulação de módulo duplo para prática de movimentos e tempo corretos." : isEs ? "Simulación de doble módulo para practicar movimientos y tiempos." : "Dual-module simulation for practice.",
+        result: isPt ? "Técnica padronizada entre departamentos." : isEs ? "Técnica estandarizada entre departamentos." : "Standardized technique across departments."
+      }
+    },
+    {
+      id: 3,
+      title: isPt ? "Simulação de Software Hospitalar" : isEs ? "Simulación de Software Hospitalario" : "Hospital Software Simulation",
+      category: isPt ? "Treinamento de Sistemas" : isEs ? "Entrenamiento de Sistemas" : "System Training",
+      image: "https://placehold.co/1920x1080/3b82f6/white?text=Software+Sim",
+      tags: ["Storyline", "Software Sim", "UX"],
+      desc: isPt ? "Simulação de alta fidelidade de software EMR para prática sem riscos." : isEs ? "Simulación de alta fidelidad de software EMR para práctica sin riesgos." : "High-fidelity EMR software simulation for risk-free practice.",
+      details: {
+        challenge: isPt ? "Treinamento no sistema real apresentava riscos aos dados." : isEs ? "El entrenamiento en el sistema real presentaba riesgos de datos." : "Training on live system posed data risks.",
+        solution: isPt ? "Réplica pixel-perfect da interface com modos guiado e teste." : isEs ? "Réplica exacta de la interfaz con modos guiado y de prueba." : "Pixel-perfect interface replica.",
+        result: isPt ? "Zero erros de dados durante o treinamento." : isEs ? "Cero errores de datos durante el entrenamiento." : "Zero data errors during training."
+      }
+    },
+    {
+      id: 4,
+      title: isPt ? "Cenário de Branching de Cibersegurança" : isEs ? "Escenario de Ciberseguridad" : "Cybersecurity Branching Scenario",
+      category: isPt ? "Baseado em Cenário" : isEs ? "Basado en Escenarios" : "Scenario-Based",
+      image: "https://placehold.co/1920x1080/6366f1/white?text=Cyber+Security",
+      tags: ["Branching", "Gamification", "Decision Making"],
+      desc: isPt ? "Treinamento narrativo de segurança contra phishing." : isEs ? "Entrenamiento narrativo de seguridad contra phishing." : "Narrative-driven security training against phishing.",
+      details: {
+        challenge: isPt ? "Treinamento seco era ignorado pela equipe." : isEs ? "El entrenamiento aburrido era ignorado por el personal." : "Dry training was ignored.",
+        solution: isPt ? "Jogo narrativo afetando o 'Medidor de Risco'." : isEs ? "Juego narrativo que afecta el 'Medidor de Riesgo'." : "Narrative game affecting 'Risk Meter'.",
+        result: isPt ? "Taxas de engajamento dobradas." : isEs ? "Tasas de participación duplicadas." : "Doubled engagement rates."
+      }
+    },
+    {
+      id: 5,
+      title: isPt ? "Gestão de Tempo Gamificada" : isEs ? "Gestión del Tiempo Gamificada" : "Time Management Gamified",
+      category: isPt ? "Soft Skills" : isEs ? "Habilidades Blandas" : "Soft Skills",
+      image: "https://placehold.co/1920x1080/ec4899/white?text=Time+Management",
+      tags: ["Storytelling", "Gamification", "Scenario"],
+      desc: isPt ? "Cenário de ramificação para priorizar tarefas urgentes vs importantes." : isEs ? "Escenario ramificado para priorizar tareas urgentes vs importantes." : "Branching scenario for prioritizing urgent vs important tasks.",
+      details: {
+        challenge: isPt ? "Gestores lutavam para priorizar." : isEs ? "Los gerentes luchaban para priorizar." : "Managers struggled to prioritize.",
+        solution: isPt ? "Dia de trabalho caótico simulado com consequências." : isEs ? "Día de trabajo caótico simulado con consecuencias." : "Simulated chaotic workday with consequences.",
+        result: isPt ? "Habilidades de priorização melhoradas." : isEs ? "Habilidades de priorización mejoradas." : "Improved prioritization skills."
+      }
+    },
+    {
+      id: 6,
+      title: isPt ? "Cenário de Boas Práticas de IA" : isEs ? "Mejores Prácticas de IA" : "AI Best Practices Scenario",
+      category: isPt ? "Tecnologia Emergente" : isEs ? "Tecnología Emergente" : "Emerging Tech",
+      image: "https://placehold.co/1920x1080/8b5cf6/white?text=AI+Ethics",
+      tags: ["AI", "Ethics", "Light Gamification"],
+      desc: isPt ? "Guia sobre uso responsável de IA no trabalho." : isEs ? "Guía sobre el uso responsable de la IA en el trabajo." : "Guide on responsible AI usage in the workplace.",
+      details: {
+        challenge: isPt ? "Diretrizes pouco claras sobre uso de IA." : isEs ? "Pautas poco claras sobre el uso de la IA." : "Unclear guidelines on AI usage.",
+        solution: isPt ? "Cenários destacando armadilhas comuns." : isEs ? "Escenarios que destacan errores comunes." : "Scenarios highlighting pitfalls.",
+        result: isPt ? "Estabeleceu linha de base para adoção de IA." : isEs ? "Estableció una línea base para la adopción de IA." : "Established baseline for AI adoption."
+      }
     }
-  },
-  {
-    id: 2,
-    title: lang === 'pt' ? "Simulação 3D de Higiene das Mãos" : "3D Hand Hygiene Simulation",
-    category: lang === 'pt' ? "Treinamento em Saúde" : "Healthcare Training",
-    image: "https://placehold.co/800x600/10b981/white?text=Hand+Hygiene",
-    tags: ["Simulation", "3D Animation", "Gamification"],
-    desc: lang === 'pt' ? "Simulação 3D interativa para técnicas de higiene das mãos da OMS." : "Interactive 3D simulation for WHO hand hygiene techniques.",
-    details: {
-      challenge: lang === 'pt' ? "Conformidade inconsistente da equipe hospitalar com protocolos de higiene." : "Inconsistent compliance with protocols.",
-      solution: lang === 'pt' ? "Simulação de módulo duplo para prática de movimentos e tempo corretos." : "Dual-module simulation for practice.",
-      result: lang === 'pt' ? "Técnica padronizada entre departamentos." : "Standardized technique across departments."
-    }
-  },
-  {
-    id: 3,
-    title: lang === 'pt' ? "Simulação de Software Hospitalar" : "Hospital Software Simulation",
-    category: lang === 'pt' ? "Treinamento de Sistemas" : "System Training",
-    image: "https://placehold.co/800x600/3b82f6/white?text=Software+Sim",
-    tags: ["Storyline", "Software Sim", "UX"],
-    desc: lang === 'pt' ? "Simulação de alta fidelidade de software EMR para prática sem riscos." : "High-fidelity EMR software simulation for risk-free practice.",
-    details: {
-      challenge: lang === 'pt' ? "Treinamento no sistema real apresentava riscos aos dados." : "Training on live system posed data risks.",
-      solution: lang === 'pt' ? "Réplica pixel-perfect da interface com modos guiado e teste." : "Pixel-perfect interface replica.",
-      result: lang === 'pt' ? "Zero erros de dados durante o treinamento." : "Zero data errors during training."
-    }
-  },
-  {
-    id: 4,
-    title: lang === 'pt' ? "Cenário de Branching de Cibersegurança" : "Cybersecurity Branching Scenario",
-    category: lang === 'pt' ? "Baseado em Cenário" : "Scenario-Based",
-    image: "https://placehold.co/800x600/6366f1/white?text=Cyber+Security",
-    tags: ["Branching", "Gamification", "Decision Making"],
-    desc: lang === 'pt' ? "Treinamento narrativo de segurança contra phishing." : "Narrative-driven security training against phishing.",
-    details: {
-      challenge: lang === 'pt' ? "Treinamento seco era ignorado pela equipe." : "Dry training was ignored.",
-      solution: lang === 'pt' ? "Jogo narrativo afetando o 'Medidor de Risco'." : "Narrative game affecting 'Risk Meter'.",
-      result: lang === 'pt' ? "Taxas de engajamento dobradas." : "Doubled engagement rates."
-    }
-  },
-  {
-    id: 5,
-    title: lang === 'pt' ? "Gestão de Tempo Gamificada" : "Time Management Gamified",
-    category: lang === 'pt' ? "Soft Skills" : "Soft Skills",
-    image: "https://placehold.co/800x600/ec4899/white?text=Time+Management",
-    tags: ["Storytelling", "Gamification", "Scenario"],
-    desc: lang === 'pt' ? "Cenário de ramificação para priorizar tarefas urgentes vs importantes." : "Branching scenario for prioritizing urgent vs important tasks.",
-    details: {
-      challenge: lang === 'pt' ? "Gestores lutavam para priorizar." : "Managers struggled to prioritize.",
-      solution: lang === 'pt' ? "Dia de trabalho caótico simulado com consequências." : "Simulated chaotic workday with consequences.",
-      result: lang === 'pt' ? "Habilidades de priorização melhoradas." : "Improved prioritization skills."
-    }
-  },
-  {
-    id: 6,
-    title: lang === 'pt' ? "Cenário de Boas Práticas de IA" : "AI Best Practices Scenario",
-    category: lang === 'pt' ? "Tecnologia Emergente" : "Emerging Tech",
-    image: "https://placehold.co/800x600/8b5cf6/white?text=AI+Ethics",
-    tags: ["AI", "Ethics", "Light Gamification"],
-    desc: lang === 'pt' ? "Guia sobre uso responsável de IA no trabalho." : "Guide on responsible AI usage in the workplace.",
-    details: {
-      challenge: lang === 'pt' ? "Diretrizes pouco claras sobre uso de IA." : "Unclear guidelines on AI usage.",
-      solution: lang === 'pt' ? "Cenários destacando armadilhas comuns." : "Scenarios highlighting pitfalls.",
-      result: lang === 'pt' ? "Estabeleceu linha de base para adoção de IA." : "Established baseline for AI adoption."
-    }
-  }
-];
+  ];
+};
 
 // --- STYLES & FONTS ---
 const GlobalStyles = () => (
@@ -187,7 +237,7 @@ const GlobalStyles = () => (
       --primary-blue: #3b82f6;   
       
       /* Backgrounds */
-      --bg-light: #F8FAFC;       
+      --bg-light: #F8FAFC;        
       --text-dark: #0f172a;
       --header-island-bg: #1e293b;
     }
@@ -206,8 +256,8 @@ const GlobalStyles = () => (
 
     /* Mobile Optimization */
     @media (max-width: 768px) {
-      body { cursor: auto !important; } /* Restore normal cursor on mobile */
-      .custom-cursor, .custom-cursor-dot { display: none !important; } /* Hide custom cursor elements */
+      body { cursor: auto !important; }
+      .custom-cursor, .custom-cursor-dot { display: none !important; }
     }
 
     h1, h2, h3, h4, button, .font-display {
@@ -246,6 +296,14 @@ const GlobalStyles = () => (
       background-size: 300% auto;
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       background-clip: text; animation: gradient-flow 8s ease infinite; padding-bottom: 0.1em;
+    }
+
+    .fade-in-up {
+      animation: fadeInUp 0.8s ease-out forwards;
+      opacity: 0; transform: translateY(20px);
+    }
+    @keyframes fadeInUp {
+      to { opacity: 1; transform: translateY(0); }
     }
 
     /* --- COMPONENTS --- */
@@ -306,7 +364,6 @@ const GlobalStyles = () => (
       transition: all 0.4s ease; padding: 0.75rem 2rem; height: 84px;
     }
     
-    /* Gradient Border Bottom - using pseudo element on inner div to avoid overflow issues */
     .header-gradient-border {
       position: absolute; bottom: 0; left: 10px; right: 10px; height: 2px;
       border-radius: 9999px; pointer-events: none;
@@ -351,7 +408,7 @@ const GlobalStyles = () => (
         40% {transform: translateY(10px);} 60% {transform: translateY(5px);}
     }
 
-    /* Project Card Green Border */
+    /* Project Card */
     .project-card-green {
         border: 1px solid rgba(16, 185, 129, 0.3); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
@@ -382,24 +439,17 @@ const GlobalStyles = () => (
     }
     .jl-badge:hover { background-color: #64748b; }
 
-    /* Language Dropdown */
     .lang-dropdown {
-      position: absolute;
-      top: 100%; right: 0;
-      background: #1e293b;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 0.5rem;
-      padding: 0.5rem;
-      margin-top: 0.5rem;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-      z-index: 60;
-      min-width: 120px;
+      position: absolute; top: 100%; right: 0;
+      background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 0.5rem; padding: 0.5rem; margin-top: 0.5rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); z-index: 60;
+      min-width: 140px;
     }
     .lang-option {
-      display: flex; align-items: center; gap: 0.5rem;
-      padding: 0.5rem; color: #cbd5e1; font-size: 0.9rem;
-      cursor: pointer; border-radius: 0.25rem;
-      transition: all 0.2s;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 0.5rem; padding: 0.5rem; color: #cbd5e1; font-size: 0.9rem;
+      cursor: pointer; border-radius: 0.25rem; transition: all 0.2s;
     }
     .lang-option:hover { background: rgba(255,255,255,0.1); color: white; }
     .lang-option.active { color: var(--primary-teal); font-weight: 600; }
@@ -407,10 +457,8 @@ const GlobalStyles = () => (
     /* Mobile Menu */
     .mobile-menu-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
-      background: rgba(15, 23, 42, 0.95);
-      backdrop-filter: blur(10px);
-      z-index: 49;
-      display: flex; flex-direction: column; justify-content: center; items-center;
+      background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);
+      z-index: 49; display: flex; flex-direction: column; justify-content: center; items-center;
       transition: opacity 0.3s ease, transform 0.3s ease;
       opacity: 0; pointer-events: none; transform: translateY(-20px);
     }
@@ -420,6 +468,12 @@ const GlobalStyles = () => (
       cursor: pointer; transition: color 0.3s;
     }
     .mobile-nav-item:hover { color: var(--primary-teal); }
+
+    /* Project Page Specific */
+    .project-page-header {
+      height: 60vh; min-height: 400px; position: relative;
+      background-attachment: fixed; background-size: cover; background-position: center;
+    }
   `}</style>
 );
 
@@ -442,7 +496,7 @@ const CustomCursor = () => {
 
     window.addEventListener('mousemove', moveCursor);
     setTimeout(() => {
-       document.querySelectorAll('a, button, .nav-item, .glass-card, .scroll-pill-btn, .contact-box-green, .project-card-green, .jl-badge, .mobile-nav-item, .lang-trigger').forEach(el => {
+       document.querySelectorAll('a, button, .nav-item, .glass-card, .scroll-pill-btn, .contact-box-green, .project-card-green, .jl-badge, .mobile-nav-item, .lang-trigger, .lang-option').forEach(el => {
           el.addEventListener('mouseenter', handleHover);
           el.addEventListener('mouseleave', handleLeave);
       });
@@ -478,14 +532,12 @@ const Reveal = ({ children, className = "", delay = 0 }) => {
   );
 };
 
-// --- TYPING EFFECT ---
 const TypingEffect = ({ texts }) => {
   const [index, setIndex] = useState(0);
   const [text, setText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [speed, setSpeed] = useState(50);
 
-  // Reset typing when language changes (texts prop changes)
   useEffect(() => {
     setText('');
     setIndex(0);
@@ -548,6 +600,14 @@ const Navigation = ({ activeSection, scrollToSection, lang, setLang, t }) => {
     scrollToSection(id);
   };
 
+  const langOptions = [
+    { code: 'en', label: 'English', flag: '🇺🇸' },
+    { code: 'pt', label: 'Português', flag: '🇧🇷' },
+    { code: 'es', label: 'Español', flag: '🇪🇸' },
+  ];
+
+  const currentLang = langOptions.find(opt => opt.code === lang);
+
   return (
     <>
       <nav className={`header-container ${isScrolled ? 'scrolled' : ''}`}>
@@ -581,12 +641,16 @@ const Navigation = ({ activeSection, scrollToSection, lang, setLang, t }) => {
                       className="flex items-center gap-2 text-sm font-medium text-gray-400 cursor-pointer hover:text-white transition-colors lang-trigger"
                       onClick={() => setLangDropdownOpen(!langDropdownOpen)}
                     >
-                        <Globe size={16}/> <span>{lang === 'en' ? 'EN' : 'PT'}</span> <ChevronDown size={14}/>
+                        <Globe size={16}/> <span>{currentLang.code.toUpperCase()}</span> <ChevronDown size={14}/>
                     </div>
                     {langDropdownOpen && (
                       <div className="lang-dropdown">
-                         <div className={`lang-option ${lang === 'en' ? 'active' : ''}`} onClick={() => handleLangSelect('en')}>🇺🇸 English</div>
-                         <div className={`lang-option ${lang === 'pt' ? 'active' : ''}`} onClick={() => handleLangSelect('pt')}>🇧🇷 Português</div>
+                        {langOptions.map(opt => (
+                           <div key={opt.code} className={`lang-option ${lang === opt.code ? 'active' : ''}`} onClick={() => handleLangSelect(opt.code)}>
+                              <span>{opt.flag}</span>
+                              <span className='flex-1'>{opt.label}</span>
+                           </div>
+                        ))}
                       </div>
                     )}
                 </div>
@@ -609,70 +673,108 @@ const Navigation = ({ activeSection, scrollToSection, lang, setLang, t }) => {
             </div>
          ))}
          <div className="mt-8 flex gap-4">
-            <button className={`px-4 py-2 rounded border ${lang === 'en' ? 'bg-teal-600 border-teal-600 text-white' : 'border-slate-600 text-slate-400'}`} onClick={() => handleLangSelect('en')}>EN</button>
-            <button className={`px-4 py-2 rounded border ${lang === 'pt' ? 'bg-teal-600 border-teal-600 text-white' : 'border-slate-600 text-slate-400'}`} onClick={() => handleLangSelect('pt')}>PT</button>
+            {langOptions.map(opt => (
+                <button 
+                  key={opt.code}
+                  className={`px-4 py-2 rounded border transition-colors ${lang === opt.code ? 'bg-teal-600 border-teal-600 text-white' : 'border-slate-600 text-slate-400 hover:bg-slate-700'}`} 
+                  onClick={() => handleLangSelect(opt.code)}
+                >
+                    {opt.flag} {opt.code.toUpperCase()}
+                </button>
+            ))}
          </div>
       </div>
     </>
   );
 };
 
-// --- PROJECT MODAL (Used for detailed view) ---
-const ProjectModal = ({ project, onClose, t }) => {
+// --- NEW PROJECT PAGE COMPONENT (Replaces Modal) ---
+const ProjectPage = ({ project, onBack, t }) => {
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   if (!project) return null;
+
   return (
-    <div className="fixed inset-0 z-[60] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
-        <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full border border-slate-200">
-            <div className="relative h-80">
-               <img className="w-full h-full object-cover" src={project.image} alt={project.title} />
-               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-               <button onClick={onClose} className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 rounded-full p-2 text-white transition-colors backdrop-blur-md"><X size={24} /></button>
-               <div className="absolute bottom-6 left-8 right-8">
-                  <h2 className="text-4xl font-display font-bold text-white mb-1">{project.title}</h2>
-                  <p className="text-slate-300 text-lg">{project.category}</p>
-               </div>
-            </div>
-            <div className="p-8 sm:p-12 bg-white">
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                  <div className="md:col-span-2 space-y-8">
-                     <div>
-                        <h3 className="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2"><Play size={20} className="text-teal-500"/> {t.modal.challenge}</h3>
-                        <p className="text-slate-600 leading-relaxed">{project.details?.challenge}</p>
-                     </div>
-                     <div>
-                        <h3 className="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2"><CheckCircle size={20} className="text-teal-500"/> {t.modal.solution}</h3>
-                        <p className="text-slate-600 leading-relaxed">{project.details?.solution}</p>
-                     </div>
-                     <div>
-                        <h3 className="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2"><Award size={20} className="text-teal-500"/> {t.modal.results}</h3>
-                        <p className="text-slate-600 leading-relaxed">{project.details?.result}</p>
-                     </div>
-                  </div>
-                  <div className="space-y-8">
-                     <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">
-                        <h4 className="font-bold text-slate-900 mb-4 uppercase text-sm tracking-wider">{t.modal.tools}</h4>
-                        <div className="flex flex-wrap gap-2">
-                           {project.tags.map((tag,i) => (<span key={i} className="px-2 py-1 bg-white border border-slate-200 rounded text-xs text-slate-600">{tag}</span>))}
-                        </div>
-                     </div>
-                     <button className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold transition-colors flex items-center justify-center gap-2">
-                        {t.modal.launch} <ArrowUpRight size={18}/>
-                     </button>
-                  </div>
-               </div>
-            </div>
+    <div className="min-h-screen bg-slate-50 fade-in-up">
+      {/* Hero Banner for Project */}
+      <div className="relative h-[60vh] w-full overflow-hidden">
+        <div className="absolute inset-0 bg-slate-900/40 z-10"></div>
+        <img src={project.image} alt={project.title} className="w-full h-full object-cover" />
+        <div className="absolute inset-0 z-20 flex flex-col justify-end pb-16 px-6 max-w-[1440px] mx-auto">
+           <div className="bg-white/10 backdrop-blur-md inline-block px-4 py-2 rounded-lg text-white/90 font-semibold mb-4 w-max border border-white/20">
+             {project.category}
+           </div>
+           <h1 className="font-display font-bold text-4xl md:text-6xl text-white mb-6 max-w-4xl leading-tight">
+             {project.title}
+           </h1>
+           <div className="flex flex-wrap gap-2">
+              {project.tags.map((tag,i) => (
+                <span key={i} className="px-3 py-1 bg-teal-500/80 backdrop-blur-sm text-white rounded-full text-sm font-medium border border-teal-400/50">
+                  {tag}
+                </span>
+              ))}
+           </div>
         </div>
+      </div>
+
+      {/* Content */}
+      <div className="max-w-[1000px] mx-auto px-6 py-20">
+         <button onClick={onBack} className="flex items-center text-slate-500 hover:text-teal-600 transition-colors mb-12 group font-medium">
+            <ArrowLeft size={20} className="mr-2 group-hover:-translate-x-1 transition-transform"/> {t.work.backToWork}
+         </button>
+
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
+            <div className="md:col-span-2 space-y-16">
+               <Reveal>
+                 <div className="relative pl-6 border-l-4 border-teal-500">
+                    <h3 className="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                       {t.modal.challenge}
+                    </h3>
+                    <p className="text-lg text-slate-700 leading-relaxed">{project.details?.challenge}</p>
+                 </div>
+               </Reveal>
+               
+               <Reveal delay={100}>
+                 <div className="relative pl-6 border-l-4 border-cyan-500">
+                    <h3 className="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                       {t.modal.solution}
+                    </h3>
+                    <p className="text-lg text-slate-700 leading-relaxed">{project.details?.solution}</p>
+                 </div>
+               </Reveal>
+
+               <Reveal delay={200}>
+                 <div className="relative pl-6 border-l-4 border-blue-500">
+                    <h3 className="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                       {t.modal.results}
+                    </h3>
+                    <p className="text-lg text-slate-700 leading-relaxed">{project.details?.result}</p>
+                 </div>
+               </Reveal>
+            </div>
+
+            <div className="space-y-8">
+               <div className="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 sticky top-32">
+                  <h4 className="font-bold text-slate-900 mb-6 uppercase text-sm tracking-wider border-b border-slate-100 pb-2">{t.modal.tools}</h4>
+                  <div className="flex flex-wrap gap-2 mb-8">
+                     {project.tags.map((tag,i) => (<span key={i} className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-sm text-slate-600 font-medium">{tag}</span>))}
+                  </div>
+                  <button className="w-full py-4 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 transform hover:-translate-y-1">
+                     {t.modal.launch} <ArrowUpRight size={20}/>
+                  </button>
+               </div>
+            </div>
+         </div>
       </div>
     </div>
   );
 };
 
-const ProjectCard = ({ project, onClick }) => (
+const ProjectCard = ({ project, onClick, t }) => (
   <div className="project-card-green glass-card overflow-hidden group cursor-none flex flex-col h-full" onClick={() => onClick(project)}>
     <div className="relative h-56 overflow-hidden border-b border-slate-200 flex-shrink-0">
-      {/* Title removed from here to clean up the banner visual */}
       <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/5 transition-colors z-10"></div>
       <img src={project.image} alt={project.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
     </div>
@@ -691,7 +793,7 @@ const ProjectCard = ({ project, onClick }) => (
         {project.desc}
       </p>
       <button className="inline-flex items-center text-sm font-bold text-teal-700 hover:text-teal-800 group/link mt-auto">
-        View Details <ArrowUpRight size={16} className="ml-1 transition-transform group-hover/link:translate-x-1 group-hover/link:-translate-y-1"/>
+        {t.work.viewDetails} <ArrowUpRight size={16} className="ml-1 transition-transform group-hover/link:translate-x-1 group-hover/link:-translate-y-1"/>
       </button>
     </div>
   </div>
@@ -701,18 +803,42 @@ const ProjectCard = ({ project, onClick }) => (
 export default function Portfolio() {
   const [activeSection, setActiveSection] = useState('hero');
   const [selectedProject, setSelectedProject] = useState(null);
+  const [view, setView] = useState('home'); // 'home' | 'project'
   const [lang, setLang] = useState('en');
+  const [targetSection, setTargetSection] = useState(null);
+  
   const t = translations[lang];
 
+  // Updated Scroll Logic to handle View Switching
   const scrollToSection = (id) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-    setActiveSection(id === 'work' ? 'portfolio' : id);
+    if (view !== 'home') {
+      setView('home');
+      setTargetSection(id);
+    } else {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+      setActiveSection(id === 'work' ? 'portfolio' : id);
+    }
   };
+
+  // Effect to handle delayed scrolling after view change
+  useEffect(() => {
+     if (view === 'home' && targetSection) {
+        // Small delay to ensure DOM render
+        const timer = setTimeout(() => {
+           document.getElementById(targetSection)?.scrollIntoView({ behavior: 'smooth' });
+           setActiveSection(targetSection === 'work' ? 'portfolio' : targetSection);
+           setTargetSection(null);
+        }, 100);
+        return () => clearTimeout(timer);
+     }
+  }, [view, targetSection]);
 
   useEffect(() => {
     const handleScroll = () => {
+      if (view !== 'home') return; // Don't track home sections if not in home view
+
       const sections = ['hero', 'about', 'work', 'contact'];
-      const scrollPosition = window.scrollY + (window.innerHeight / 3); 
+      const scrollPosition = window.scrollY + (window.innerHeight * 0.4); 
       for (const section of sections) {
         const element = document.getElementById(section);
         if (element) {
@@ -725,141 +851,159 @@ export default function Portfolio() {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [view]);
+  
+  const handleProjectClick = (project) => {
+    setSelectedProject(project);
+    setView('project');
+  };
+
+  const handleBackToWork = () => {
+    scrollToSection('work');
+  };
+
+  // Data dependent on language state
+  const projects = getProjects(lang);
+  const skillsList = ["Instructional Design", "E-Learning", "3D Animation", "Gamification", "Articulate 360", "Adobe Creative Suite", "Blender", "Unreal Engine", "LMS Management", "SCORM/xAPI", "AI Tools", "Agile"];
+  const aboutParagraphs = [t.about.p1, t.about.p2, t.about.p3];
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen relative bg-slate-50">
       <GlobalStyles />
       <CustomCursor />
+      
+      {/* Navigation remains visible in both views */}
       <Navigation activeSection={activeSection} scrollToSection={scrollToSection} lang={lang} setLang={setLang} t={t} />
 
-      {/* HERO */}
-      <section id="hero" className="relative h-screen min-h-[700px] flex items-center px-6 overflow-hidden" style={{ backgroundColor: 'var(--bg-light)' }}>
-        <svg className="absolute bottom-0 right-0 w-full md:w-[75%] h-auto max-h-[95vh] pointer-events-none z-0 opacity-60" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMaxYMax meet">
-            <defs>
-            <linearGradient id="gradAnimated" x1="0" y1="0" x2="100%" y2="0">
-                <stop offset="0%" stopColor="#10b981"><animate attributeName="stop-color" values="#10b981; #06b6d4; #3b82f6; #10b981" dur="4s" repeatCount="indefinite" /></stop>
-                <stop offset="100%" stopColor="#06b6d4"><animate attributeName="stop-color" values="#06b6d4; #3b82f6; #10b981; #06b6d4" dur="4s" repeatCount="indefinite" /></stop>
-            </linearGradient>
-            </defs>
-            <path className="wave-line" d="M0,600 C150,500 250,450 450,500 C650,550 750,400 800,300" stroke="url(#gradAnimated)" strokeWidth="1.5" style={{animationDelay: '0ms'}} />
-            <path className="wave-line" d="M0,600 C200,550 350,400 550,450 C750,500 780,300 800,200" stroke="url(#gradAnimated)" strokeWidth="1.5" style={{animationDelay: '200ms'}} />
-            <path className="wave-line" d="M50,600 C250,500 400,350 600,400 C800,450 820,250 800,150" stroke="url(#gradAnimated)" strokeWidth="1.5" style={{animationDelay: '400ms'}} />
-            <path className="wave-line" d="M100,600 C300,450 450,300 650,350 C850,400 850,200 800,100" stroke="url(#gradAnimated)" strokeWidth="1.5" style={{animationDelay: '600ms'}} />
-        </svg>
-        <div className="max-w-[1440px] w-full mx-auto grid grid-cols-1 md:grid-cols-2 relative z-10 h-full items-center">
-          <div className="flex flex-col justify-center md:-mt-12">
-             <Reveal>
-                <h2 className="font-display font-bold text-3xl md:text-5xl lg:text-6xl text-[#10b981] mb-2 tracking-tight">{t.hero.hello}</h2>
-                <h2 className="font-display font-bold text-3xl md:text-5xl lg:text-6xl text-[#10b981] mb-4 tracking-tight">{t.hero.myName}</h2>
-                <h1 className="font-display font-extrabold text-5xl md:text-7xl lg:text-8xl mb-6 text-gradient-animated leading-[1] tracking-tighter whitespace-nowrap">Jean Leoni</h1>
-                <TypingEffect texts={t.hero.role} />
-                <div className="mt-12"><button onClick={() => scrollToSection('work')} className="btn-portfolio px-10 py-4 text-lg shadow-lg">{t.hero.cta}</button></div>
-             </Reveal>
-          </div>
-          <div className="hidden md:flex flex-col justify-center items-end md:-mt-12">
-             <Reveal delay={400}>
-                <div className="flex flex-col items-end text-right">
-                   <h2 className="font-display font-bold text-5xl lg:text-6xl text-gradient-animated leading-tight tracking-tighter opacity-90 pb-2" style={{ textShadow: '0 4px 15px rgba(6, 182, 212, 0.1)' }}>{t.hero.badge1}<br/>{t.hero.badge2}</h2>
-                   <div className="w-24 h-2 bg-gradient-to-r from-transparent to-teal-500 mt-4 rounded-full opacity-60"></div>
-                </div>
-             </Reveal>
-          </div>
-        </div>
-        <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 z-20">
-           <div onClick={() => scrollToSection('about')} className="scroll-pill-btn group" role="button"><ArrowDown size={24} className="scroll-arrow-icon" /></div>
-        </div>
-      </section>
-
-      {/* ABOUT */}
-      <section id="about" className="py-32 px-6 relative z-10 bg-white/40 backdrop-blur-sm">
-        <div className="max-w-[1000px] mx-auto">
-          <Reveal><div className="mb-12 flex items-center gap-4"><div className="w-12 h-1 bg-teal-500 rounded-full"></div><h2 className="font-display font-bold text-3xl md:text-4xl text-slate-900">{t.about.title}</h2></div></Reveal>
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-12">
-            <Reveal>
-              <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full opacity-70 blur transition duration-1000 group-hover:opacity-100"></div>
-                <img src="https://iili.io/fBYKQFj.png" alt="Jean Leoni" className="relative w-48 h-48 md:w-64 md:h-64 rounded-full object-cover border-4 border-white shadow-2xl" style={{ objectPosition: 'center 15%' }} />
+      {view === 'home' ? (
+        <div className="fade-in-up">
+          {/* HERO */}
+          <section id="hero" className="relative h-screen min-h-[700px] flex items-center px-6 overflow-hidden" style={{ backgroundColor: 'var(--bg-light)' }}>
+            <svg className="absolute bottom-0 right-0 w-full md:w-[75%] h-auto max-h-[95vh] pointer-events-none z-0 opacity-60" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMaxYMax meet">
+                <defs>
+                <linearGradient id="gradAnimated" x1="0" y1="0" x2="100%" y2="0">
+                    <stop offset="0%" stopColor="#10b981"><animate attributeName="stop-color" values="#10b981; #06b6d4; #3b82f6; #10b981" dur="4s" repeatCount="indefinite" /></stop>
+                    <stop offset="100%" stopColor="#06b6d4"><animate attributeName="stop-color" values="#06b6d4; #3b82f6; #10b981; #06b6d4" dur="4s" repeatCount="indefinite" /></stop>
+                </linearGradient>
+                </defs>
+                <path className="wave-line" d="M0,600 C150,500 250,450 450,500 C650,550 750,400 800,300" stroke="url(#gradAnimated)" strokeWidth="1.5" style={{animationDelay: '0ms'}} />
+                <path className="wave-line" d="M0,600 C200,550 350,400 550,450 C750,500 780,300 800,200" stroke="url(#gradAnimated)" strokeWidth="1.5" style={{animationDelay: '200ms'}} />
+                <path className="wave-line" d="M50,600 C250,500 400,350 600,400 C800,450 820,250 800,150" stroke="url(#gradAnimated)" strokeWidth="1.5" style={{animationDelay: '400ms'}} />
+                <path className="wave-line" d="M100,600 C300,450 450,300 650,350 C850,400 850,200 800,100" stroke="url(#gradAnimated)" strokeWidth="1.5" style={{animationDelay: '600ms'}} />
+            </svg>
+            <div className="max-w-[1440px] w-full mx-auto grid grid-cols-1 md:grid-cols-2 relative z-10 h-full items-center">
+              <div className="flex flex-col justify-center md:-mt-12">
+                 <Reveal>
+                    <h2 className="font-display font-bold text-3xl md:text-5xl lg:text-6xl text-[#10b981] mb-2 tracking-tight">{t.hero.hello}</h2>
+                    <h2 className="font-display font-bold text-3xl md:text-5xl lg:text-6xl text-[#10b981] mb-4 tracking-tight">{t.hero.myName}</h2>
+                    <h1 className="font-display font-extrabold text-5xl md:text-7xl lg:text-8xl mb-6 text-gradient-animated leading-[1] tracking-tighter whitespace-nowrap">Jean Leoni</h1>
+                    <TypingEffect texts={t.hero.role} />
+                    <div className="mt-12"><button onClick={() => scrollToSection('work')} className="btn-portfolio px-10 py-4 text-lg shadow-lg">{t.hero.cta}</button></div>
+                 </Reveal>
               </div>
-            </Reveal>
-            <div className="space-y-6 text-xl text-slate-700 leading-relaxed font-sans font-light flex-1">
-              <Reveal delay={100}><p>{t.about.p1}</p></Reveal>
-              <Reveal delay={200}><p>{t.about.p2}</p></Reveal>
-              <Reveal delay={300}><p>{t.about.p3}</p></Reveal>
-              <Reveal delay={400}>
-                  <div className="pt-6">
-                     <h4 className="font-bold text-slate-900 mb-4 flex items-center gap-2"><Cpu size={20} className="text-teal-600"/> {t.about.skillsTitle}</h4>
-                     <div className="flex flex-wrap gap-2">{["Instructional Design", "E-Learning", "3D Animation", "Gamification", "Articulate 360", "Adobe Creative Suite", "Blender", "Unreal Engine", "LMS Management", "SCORM/xAPI", "AI Tools", "Agile"].map((skill, i) => <span key={i} className="skill-pill">{skill}</span>)}</div>
-                  </div>
-               </Reveal>
+              <div className="hidden md:flex flex-col justify-center items-end md:-mt-12">
+                 <Reveal delay={400}>
+                    <div className="flex flex-col items-end text-right">
+                       <h2 className="font-display font-bold text-5xl lg:text-6xl text-gradient-animated leading-tight tracking-tighter opacity-90 pb-2" style={{ textShadow: '0 4px 15px rgba(6, 182, 212, 0.1)' }}>{t.hero.badge1}<br/>{t.hero.badge2}</h2>
+                       <div className="w-24 h-2 bg-gradient-to-r from-transparent to-teal-500 mt-4 rounded-full opacity-60"></div>
+                    </div>
+                 </Reveal>
+              </div>
             </div>
-          </div>
-        </div>
-      </section>
+            <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 z-20">
+               <div onClick={() => scrollToSection('about')} className="scroll-pill-btn group" role="button"><ArrowDown size={24} className="scroll-arrow-icon" /></div>
+            </div>
+          </section>
 
-      {/* WORK */}
-      <section id="work" className="py-32 px-6 bg-white/60">
-        <div className="max-w-[1440px] mx-auto">
-           <Reveal className="mb-16 flex flex-col md:flex-row md:items-end justify-between border-b border-slate-300 pb-6 gap-4">
-             <div>
-                <h2 className="font-display font-bold text-4xl md:text-5xl text-slate-900 mb-2">{t.work.title}</h2>
-                <p className="text-slate-600 text-lg">{t.work.subtitle}</p>
-             </div>
-          </Reveal>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {getProjects(lang).map((project, i) => (<Reveal key={i} delay={i * 100}><ProjectCard project={project} onClick={setSelectedProject} /></Reveal>))}
-          </div>
-        </div>
-      </section>
+          {/* ABOUT */}
+          <section id="about" className="py-32 px-6 relative z-10 bg-white/40 backdrop-blur-sm">
+            <div className="max-w-[1000px] mx-auto">
+              <Reveal><div className="mb-12 flex items-center gap-4"><div className="w-12 h-1 bg-teal-500 rounded-full"></div><h2 className="font-display font-bold text-3xl md:text-4xl text-slate-900">{t.about.title}</h2></div></Reveal>
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-12">
+                <Reveal>
+                  <div className="relative group">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full opacity-70 blur transition duration-1000 group-hover:opacity-100"></div>
+                    <img src="https://iili.io/fBYKQFj.png" alt="Jean Leoni" className="relative w-48 h-48 md:w-64 md:h-64 rounded-full object-cover border-4 border-white shadow-2xl" style={{ objectPosition: 'center 15%' }} />
+                  </div>
+                </Reveal>
+                <div className="space-y-6 text-xl text-slate-700 leading-relaxed font-sans font-light flex-1">
+                  {aboutParagraphs.map((para, i) => (<Reveal key={i} delay={i * 100}><p>{para}</p></Reveal>))}
+                   <Reveal delay={400}>
+                      <div className="pt-6">
+                         <h4 className="font-bold text-slate-900 mb-4 flex items-center gap-2"><Cpu size={20} className="text-teal-600"/> {t.about.skillsTitle}</h4>
+                         <div className="flex flex-wrap gap-2">{skillsList.map((skill, i) => <span key={i} className="skill-pill">{skill}</span>)}</div>
+                      </div>
+                   </Reveal>
+                </div>
+              </div>
+            </div>
+          </section>
 
-      {/* CONTACT */}
-      <section id="contact" className="py-32 px-6 relative z-10" style={{ backgroundColor: 'var(--bg-light)' }}>
-        <div className="max-w-[1200px] mx-auto">
-          <Reveal className="mb-16 text-center">
-            <h2 className="font-display font-bold text-4xl md:text-6xl text-slate-900 mb-6">{t.contact.title}</h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">{t.contact.subtitle}</p>
-          </Reveal>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-             <Reveal key={1} delay={100}>
-                <a href="mailto:jean_leoni@hotmail.com" className="contact-box-green glass-card p-8 flex flex-col items-center text-center group h-full justify-center cursor-none">
-                    <div className="p-4 bg-white rounded-2xl mb-6 text-slate-500 group-hover:text-teal-600 group-hover:scale-110 transition-all shadow-sm"><Mail size={24}/></div>
-                    <h3 className="font-bold text-slate-900 mb-2">{t.contact.email}</h3>
-                    <p className="text-sm text-slate-600">jean_leoni@hotmail.com</p>
-                </a>
-             </Reveal>
-             <Reveal key={2} delay={200}>
-                <a href="#" className="contact-box-green glass-card p-8 flex flex-col items-center text-center group h-full justify-center cursor-none">
-                    <div className="p-4 bg-white rounded-2xl mb-6 text-slate-500 group-hover:text-teal-600 group-hover:scale-110 transition-all shadow-sm"><Linkedin size={24}/></div>
-                    <h3 className="font-bold text-slate-900 mb-2">{t.contact.linkedin}</h3>
-                    <p className="text-sm text-slate-600">Jean Leoni</p>
-                </a>
-             </Reveal>
-             <Reveal key={3} delay={300}>
-                <a href="#" className="contact-box-green glass-card p-8 flex flex-col items-center text-center group h-full justify-center cursor-none">
-                    <div className="p-4 bg-white rounded-2xl mb-6 text-slate-500 group-hover:text-teal-600 group-hover:scale-110 transition-all shadow-sm"><Github size={24}/></div>
-                    <h3 className="font-bold text-slate-900 mb-2">{t.contact.github}</h3>
-                    <p className="text-sm text-slate-600">jeanleoni</p>
-                </a>
-             </Reveal>
-             <Reveal key={4} delay={400}>
-                <a href="tel:+5547991850992" className="contact-box-green glass-card p-8 flex flex-col items-center text-center group h-full justify-center cursor-none">
-                    <div className="p-4 bg-white rounded-2xl mb-6 text-slate-500 group-hover:text-teal-600 group-hover:scale-110 transition-all shadow-sm"><Phone size={24}/></div>
-                    <h3 className="font-bold text-slate-900 mb-2">{t.contact.phone}</h3>
-                    <p className="text-sm text-slate-600">+55 47 99185-0992</p>
-                </a>
-             </Reveal>
-          </div>
-        </div>
-      </section>
+          {/* WORK */}
+          <section id="work" className="py-32 px-6 bg-white/60">
+            <div className="max-w-[1440px] mx-auto">
+               <Reveal className="mb-16 flex flex-col md:flex-row md:items-end justify-between border-b border-slate-300 pb-6 gap-4">
+                 <div>
+                    <h2 className="font-display font-bold text-4xl md:text-5xl text-slate-900 mb-2">{t.work.title}</h2>
+                    <p className="text-slate-600 text-lg">{t.work.subtitle}</p>
+                 </div>
+              </Reveal>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {getProjects(lang).map((project, i) => (<Reveal key={i} delay={i * 100}><ProjectCard project={project} onClick={handleProjectClick} t={t}/></Reveal>))}
+              </div>
+            </div>
+          </section>
 
-      <footer className="py-12 bg-[#0f172a] text-slate-400 text-sm">
+          {/* CONTACT */}
+          <section id="contact" className="py-32 px-6 relative z-10" style={{ backgroundColor: 'var(--bg-light)' }}>
+            <div className="max-w-[1200px] mx-auto">
+              <Reveal className="mb-16 text-center">
+                <h2 className="font-display font-bold text-4xl md:text-6xl text-slate-900 mb-6">{t.contact.title}</h2>
+                <p className="text-xl text-slate-600 max-w-2xl mx-auto">{t.contact.subtitle}</p>
+              </Reveal>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                 <Reveal key={1} delay={100}>
+                    <a href="mailto:jean_leoni@hotmail.com" className="contact-box-green glass-card p-8 flex flex-col items-center text-center group h-full justify-center cursor-none">
+                        <div className="p-4 bg-white rounded-2xl mb-6 text-slate-500 group-hover:text-teal-600 group-hover:scale-110 transition-all shadow-sm"><Mail size={24}/></div>
+                        <h3 className="font-bold text-slate-900 mb-2">{t.contact.email}</h3>
+                        <p className="text-sm text-slate-600">jean_leoni@hotmail.com</p>
+                    </a>
+                 </Reveal>
+                 <Reveal key={2} delay={200}>
+                    <a href="#" className="contact-box-green glass-card p-8 flex flex-col items-center text-center group h-full justify-center cursor-none">
+                        <div className="p-4 bg-white rounded-2xl mb-6 text-slate-500 group-hover:text-teal-600 group-hover:scale-110 transition-all shadow-sm"><Linkedin size={24}/></div>
+                        <h3 className="font-bold text-slate-900 mb-2">{t.contact.linkedin}</h3>
+                        <p className="text-sm text-slate-600">Jean Leoni</p>
+                    </a>
+                 </Reveal>
+                 <Reveal key={3} delay={300}>
+                    <a href="#" className="contact-box-green glass-card p-8 flex flex-col items-center text-center group h-full justify-center cursor-none">
+                        <div className="p-4 bg-white rounded-2xl mb-6 text-slate-500 group-hover:text-teal-600 group-hover:scale-110 transition-all shadow-sm"><Github size={24}/></div>
+                        <h3 className="font-bold text-slate-900 mb-2">{t.contact.github}</h3>
+                        <p className="text-sm text-slate-600">jeanleoni</p>
+                    </a>
+                 </Reveal>
+                 <Reveal key={4} delay={400}>
+                    <a href="tel:+5547991850992" className="contact-box-green glass-card p-8 flex flex-col items-center text-center group h-full justify-center cursor-none">
+                        <div className="p-4 bg-white rounded-2xl mb-6 text-slate-500 group-hover:text-teal-600 group-hover:scale-110 transition-all shadow-sm"><Phone size={24}/></div>
+                        <h3 className="font-bold text-slate-900 mb-2">{t.contact.phone}</h3>
+                        <p className="text-sm text-slate-600">+55 47 99185-0992</p>
+                    </a>
+                 </Reveal>
+              </div>
+            </div>
+          </section>
+        </div>
+      ) : (
+        <ProjectPage project={selectedProject} onBack={handleBackToWork} t={t} />
+      )}
+
+      <footer className="py-12 bg-[#0f172a] text-slate-400 text-sm border-t border-slate-800 relative z-20">
         <div className="max-w-[1440px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
           <p>© 2025 Jean Leoni. {t.footer.rights}</p>
           <div className="flex gap-8 mt-4 md:mt-0"><a href="#" className="hover:text-white transition-colors cursor-none">{t.footer.privacy}</a></div>
         </div>
       </footer>
-
-      <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} t={t} />
     </div>
   );
 }
