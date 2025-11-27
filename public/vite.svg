@@ -1,21 +1,14 @@
 <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="jl-gradient-stroke" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="jl-gradient-badge" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#10b981" />
       <stop offset="50%" style="stop-color:#06b6d4" />
       <stop offset="100%" style="stop-color:#3b82f6" />
     </linearGradient>
   </defs>
   
-  <path d="M24 14 V42 C24 50 18 52 12 52" 
-        stroke="url(#jl-gradient-stroke)" 
-        stroke-width="8" 
-        stroke-linecap="round" 
-        stroke-linejoin="round"/>
-        
-  <path d="M40 14 V52 H56" 
-        stroke="url(#jl-gradient-stroke)" 
-        stroke-width="8" 
-        stroke-linecap="round" 
-        stroke-linejoin="round"/>
+  <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#jl-gradient-badge)" />
+  
+  <path d="M26 18 V38 C26 43 23 45 20 45 H18" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M38 18 V45 H50" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
