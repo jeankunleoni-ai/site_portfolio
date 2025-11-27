@@ -432,12 +432,26 @@ const GlobalStyles = () => (
       margin-right: 8px; margin-bottom: 8px;
     }
     
+    /* UPDATED: Animated Gradient Badge for JL ID */
     .jl-badge {
-        background-color: #475569; color: white; padding: 0.35rem 0.85rem;
-        border-radius: 0.5rem; font-size: 0.875rem; font-weight: 700;
-        cursor: pointer; transition: background-color 0.2s; display: inline-block;
+        background: linear-gradient(270deg, var(--primary-teal), var(--primary-cyan), var(--primary-blue), var(--primary-teal));
+        background-size: 300% auto;
+        animation: gradient-flow 8s ease infinite;
+        color: white; 
+        padding: 0.35rem 0.85rem;
+        border-radius: 0.5rem; 
+        font-size: 0.875rem; 
+        font-weight: 700;
+        cursor: pointer; 
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: inline-block;
+        border: 1px solid rgba(255,255,255,0.1);
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
-    .jl-badge:hover { background-color: #64748b; }
+    .jl-badge:hover { 
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(6, 182, 212, 0.4);
+    }
 
     .lang-dropdown {
       position: absolute; top: 100%; right: 0;
@@ -613,6 +627,7 @@ const Navigation = ({ activeSection, scrollToSection, lang, setLang, t }) => {
       <nav className={`header-container ${isScrolled ? 'scrolled' : ''}`}>
         <div className="header-wrapper">
           <div className="header-content">
+              {/* Updated: jl-badge now has the animated class from GlobalStyles */}
               <div className="jl-badge" onClick={() => scrollToSection('hero')}>JL ID</div>
               
               <div className="hidden md:flex items-center">
@@ -620,7 +635,9 @@ const Navigation = ({ activeSection, scrollToSection, lang, setLang, t }) => {
                 <div className="w-px h-5 bg-slate-600 opacity-30 mr-6"></div>
                 <div className="flex items-center gap-8">
                     {Object.entries(t.nav).map(([key, label]) => {
-                        const sectionId = key === 'portfolio' ? 'work' : key;
+                        // UPDATED: Correct mapping for Home -> Hero
+                        const sectionId = key === 'home' ? 'hero' : (key === 'portfolio' ? 'work' : key);
+                        
                         const isActive = activeSection === sectionId;
                         return (
                             <button 
@@ -668,7 +685,8 @@ const Navigation = ({ activeSection, scrollToSection, lang, setLang, t }) => {
       {/* Mobile Menu Overlay */}
       <div className={`mobile-menu-overlay ${mobileMenuOpen ? 'open' : ''}`}>
          {Object.entries(t.nav).map(([key, label]) => (
-            <div key={key} className="mobile-nav-item" onClick={() => handleMobileClick(key === 'portfolio' ? 'work' : key)}>
+            // UPDATED: Correct mapping for Mobile Home -> Hero
+            <div key={key} className="mobile-nav-item" onClick={() => handleMobileClick(key === 'home' ? 'hero' : (key === 'portfolio' ? 'work' : key))}>
                {label}
             </div>
          ))}
