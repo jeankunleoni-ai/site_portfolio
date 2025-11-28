@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Management: The Journey</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel for compiling JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Custom Animation Styles -->
+    <style>
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slide-up {
+          from { opacity: 0; transform: translateY(40px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scale-in {
+          from { opacity: 0; transform: scale(0.9); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fade-in { animation: fade-in 0.6s ease-out forwards; }
+        .animate-slide-up { animation: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-scale-in { animation: scale-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    </style>
+</head>
+<body class="bg-slate-100">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // --- ICONS (Embedded to ensure offline compatibility) ---
+        const Icon = ({ children, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>{children}</svg>
+        );
+
+        const Clock = (props) => <Icon {...props}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></Icon>;
+        const AlertCircle = (props) => <Icon {...props}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></Icon>;
+        const CheckCircle = (props) => <Icon {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></Icon>;
+        const MessageSquare = (props) => <Icon {...props}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></Icon>;
+        const ChevronRight = (props) => <Icon {...props}><polyline points="9 18 15 12 9 6"/></Icon>;
+        const RefreshCcw = (props) => <Icon {...props}><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></Icon>;
+        const Play = (props) => <Icon {...props}><polygon points="5 3 19 12 5 21 5 3"/></Icon>;
+        const Briefcase = (props) => <Icon {...props}><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></Icon>;
+        const Download = (props) => <Icon {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></Icon>;
+        const Award = (props) => <Icon {...props}><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></Icon>;
+        const Users = (props) => <Icon {...props}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></Icon>;
+        const Coffee = (props) => <Icon {...props}><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></Icon>;
+        const Sun = (props) => <Icon {...props}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></Icon>;
+        const BarChart2 = (props) => <Icon {...props}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></Icon>;
+        const Zap = (props) => <Icon {...props}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></Icon>;
+        const User = (props) => <Icon {...props}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></Icon>;
+        const HelpCircle = (props) => <Icon {...props}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></Icon>;
+        const FileText = (props) => <Icon {...props}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></Icon>;
+
+        // --- SCREEN CONSTANTS ---
+        const SCREENS = {
+            INTRO: 0,
+            CHARACTER_SELECTION: 1,
+            OBJECTIVES: 2,
+            PRE_TEST: 3,
+            NARRATIVE_START: 4,
+            SCENARIO_1: 5,
+            SCENARIO_2: 6,
+            FEEDBACK_EXPANDED: 7,
+            SCENARIO_3: 8,
+            SCENARIO_4: 9,
+            SCENARIO_5: 10,
+            RESULTS: 11,
+            CONCLUSION: 12
+        };
+
+        // --- VISUAL ASSETS (FLAT ILLUSTRATIONS - POPSY STYLE) ---
+        const SCENE_ASSETS = {
+            intro: "https://illustrations.popsy.co/amber/home-office.svg",
+            objectives: "https://illustrations.popsy.co/amber/target.svg",
+            office: "https://illustrations.popsy.co/amber/digital-nomad.svg", 
+            stressed: "https://illustrations.popsy.co/amber/crashed-error.svg",
+            meeting: "https://illustrations.popsy.co/amber/remote-work.svg",
+            colleague: "https://illustrations.popsy.co/amber/social-media.svg",
+            success: "https://illustrations.popsy.co/amber/success.svg",
+            fail: "https://illustrations.popsy.co/amber/falling.svg",
+            sunset: "https://illustrations.popsy.co/amber/late-at-night.svg",
+            avatar_lucio: "https://api.dicebear.com/9.x/notionists/svg?seed=Felix&backgroundColor=ffdfbf&brows=variant10&eyes=variant03&mouth=variant09&glasses=variant03",
+            avatar_stacy: "https://api.dicebear.com/9.x/notionists/svg?seed=Liza&backgroundColor=ffdfbf&brows=variant07&eyes=variant04&mouth=variant07"
+        };
+
+        // --- FUNCTION TO GENERATE FINAL REPORT ---
+        const generateReport = (characterName, scores) => {
+            const finalScore = Math.round((scores.org + scores.priority + scores.comm) / 3);
+            const date = new Date().toLocaleDateString('en-US');
+            
+            const reportHTML = `
+                <html>
+                <head>
+                    <title>Performance Report - ${characterName}</title>
+                    <style>
+                    body { font-family: 'Helvetica', sans-serif; padding: 40px; color: #333; line-height: 1.6; }
+                    .header { text-align: center; border-bottom: 2px solid #f59e0b; padding-bottom: 20px; margin-bottom: 30px; }
+                    .header h1 { color: #d97706; margin: 0; }
+                    .score-card { background: #fffbeb; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 30px; border: 1px solid #fcd34d; }
+                    .score-big { font-size: 48px; font-weight: bold; color: #d97706; }
+                    .metrics { display: flex; justify-content: space-between; margin-bottom: 40px; }
+                    .metric { text-align: center; width: 30%; }
+                    .bar-bg { background: #e5e7eb; height: 10px; border-radius: 5px; overflow: hidden; }
+                    .bar-fill { height: 100%; background: #4f46e5; }
+                    .tips { background: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #4f46e5; }
+                    .footer { margin-top: 50px; font-size: 12px; text-align: center; color: #666; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                    <h1>Certificate of Completion</h1>
+                    <p>Course: Time Management & Productivity</p>
+                    <p>Participant: <strong>${characterName}</strong> | Date: ${date}</p>
+                    </div>
+
+                    <div class="score-card">
+                    <div class="score-big">${finalScore}%</div>
+                    <div>Overall Efficiency Index</div>
+                    </div>
+
+                    <h3>Competency Breakdown</h3>
+                    <div class="metrics">
+                    <div class="metric">
+                        <p>Organization</p>
+                        <div class="bar-bg"><div class="bar-fill" style="width: ${scores.org}%; background-color: #3b82f6;"></div></div>
+                        <p><strong>${scores.org}%</strong></p>
+                    </div>
+                    <div class="metric">
+                        <p>Prioritization</p>
+                        <div class="bar-bg"><div class="bar-fill" style="width: ${scores.priority}%; background-color: #a855f7;"></div></div>
+                        <p><strong>${scores.priority}%</strong></p>
+                    </div>
+                    <div class="metric">
+                        <p>Communication</p>
+                        <div class="bar-bg"><div class="bar-fill" style="width: ${scores.comm}%; background-color: #22c55e;"></div></div>
+                        <p><strong>${scores.comm}%</strong></p>
+                    </div>
+                    </div>
+
+                    <div class="tips">
+                    <h3>📌 Recommended Action Plan</h3>
+                    <ul>
+                        <li>Use the <strong>Eisenhower Matrix</strong> at the start of every day (10 min).</li>
+                        <li>Practice <strong>assertive communication</strong>: give real deadlines instead of accepting everything.</li>
+                        <li>Avoid <strong>multitasking</strong> in critical meetings.</li>
+                        <li>Create a closing ritual to plan for the next day.</li>
+                    </ul>
+                    </div>
+
+                    <div class="footer">
+                    Generated automatically by the Time Management Simulator L&D Experience.
+                    </div>
+                    <script>window.print();<\/script>
+                </body>
+                </html>
+            `;
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(reportHTML);
+            printWindow.document.close();
+        };
+
+        // --- UI COMPONENTS ---
+
+        const CoursePlayer = ({ children, title, progress, currentScreenLabel }) => (
+            <div className="min-h-screen bg-amber-50 flex items-center justify-center p-4 md:p-8 font-sans text-slate-800">
+                <div className="bg-white w-full max-w-6xl aspect-video shadow-2xl rounded-xl overflow-hidden flex flex-col border border-slate-200 relative">
+                <header className="bg-slate-900 text-white h-16 flex items-center justify-between px-6 shrink-0 z-30 shadow-md">
+                    <div className="flex items-center gap-3">
+                    <div className="bg-amber-500 p-2 rounded-lg shadow-lg">
+                        <Briefcase size={20} className="text-slate-900" />
+                    </div>
+                    <div>
+                        <h1 className="text-xs font-bold tracking-widest uppercase text-amber-400 mb-0.5">Corporate Academy</h1>
+                        <p className="text-sm font-medium text-white">{title}</p>
+                    </div>
+                    </div>
+                    <div className="flex items-center gap-6">
+                    <span className="hidden md:inline text-xs font-medium opacity-60 uppercase tracking-wider">{currentScreenLabel}</span>
+                    <div className="flex flex-col items-end gap-1">
+                        <div className="w-32 h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+                            <div className="h-full bg-amber-500 transition-all duration-700 ease-out" style={{ width: `${progress}%` }}></div>
+                        </div>
+                        <span className="text-[10px] text-slate-500">{Math.round(progress)}% Complete</span>
+                    </div>
+                    </div>
+                </header>
+                <div className="flex-1 relative overflow-y-auto overflow-x-hidden bg-white">
+                    {children}
+                </div>
+                <footer className="bg-white border-t border-slate-100 h-10 flex items-center justify-between px-6 text-[10px] text-slate-400 shrink-0 z-20 uppercase tracking-wider">
+                    <span>© 2024 L&D Experience</span>
+                    <div className="flex gap-4">
+                    <span>v8.0 English Edition</span>
+                    </div>
+                </footer>
+                </div>
+            </div>
+        );
+
+        const ChoiceButton = ({ onClick, children, active }) => (
+            <button 
+                onClick={onClick}
+                className={`w-full text-left p-5 rounded-xl border-2 transition-all duration-200 group relative overflow-hidden shadow-sm hover:shadow-md
+                ${active 
+                    ? 'bg-amber-50 border-amber-500 ring-1 ring-amber-200' 
+                    : 'bg-white border-slate-200 hover:border-amber-300'
+                }`}
+            >
+                <div className={`absolute left-0 top-0 bottom-0 w-1.5 transition-colors ${active ? 'bg-amber-500' : 'bg-transparent group-hover:bg-amber-300'}`}></div>
+                <div className="pl-4 pr-2 relative z-10 flex items-start gap-3">
+                <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${active ? 'border-amber-500 bg-amber-500 text-white' : 'border-slate-300 text-transparent group-hover:border-amber-300'}`}>
+                    <div className="w-2 h-2 bg-current rounded-full" />
+                </div>
+                <div className="text-sm md:text-base text-slate-700 font-medium">
+                    {children}
+                </div>
+                </div>
+            </button>
+        );
+
+        const TooltipBar = ({ label, value, color, description }) => (
+            <div className="flex flex-col items-center group relative cursor-help">
+                <div className="absolute bottom-full mb-3 hidden group-hover:block w-48 p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl z-50 text-center animate-fade-in">
+                    {description}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
+                </div>
+                
+                <div className={`text-[10px] font-bold uppercase tracking-widest mb-1 transition-colors ${color.text}`}>{label}</div>
+                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200">
+                    <div className={`h-full transition-all duration-500 ${color.bg}`} style={{width: `${value}%`}}></div>
+                </div>
+                <span className="text-[10px] text-slate-400 mt-1 font-mono">{value}%</span>
+            </div>
+        );
+
+        const IllustrationScene = ({ scene, bgColor = "bg-slate-50" }) => {
+            const imageUrl = SCENE_ASSETS[scene] || SCENE_ASSETS.intro;
+            
+            return (
+                <div className={`w-full h-full ${bgColor} relative overflow-hidden flex items-center justify-center p-8`}>
+                <div className="absolute inset-0 opacity-10" style={{backgroundImage: 'radial-gradient(#f59e0b 1px, transparent 1px)', backgroundSize: '20px 20px'}}></div>
+                
+                <div className="relative z-10 w-full h-full flex items-center justify-center transform transition-transform duration-700 hover:scale-105">
+                    <img 
+                        src={imageUrl} 
+                        alt={`Scene: ${scene}`}
+                        className="w-full h-full object-contain max-h-[320px] drop-shadow-xl"
+                    />
+                </div>
+                </div>
+            );
+        };
+
+        const ScenarioLayout = ({ sceneType, title, description, children, scores }) => (
+            <div className="w-full h-full flex flex-col md:flex-row animate-fade-in">
+                <div className="md:w-5/12 h-64 md:h-auto border-r border-slate-200 relative flex flex-col bg-amber-50/50">
+                    <div className="flex-1 relative overflow-hidden">
+                        <IllustrationScene scene={sceneType} bgColor="bg-amber-50/50" />
+                    </div>
+                    
+                    <div className="bg-white p-4 border-t border-slate-200 z-20 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                        <TooltipBar 
+                            label="Organization" 
+                            value={scores.org} 
+                            color={{text: "group-hover:text-blue-600", bg: scores.org < 30 ? "bg-red-400" : "bg-blue-500"}}
+                            description="Capacity to structure workflow, avoid bottlenecks, and maintain order."
+                        />
+                        <TooltipBar 
+                            label="Priority" 
+                            value={scores.priority} 
+                            color={{text: "group-hover:text-purple-600", bg: scores.priority < 30 ? "bg-red-400" : "bg-purple-500"}}
+                            description="Ability to distinguish what is Urgent (deadline) from what is Important (value)."
+                        />
+                        <TooltipBar 
+                            label="Communication" 
+                            value={scores.comm} 
+                            color={{text: "group-hover:text-green-600", bg: scores.comm < 30 ? "bg-red-400" : "bg-green-500"}}
+                            description="Clarity and assertiveness when managing expectations with the team."
+                        />
+                    </div>
+                    </div>
+                </div>
+
+                <div className="md:w-7/12 p-8 md:p-12 overflow-y-auto bg-white flex flex-col">
+                    <div className="mb-8">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 shadow-sm border border-amber-100">
+                            {sceneType === 'stressed' || sceneType === 'fail' ? <Zap size={20} className="text-red-500"/> : <AlertCircle size={20} />}
+                        </div>
+                        <h2 className="text-2xl font-bold text-slate-800 leading-tight">{title}</h2>
+                    </div>
+                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-slate-600 leading-relaxed shadow-sm relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-amber-400"></div>
+                        {description}
+                    </div>
+                    </div>
+                    
+                    <div className="mt-auto space-y-4">
+                    <h3 className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-2 ml-1 flex items-center gap-2">
+                        <Play size={12} className="fill-current"/> Decide the next step:
+                    </h3>
+                    {children}
+                    </div>
+                </div>
+            </div>
+        );
+
+        const ModalOverlay = ({ title, children, onNext }) => (
+            <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4 animate-fade-in">
+                <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border-t-8 border-amber-500 animate-slide-up">
+                <div className="p-8 pb-4">
+                    <h3 className="text-2xl font-bold text-slate-800 mb-2 flex items-center gap-2">
+                    {title}
+                    </h3>
+                    <div className="h-1.5 w-16 bg-amber-200 rounded-full"></div>
+                </div>
+                <div className="px-8 py-2 overflow-y-auto text-slate-600 leading-relaxed text-lg">
+                    {children}
+                </div>
+                <div className="p-8 pt-6 bg-white flex justify-end shrink-0">
+                    <button 
+                    onClick={onNext}
+                    className="bg-amber-500 hover:bg-amber-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-amber-200 transition-transform active:scale-95 flex items-center gap-2"
+                    >
+                    Continue <ChevronRight size={18} />
+                    </button>
+                </div>
+                </div>
+            </div>
+        );
+
+        function App() {
+            const [currentScreen, setCurrentScreen] = useState(SCREENS.INTRO);
+            const [characterName, setCharacterName] = useState("");
+            const [scores, setScores] = useState({ org: 50, priority: 50, comm: 50 });
+            const [unlockedBonus, setUnlockedBonus] = useState(false);
+            const [feedbackModal, setFeedbackModal] = useState({ show: false, text: "", nextScreen: null, title: "Feedback from Mentor" });
+            const [quizSelected, setQuizSelected] = useState(null);
+
+            const updateScore = (orgDelta, prioDelta, commDelta) => {
+                setScores(prev => ({
+                org: Math.min(100, Math.max(0, prev.org + orgDelta)),
+                priority: Math.min(100, Math.max(0, prev.priority + prioDelta)),
+                comm: Math.min(100, Math.max(0, prev.comm + commDelta))
+                }));
+            };
+
+            const handleChoice = (feedbackText, scoreUpdates, nextScreenId, triggerBonus = false, modalTitle = "Feedback") => {
+                if (scoreUpdates) updateScore(...scoreUpdates);
+                if (triggerBonus) setUnlockedBonus(true);
+                
+                setFeedbackModal({
+                show: true,
+                text: feedbackText,
+                nextScreen: nextScreenId,
+                title: modalTitle
+                });
+            };
+
+            const closeFeedback = () => {
+                setFeedbackModal(prev => ({ ...prev, show: false }));
+                setCurrentScreen(feedbackModal.nextScreen);
+            };
+
+            const resetGame = () => {
+                setScores({ org: 50, priority: 50, comm: 50 });
+                setUnlockedBonus(false);
+                setQuizSelected(null);
+                setCurrentScreen(SCREENS.INTRO);
+                setCharacterName("");
+            };
+
+            // --- SCREEN RENDERERS ---
+
+            const renderIntro = () => (
+                <div className="w-full h-full flex flex-col md:flex-row">
+                <div className="md:w-5/12 bg-amber-50 flex flex-col justify-center items-center relative overflow-hidden p-8">
+                    <div className="relative z-10 w-full max-w-sm transform transition-transform hover:scale-105 duration-500">
+                    <img src={SCENE_ASSETS.intro} alt="Home Office" className="w-full h-full object-contain drop-shadow-2xl" />
+                    </div>
+                </div>
+
+                <div className="md:w-7/12 bg-white p-12 flex flex-col justify-center items-start space-y-8">
+                    <div>
+                    <div className="bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1 rounded-full mb-4 inline-block uppercase tracking-wider">
+                        Interactive Module
+                    </div>
+                    <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-4 text-slate-900">
+                        Time Management: <br/>
+                        <span className="text-amber-600">The Professional Journey</span>
+                    </h1>
+                    <p className="text-slate-500 text-lg max-w-md leading-relaxed">
+                        An immersive experience where you control the decisions. Follow a busy work day and balance performance with well-being.
+                    </p>
+                    </div>
+
+                    <div className="w-full bg-slate-50 p-6 rounded-xl border border-slate-100 grid grid-cols-2 gap-4">
+                        <div className="flex items-center gap-3">
+                            <Clock className="text-amber-500" />
+                            <span className="text-sm font-bold text-slate-700">15 Minutes</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Users className="text-slate-500" />
+                            <span className="text-sm font-bold text-slate-700">Roleplay</span>
+                        </div>
+                    </div>
+
+                    <button 
+                    onClick={() => setCurrentScreen(SCREENS.CHARACTER_SELECTION)}
+                    className="w-full md:w-auto bg-slate-900 hover:bg-slate-800 text-white px-10 py-4 rounded-xl font-bold shadow-xl shadow-slate-200 flex items-center justify-center gap-3 transition-all hover:-translate-y-1"
+                    >
+                    Start Journey <Play size={20} className="fill-current" />
+                    </button>
+                </div>
+                </div>
+            );
+
+            const renderCharacterSelection = () => (
+                <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-slate-50 animate-fade-in">
+                    <div className="text-center mb-10">
+                        <h2 className="text-3xl font-bold text-slate-800 mb-2">Choose Your Character</h2>
+                        <p className="text-slate-500">Who will you be in the office today?</p>
+                    </div>
+                    
+                    <div className="flex flex-col md:flex-row gap-8 w-full max-w-4xl justify-center">
+                        <button 
+                            onClick={() => { setCharacterName("Lucio"); setCurrentScreen(SCREENS.OBJECTIVES); }}
+                            className="flex-1 bg-white p-8 rounded-3xl border-2 border-slate-200 hover:border-amber-500 hover:shadow-xl transition-all group flex flex-col items-center text-center relative overflow-hidden"
+                        >
+                            <div className="w-40 h-40 mb-6 relative">
+                                <div className="absolute inset-0 bg-amber-100 rounded-full scale-90 group-hover:scale-100 transition-transform"></div>
+                                <img src={SCENE_ASSETS.avatar_lucio} alt="Lucio" className="w-full h-full object-contain relative z-10 drop-shadow-lg" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-slate-800 mb-1">Lucio</h3>
+                            <p className="text-slate-500 text-sm mb-4">Project Analyst</p>
+                            <div className="w-full bg-slate-50 py-2 rounded-lg text-xs text-slate-400 group-hover:bg-amber-50 group-hover:text-amber-700 transition-colors">
+                                Click to select
+                            </div>
+                        </button>
+
+                        <button 
+                            onClick={() => { setCharacterName("Stacy"); setCurrentScreen(SCREENS.OBJECTIVES); }}
+                            className="flex-1 bg-white p-8 rounded-3xl border-2 border-slate-200 hover:border-purple-500 hover:shadow-xl transition-all group flex flex-col items-center text-center relative overflow-hidden"
+                        >
+                            <div className="w-40 h-40 mb-6 relative">
+                                <div className="absolute inset-0 bg-purple-100 rounded-full scale-90 group-hover:scale-100 transition-transform"></div>
+                                <img src={SCENE_ASSETS.avatar_stacy} alt="Stacy" className="w-full h-full object-contain relative z-10 drop-shadow-lg" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-slate-800 mb-1">Stacy</h3>
+                            <p className="text-slate-500 text-sm mb-4">Account Manager</p>
+                            <div className="w-full bg-slate-50 py-2 rounded-lg text-xs text-slate-400 group-hover:bg-purple-50 group-hover:text-purple-700 transition-colors">
+                                Click to select
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            );
+
+            const renderObjectives = () => (
+                <div className="max-w-4xl mx-auto py-12 px-8 animate-fade-in flex flex-col h-full justify-center">
+                <div className="text-center mb-10">
+                    <div className="w-24 h-24 mx-auto mb-6">
+                        <img src={SCENE_ASSETS.objectives} alt="Target" className="w-full h-full object-contain" />
+                    </div>
+                    <h2 className="text-3xl font-bold text-slate-800 mb-2">Your Mission as {characterName}</h2>
+                    <p className="text-slate-500">Develop 4 productivity superpowers</p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6 mb-10">
+                    {[
+                        { icon: <Briefcase className="text-blue-500"/>, title: "Prioritization", desc: "Distinguish urgent from vital." },
+                        { icon: <MessageSquare className="text-green-500"/>, title: "Communication", desc: "Knowing how to say 'no' without losing allies." },
+                        { icon: <AlertCircle className="text-red-500"/>, title: "Crisis Management", desc: "Staying calm when the plan fails." },
+                        { icon: <Sun className="text-amber-500"/>, title: "Balance", desc: "Ending the day with a clear mind." }
+                    ].map((card, i) => (
+                        <div key={i} className="bg-white p-6 rounded-2xl border border-slate-100 hover:border-amber-200 hover:shadow-lg transition-all flex items-start gap-4">
+                            <div className="p-3 bg-slate-50 rounded-xl shrink-0">{card.icon}</div>
+                            <div>
+                                <h4 className="font-bold text-slate-800 mb-1">{card.title}</h4>
+                                <p className="text-sm text-slate-500 leading-snug">{card.desc}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="flex justify-center">
+                    <button onClick={() => setCurrentScreen(SCREENS.PRE_TEST)} className="text-amber-600 font-bold hover:text-amber-800 flex items-center gap-2 transition-all hover:gap-4 text-lg">
+                        Let's go <ChevronRight size={20} />
+                    </button>
+                </div>
+                </div>
+            );
+
+            const renderPreTest = () => (
+                <div className="w-full h-full flex flex-col md:flex-row">
+                    <div className="md:w-1/3 bg-slate-900 p-8 flex flex-col justify-center items-center text-center relative overflow-hidden">
+                        <div className="relative z-10">
+                            <div className="w-32 h-32 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-sm border-2 border-white/20 p-4">
+                                <Award size={48} className="text-yellow-400" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-white mb-2">Quick Question</h3>
+                            <p className="text-slate-400 text-sm">To calibrate the simulator...</p>
+                        </div>
+                    </div>
+                    <div className="md:w-2/3 p-12 flex flex-col justify-center bg-slate-50">
+                        <div className="max-w-lg mx-auto w-full">
+                        <h2 className="text-xl font-bold text-slate-800 mb-6">What is the difference between <span className="text-amber-600">Urgency</span> and <span className="text-purple-600">Importance</span>?</h2>
+                        <div className="space-y-3">
+                            {[
+                            "Urgency is my desire; Importance is the boss's desire.",
+                            "Urgency = Deadline (When); Importance = Value (Why).",
+                            "They are corporate synonyms."
+                            ].map((opt, idx) => (
+                            <ChoiceButton 
+                                key={idx} 
+                                active={quizSelected === idx}
+                                onClick={() => setQuizSelected(idx)}
+                            >
+                                <span className="text-slate-700">{opt}</span>
+                            </ChoiceButton>
+                            ))}
+                        </div>
+                        <div className="mt-8 flex justify-end">
+                            <button 
+                                disabled={quizSelected === null}
+                                onClick={() => {
+                                    if(quizSelected === 1) updateScore(5, 5, 0);
+                                    handleChoice(
+                                        quizSelected === 1 
+                                        ? "Exactly! Eisenhower teaches: not everything urgent is important." 
+                                        : "Careful. Urgency is about the clock. Importance is about the compass (goals).", 
+                                        null, 
+                                        SCREENS.NARRATIVE_START,
+                                        false,
+                                        quizSelected === 1 ? "Correct Answer!" : "Point of Attention"
+                                    );
+                                }}
+                                className={`px-8 py-3 rounded-xl font-bold text-white transition-all shadow-md ${quizSelected !== null ? 'bg-amber-500 hover:bg-amber-600' : 'bg-slate-300 cursor-not-allowed'}`}
+                            >
+                                Confirm
+                            </button>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            const renderNarrativeStart = () => (
+                <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-amber-50 text-center">
+                    <div className="max-w-2xl w-full bg-white p-10 rounded-3xl shadow-2xl border border-amber-100 animate-fade-in">
+                        <div className="w-48 h-48 mx-auto -mt-24 mb-6 relative">
+                            <img src={SCENE_ASSETS.office} className="w-full h-full object-contain drop-shadow-xl" alt="Start Scene" />
+                        </div>
+                        
+                        <h2 className="text-3xl font-bold text-slate-800 mb-2">08:00 AM</h2>
+                        <p className="text-amber-600 font-medium mb-6">Central Office</p>
+
+                        <p className="text-xl text-slate-600 leading-relaxed mb-8">
+                            {characterName} just sat down. The coffee is still hot, but notifications are already buzzing.
+                            <br/>
+                            <span className="font-bold text-slate-800">Three demands are competing for attention right now.</span>
+                        </p>
+                        
+                        <button 
+                            onClick={() => setCurrentScreen(SCREENS.SCENARIO_1)}
+                            className="bg-amber-500 text-white px-12 py-4 rounded-full font-bold text-lg hover:bg-amber-600 transition-all hover:scale-105 shadow-xl shadow-amber-200"
+                        >
+                            Start the Day
+                        </button>
+                    </div>
+                </div>
+            );
+
+            const renderScenario1 = () => (
+                <ScenarioLayout 
+                sceneType="office"
+                title="Scenario 1: The Inbox"
+                scores={scores}
+                description={
+                    <>
+                    <p className="mb-4">Three notifications arrive at the same time:</p>
+                    <div className="space-y-3">
+                        <div className="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-100 text-sm text-red-800">
+                            <AlertCircle size={16}/> <strong>Manager (Email):</strong> "Urgent report for the board!"
+                        </div>
+                        <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100 text-sm text-blue-800">
+                            <MessageSquare size={16}/> <strong>Colleague (Slack):</strong> "Help me with this bug? I'm stuck."
+                        </div>
+                        <div className="flex items-center gap-3 p-3 bg-amber-50 rounded-lg border border-amber-100 text-sm text-amber-800">
+                            <Clock size={16}/> <strong>Personal:</strong> Plan the week (Overdue).
+                        </div>
+                    </div>
+                    </>
+                }
+                >
+                    <ChoiceButton onClick={() => handleChoice(
+                    "Excellent! 10 minutes of organizing saves hours of execution. Now you know what is truly priority.", 
+                    [15, 10, 0], SCREENS.SCENARIO_2, true
+                    )}>
+                        <span className="font-bold text-slate-800 block mb-1">Option A:</span> Take 10 min to organize the queue (Strategic)
+                    </ChoiceButton>
+
+                    <ChoiceButton onClick={() => handleChoice(
+                    "Addressing the manager without analyzing the whole picture puts you in 'firefighting mode' early. You solved a problem but lost control of the day.", 
+                    [-10, -5, 5], SCREENS.SCENARIO_2
+                    )}>
+                        <span className="font-bold text-slate-800 block mb-1">Option B:</span> Do the manager's report now (Reactive)
+                    </ChoiceButton>
+
+                    <ChoiceButton onClick={() => handleChoice(
+                    "Helping is good, but being the 'help desk' drains your energy. Your critical tasks will be left for overtime.", 
+                    [-5, -10, 10], SCREENS.SCENARIO_2
+                    )}>
+                        <span className="font-bold text-slate-800 block mb-1">Option C:</span> Help the colleague first (Helpful)
+                    </ChoiceButton>
+                </ScenarioLayout>
+            );
+
+            const renderScenario2 = () => (
+                <ScenarioLayout 
+                sceneType="stressed"
+                title="Scenario 2: The Unforeseen"
+                scores={scores}
+                description={
+                    <div className="space-y-4">
+                        <div className="bg-red-50 p-4 rounded-xl border border-red-200 text-red-900 text-sm flex gap-3 items-start">
+                            <AlertCircle size={20} className="shrink-0 mt-0.5"/>
+                            <div>
+                                <strong>Critical Alert:</strong> The system crashed! Extracting data for the report will take double the time. The original deadline is impossible.
+                            </div>
+                        </div>
+                        <p>The clock is ticking. Frustration rises. What does {characterName} do?</p>
+                    </div>
+                }
+                >
+                    <ChoiceButton onClick={() => handleChoice(
+                        "Transparency builds trust. Better to renegotiate now than deliver something bad later.", 
+                        [0, 5, 10], SCREENS.FEEDBACK_EXPANDED
+                    )}>
+                    <span className="font-bold text-slate-800 block mb-1">Option A:</span> Negotiate new deadline with manager
+                    </ChoiceButton>
+
+                    <ChoiceButton onClick={() => handleChoice(
+                        "Good! Delegating operational tasks (like formatting) frees your mind for the analytical part.", 
+                        [5, 5, 5], SCREENS.FEEDBACK_EXPANDED
+                    )}>
+                    <span className="font-bold text-slate-800 block mb-1">Option B:</span> Delegate formatting and focus on data
+                    </ChoiceButton>
+
+                    <ChoiceButton onClick={() => handleChoice(
+                        "Trying to be a hero leads to burnout and errors. You took an unnecessary risk and quality dropped.", 
+                        [0, -5, -5], SCREENS.FEEDBACK_EXPANDED
+                    )}>
+                    <span className="font-bold text-slate-800 block mb-1">Option C:</span> Rush and try to do it all alone
+                    </ChoiceButton>
+
+                    {unlockedBonus && (
+                        <ChoiceButton onClick={() => handleChoice(
+                            "Brilliant! Since you had a plan, you just moved blocks around. Total adaptability.", 
+                            [15, 10, 5], SCREENS.FEEDBACK_EXPANDED, false, "🏆 Planning Bonus"
+                        )}>
+                            <span className="flex items-center gap-2 text-amber-600 font-bold mb-1"><CheckCircle size={16}/> Bonus Option (Active Plan)</span>
+                            Readjust agenda using morning plan
+                        </ChoiceButton>
+                    )}
+                </ScenarioLayout>
+            );
+
+            const renderFeedbackExpanded = () => (
+                <div className="flex items-center justify-center h-full bg-slate-50 p-8">
+                    <div className="max-w-3xl w-full bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row animate-fade-in border border-slate-100">
+                        <div className="md:w-5/12 bg-amber-500 p-8 flex flex-col justify-center items-center text-center text-white relative overflow-hidden">
+                            <div className="relative z-10">
+                                <div className="w-40 h-40 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <img src={SCENE_ASSETS.fail} className="w-full h-full object-contain" alt="Learning" />
+                                </div>
+                                <h3 className="text-xl font-bold mb-2">Mentor's Insight</h3>
+                                <p className="text-amber-100 text-sm opacity-90">About Adaptability</p>
+                            </div>
+                        </div>
+                        <div className="md:w-7/12 p-10 flex flex-col justify-center">
+                            <p className="text-slate-600 text-lg leading-relaxed mb-8">
+                                "'Rigidity breaks, flexibility bends but doesn't snap.' Unforeseen events are the rule, not the exception. The mature professional isn't one who never has problems, but one who <span className="font-bold text-amber-600">reprioritizes without guilt</span> when the scenario changes."
+                            </p>
+                            <div className="flex justify-end">
+                                <button 
+                                    onClick={() => setCurrentScreen(SCREENS.SCENARIO_3)}
+                                    className="bg-slate-900 text-white px-8 py-3 rounded-xl hover:bg-slate-700 transition-colors flex items-center gap-2 shadow-lg"
+                                >
+                                    Next Challenge <ChevronRight size={16} />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            const renderScenario3 = () => (
+                <ScenarioLayout 
+                sceneType="meeting"
+                title="Scenario 3: The Meeting & The Noise"
+                scores={scores}
+                description={
+                    <>
+                    <p>{characterName} is on a critical call with the board. Trying to focus, but notifications won't stop.</p>
+                    <div className="mt-4 bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col gap-2">
+                        <div className="flex items-center gap-2 text-xs text-red-500 font-bold animate-pulse">
+                            <MessageSquare size={14}/> Slack (3): "Where is the file??"
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-green-600 font-bold animate-pulse">
+                            <MessageSquare size={14}/> Whatsapp (5): "We need approval..."
+                        </div>
+                    </div>
+                    <p className="mt-4 text-slate-600 text-sm">Attention is divided. It's dangerous.</p>
+                    </>
+                }
+                >
+                    <ChoiceButton onClick={() => handleChoice(
+                    "Multitarefa é um mito. Você perdeu detalhes da reunião e respondeu mal no chat. Perdeu nos dois lados.", 
+                    [-10, -5, -5], SCREENS.SCENARIO_4
+                    )}>
+                    <span className="font-bold text-slate-800 block mb-1">Option A:</span> Try to answer discreetly (Multitasking)
+                    </ChoiceButton>
+
+                    <ChoiceButton onClick={() => handleChoice(
+                    "Total focus is great, but absolute silence ('ghosting') creates anxiety in the team. Works, but has a cost.", 
+                    [5, 10, -5], SCREENS.SCENARIO_4
+                    )}>
+                    <span className="font-bold text-slate-800 block mb-1">Option B:</span> Ignore everything and focus only on meeting
+                    </ChoiceButton>
+
+                    <ChoiceButton onClick={() => handleChoice(
+                    "Perfect. You shielded your focus and managed team anxiety professionally.", 
+                    [10, 5, 15], SCREENS.SCENARIO_4
+                    )}>
+                    <span className="font-bold text-slate-800 block mb-1">Option C:</span> Send quick msg: "In meeting until 11h. Back soon."
+                    </ChoiceButton>
+                </ScenarioLayout>
+            );
+
+            const renderScenario4 = () => {
+                const dialogue = characterName === "Stacy" 
+                    ? "\"Hey Stacy! Girl, did you see the event photos from yesterday? They were great! Oh, and do you have a minute for me to show you an idea for the Christmas project?\""
+                    : `"Hey ${characterName}! Man, did you see the game yesterday? Crazy! Oh, and do you have a minute for me to show you an idea for the Christmas project?"`;
+
+                return (
+                <ScenarioLayout 
+                sceneType="colleague"
+                title="Scenario 4: The 'Got a minute?'"
+                scores={scores}
+                description={
+                    <div className="space-y-4">
+                    <p>{characterName} finally managed to focus on the report. Suddenly...</p>
+                    <div className="bg-blue-50 border-l-4 border-blue-400 p-4 text-blue-900 text-sm italic">
+                        {dialogue}
+                    </div>
+                    <p>It's Felix, the nice colleague. He stops at your desk wanting to chat, right in your focus time.</p>
+                    </div>
+                }
+                >
+                    <ChoiceButton onClick={() => handleChoice(
+                    "Perfect assertiveness. You validated the person but protected your time. Flow continues.", 
+                    [10, 5, 10], SCREENS.SCENARIO_5
+                    )}>
+                    <span className="font-bold text-slate-800 block mb-1">Option A:</span> "Felix, I really want to see! Can I stop by at 5 PM?"
+                    </ChoiceButton>
+
+                    <ChoiceButton onClick={() => handleChoice(
+                    "You were nice, but broke your flow. Regaining concentration will take 15 more minutes. The report will be late.", 
+                    [-5, -10, 10], SCREENS.SCENARIO_5
+                    )}>
+                    <span className="font-bold text-slate-800 block mb-1">Option B:</span> Stop everything and listen to Felix (Nice)
+                    </ChoiceButton>
+
+                    <ChoiceButton onClick={() => handleChoice(
+                    "Effective, but rude. You protected your time, but created unnecessary friction in the team.", 
+                    [10, 5, -15], SCREENS.SCENARIO_5
+                    )}>
+                    <span className="font-bold text-slate-800 block mb-1">Option C:</span> Cut it short: "Can't now, I'm busy."
+                    </ChoiceButton>
+                </ScenarioLayout>
+                );
+            };
+
+            const renderScenario5 = () => (
+                <ScenarioLayout 
+                sceneType="sunset"
+                title="Scenario 5: End of the Day"
+                scores={scores}
+                description={
+                    <div className="space-y-4">
+                    <p>6:00 PM. The office is emptying. {characterName} delivered the report (phew!).</p>
+                    <p>However, the inbox still has 15 unread low-priority emails. The body asks for rest, but the mind wants to 'clear everything'.</p>
+                    </div>
+                }
+                >
+                    <ChoiceButton onClick={() => handleChoice(
+                    "Careful. Staying late to clear low-value tasks is the recipe for burnout. Tomorrow you'll be tired.", 
+                    [5, -5, 0], SCREENS.RESULTS
+                    )}>
+                    <span className="font-bold text-slate-800 block mb-1">Option A:</span> Stay 1 more hour to clear email (Overtime)
+                    </ChoiceButton>
+
+                    <ChoiceButton onClick={() => handleChoice(
+                    "Better than overtime, but running out without looking at tomorrow makes you start the next day already in chaos.", 
+                    [-5, 0, 0], SCREENS.RESULTS
+                    )}>
+                    <span className="font-bold text-slate-800 block mb-1">Option B:</span> Close notebook and run (Escape)
+                    </ChoiceButton>
+
+                    <ChoiceButton onClick={() => handleChoice(
+                    "The golden habit. 5 minutes planning tomorrow guarantees a peaceful night's sleep and a productive start.", 
+                    [10, 10, 5], SCREENS.RESULTS
+                    )}>
+                    <span className="font-bold text-slate-800 block mb-1">Option C:</span> Spend 5 min listing tomorrow's priorities and leave (Ritual)
+                    </ChoiceButton>
+                </ScenarioLayout>
+            );
+
+            // --- RESULTADOS ---
+
+            const renderResults = () => {
+                const finalScore = Math.round((scores.org + scores.priority + scores.comm) / 3);
+                let resultData = { title: "", desc: "", color: "", scene: "success" };
+
+                if (finalScore > 80) {
+                    resultData = { title: "Zen Productivity Master", desc: `You mastered the chaos! ${characterName} ends the day feeling accomplished and with a clear mind.`, color: "text-emerald-600", scene: "success" };
+                } else if (finalScore > 50) {
+                    resultData = { title: "Office Survivor", desc: `It was close! ${characterName} delivered what was needed, but stress levels were high.`, color: "text-amber-600", scene: "objectives" };
+                } else {
+                    resultData = { title: "Victim of Urgency", desc: `The day ran over ${characterName}. Too many interruptions and little strategy resulted in exhaustion.`, color: "text-red-600", scene: "fail" };
+                }
+
+                return (
+                    <div className="h-full flex flex-col items-center justify-center bg-slate-50 p-8">
+                        <div className="max-w-5xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row animate-scale-in border border-slate-100">
+                            {/* Coluna Visual Resultado (Fundo Bege Claro) */}
+                            <div className="md:w-5/12 bg-amber-50 relative flex items-center justify-center p-10 overflow-hidden">
+                                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                                <div className="relative z-10 text-center">
+                                    <div className="w-64 h-64 rounded-xl flex items-center justify-center mx-auto mb-6">
+                                        <img src={SCENE_ASSETS[resultData.scene]} className="w-full h-full object-contain" alt="Resultado" />
+                                    </div>
+                                    <div className="text-6xl font-bold text-slate-800 mb-2">{Math.round(finalScore)}</div>
+                                    <div className="text-xs uppercase tracking-widest text-slate-500">Final Score</div>
+                                </div>
+                            </div>
+
+                            {/* Coluna Detalhes */}
+                            <div className="md:w-7/12 p-12 flex flex-col justify-center">
+                                <div className="mb-8">
+                                <h2 className={`text-3xl font-bold mb-4 ${resultData.color}`}>{resultData.title}</h2>
+                                <p className="text-slate-600 text-lg leading-relaxed">{resultData.desc}</p>
+                                </div>
+                                
+                                <div className="grid grid-cols-3 gap-4 mb-10">
+                                <div className="text-center p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                    <div className="text-2xl font-bold text-blue-600">{scores.org}%</div>
+                                    <div className="text-[10px] text-slate-400 uppercase font-bold mt-1">Organization</div>
+                                </div>
+                                <div className="text-center p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                    <div className="text-2xl font-bold text-purple-600">{scores.priority}%</div>
+                                    <div className="text-[10px] text-slate-400 uppercase font-bold mt-1">Prioritization</div>
+                                </div>
+                                <div className="text-center p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                    <div className="text-2xl font-bold text-green-600">{scores.comm}%</div>
+                                    <div className="text-[10px] text-slate-400 uppercase font-bold mt-1">Communication</div>
+                                </div>
+                                </div>
+
+                                <div className="flex gap-4 mt-auto">
+                                    <button onClick={() => generateReport(characterName, scores)} className="flex-1 bg-amber-500 text-white py-4 rounded-xl font-bold hover:bg-amber-600 shadow-lg shadow-amber-200 transition-transform active:scale-95 flex items-center justify-center gap-2">
+                                    <FileText size={18}/> Download Summary
+                                    </button>
+                                    <button onClick={resetGame} className="px-6 py-4 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-amber-600 transition-colors flex items-center gap-2">
+                                    <RefreshCcw size={20}/>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            const renderConclusion = () => (
+                <div className="h-full flex items-center justify-center p-8 bg-amber-50/50">
+                    <div className="text-center space-y-8 max-w-xl flex flex-col items-center animate-fade-in">
+                        <div className="w-64 h-64 relative">
+                            <img src={SCENE_ASSETS.success} className="w-full h-full object-contain drop-shadow-xl" alt="Success" />
+                        </div>
+                        
+                        <div>
+                        <h2 className="text-4xl font-bold text-slate-800 mb-2">Mission Accomplished!</h2>
+                        <p className="text-slate-600 text-lg">
+                            You took {characterName} to the end of the day. Here are your lessons learned:
+                        </p>
+                        </div>
+
+                        <div className="w-full bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-left space-y-4">
+                        <div className="flex gap-3">
+                            <CheckCircle className="text-green-500 shrink-0" size={20} />
+                            <span className="text-slate-600"><strong>Eisenhower Matrix:</strong> Classify before executing.</span>
+                        </div>
+                        <div className="flex gap-3">
+                            <CheckCircle className="text-green-500 shrink-0" size={20} />
+                            <span className="text-slate-600"><strong>Assertive Communication:</strong> Say 'not now' with empathy.</span>
+                        </div>
+                        <div className="flex gap-3">
+                            <CheckCircle className="text-green-500 shrink-0" size={20} />
+                            <span className="text-slate-600"><strong>Closing Ritual:</strong> Plan tomorrow today.</span>
+                        </div>
+                        </div>
+
+                        <button className="bg-white border-2 border-dashed border-amber-200 hover:border-amber-500 hover:text-amber-600 text-slate-400 w-full py-5 rounded-xl flex flex-col items-center justify-center gap-2 transition-all group hover:bg-amber-50">
+                            <Download className="group-hover:scale-110 transition-transform text-amber-400"/>
+                            <span className="font-bold">Download Visual Summary (PDF)</span>
+                        </button>
+                    </div>
+                </div>
+            );
+
+            const renderScreen = () => {
+                switch(currentScreen) {
+                case SCREENS.INTRO: return renderIntro();
+                case SCREENS.CHARACTER_SELECTION: return renderCharacterSelection();
+                case SCREENS.OBJECTIVES: return renderObjectives();
+                case SCREENS.PRE_TEST: return renderPreTest();
+                case SCREENS.NARRATIVE_START: return renderNarrativeStart();
+                case SCREENS.SCENARIO_1: return renderScenario1();
+                case SCREENS.SCENARIO_2: return renderScenario2();
+                case SCREENS.FEEDBACK_EXPANDED: return renderFeedbackExpanded();
+                case SCREENS.SCENARIO_3: return renderScenario3();
+                case SCREENS.SCENARIO_4: return renderScenario4();
+                case SCREENS.SCENARIO_5: return renderScenario5();
+                case SCREENS.RESULTS: return renderResults();
+                case SCREENS.CONCLUSION: return renderConclusion();
+                default: return <div className="p-10 text-center text-red-500">Erro: Tela {currentScreen} não encontrada. <button onClick={resetGame} className="underline ml-2">Reiniciar</button></div>;
+                }
+            };
+
+            const getScreenLabel = () => {
+                if (currentScreen === SCREENS.INTRO) return "Start";
+                if (currentScreen === SCREENS.CHARACTER_SELECTION) return "Character";
+                if (currentScreen === SCREENS.RESULTS) return "End";
+                return `Stage ${currentScreen}`;
+            };
+
+            return (
+                <>
+                <CoursePlayer 
+                    title="Time Management: The Journey" 
+                    progress={Math.min(100, (currentScreen / 12) * 100)}
+                    currentScreenLabel={getScreenLabel()}
+                >
+                    {renderScreen()}
+                </CoursePlayer>
+                
+                {feedbackModal.show && (
+                    <ModalOverlay 
+                        title={feedbackModal.title} 
+                        onNext={closeFeedback}
+                    >
+                        <p>{feedbackModal.text}</p>
+                    </ModalOverlay>
+                )}
+                </>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
