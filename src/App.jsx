@@ -28,7 +28,8 @@ const translations = {
       title: "Selected Work",
       subtitle: "Showcase of digital learning experiences, simulations, and interactive storytelling.",
       viewDetails: "View Details",
-      backToWork: "Back to Portfolio"
+      backToWork: "Back to Portfolio",
+      underConstruction: "(This section is under construction)"
     },
     contact: {
       title: "Let's work together.",
@@ -71,7 +72,8 @@ const translations = {
       title: "Trabalhos Selecionados",
       subtitle: "Mostruário de experiências de aprendizagem digital, simulações e storytelling interativo.",
       viewDetails: "Ver Detalhes",
-      backToWork: "Voltar ao Portfólio"
+      backToWork: "Voltar ao Portfólio",
+      underConstruction: "(Esta seção está em construção)"
     },
     contact: {
       title: "Vamos trabalhar juntos.",
@@ -114,7 +116,8 @@ const translations = {
       title: "Trabajos Seleccionados",
       subtitle: "Muestra de experiencias de aprendizaje digital, simulaciones y narración interactiva.",
       viewDetails: "Ver Detalles",
-      backToWork: "Volver al Portafolio"
+      backToWork: "Volver al Portafolio",
+      underConstruction: "(Esta sección está en construcción)"
     },
     contact: {
       title: "Trabajemos juntos.",
@@ -373,7 +376,7 @@ const GlobalStyles = () => (
     }
     
     .header-gradient-border {
-      position: absolute; bottom: 0; left: 10px; right: 10px; height: 2px;
+      position: absolute; bottom: 0; left: 2rem; right: 2rem; height: 2px;
       border-radius: 9999px; pointer-events: none;
       background: linear-gradient(90deg, var(--primary-teal), var(--primary-cyan), var(--primary-blue));
       opacity: 0.8;
@@ -656,7 +659,7 @@ const Navigation = ({ activeSection, scrollToSection, lang, setLang, t }) => {
               <div className="jl-badge" onClick={() => scrollToSection('hero')}>JL-ID</div>
               
               <div className="hidden md:flex items-center">
-                <a href="https://linkedin.com" target="_blank" className="bg-[#0077b5] rounded-md p-1.5 hover:opacity-90 transition-opacity mr-6"><Linkedin size={18} fill="white" stroke="none" /></a>
+                <a href="https://www.linkedin.com/in/jean-leoni-213a2765/" target="_blank" className="bg-[#0077b5] rounded-md p-1.5 hover:opacity-90 transition-opacity mr-6"><Linkedin size={18} fill="white" stroke="none" /></a>
                 <div className="w-px h-5 bg-slate-600 opacity-30 mr-6"></div>
                 <div className="flex items-center gap-8">
                     {Object.entries(t.nav).map(([key, label]) => {
@@ -990,7 +993,9 @@ export default function Portfolio() {
             <div className="max-w-[1440px] mx-auto">
                <Reveal className="mb-16 flex flex-col md:flex-row md:items-end justify-between border-b border-slate-300 pb-6 gap-4">
                  <div>
-                    <h2 className="font-display font-bold text-4xl md:text-5xl text-slate-900 mb-2">{t.work.title}</h2>
+                    <h2 className="font-display font-bold text-4xl md:text-5xl text-slate-900 mb-2">
+                      {t.work.title} <span className="text-xl md:text-2xl text-slate-500 font-normal ml-3">{t.work.underConstruction}</span>
+                    </h2>
                     <p className="text-slate-600 text-lg">{t.work.subtitle}</p>
                  </div>
               </Reveal>
@@ -1018,7 +1023,7 @@ export default function Portfolio() {
                     </a>
                  </Reveal>
                  <Reveal key={2} delay={200}>
-                    <a href="#" className="contact-box-green glass-card p-8 flex flex-col items-center text-center group h-full justify-center cursor-none">
+                    <a href="https://www.linkedin.com/in/jean-leoni-213a2765/" target="_blank" rel="noopener noreferrer" className="contact-box-green glass-card p-8 flex flex-col items-center text-center group h-full justify-center cursor-none">
                         <div className="p-4 bg-white rounded-2xl mb-6 text-slate-500 group-hover:text-teal-600 group-hover:scale-110 transition-all shadow-sm"><Linkedin size={24}/></div>
                         <h3 className="font-bold text-slate-900 mb-2">{t.contact.linkedin}</h3>
                         <p className="text-sm text-slate-600">Jean Leoni</p>
