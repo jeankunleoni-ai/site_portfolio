@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { 
   Menu, X, Linkedin, Mail, ArrowUpRight, ArrowLeft,
   Github, Phone, Globe, ChevronDown, Play, MousePointer2, ArrowDown,
-  CheckCircle, Layers, PenTool, Cpu, Award, Users
+  CheckCircle, Layers, PenTool, Cpu, Award, Users, Maximize2, Minimize2, ExternalLink
 } from 'lucide-react';
 
 // --- TRANSLATIONS / TRADUÇÕES ---
@@ -48,7 +48,9 @@ const translations = {
       solution: "The Solution",
       results: "Results",
       tools: "Tools Used",
-      launch: "Launch Project"
+      launch: "Launch Project",
+      closeProject: "Close Project",
+      loading: "Loading Project..."
     }
   },
   pt: {
@@ -92,7 +94,9 @@ const translations = {
       solution: "A Solução",
       results: "Resultados",
       tools: "Ferramentas Usadas",
-      launch: "Ver Projeto"
+      launch: "Ver Projeto",
+      closeProject: "Fechar Projeto",
+      loading: "Carregando Projeto..."
     }
   },
   es: {
@@ -136,12 +140,15 @@ const translations = {
       solution: "La Solución",
       results: "Resultados",
       tools: "Herramientas",
-      launch: "Ver Proyecto"
+      launch: "Ver Proyecto",
+      closeProject: "Cerrar Proyecto",
+      loading: "Cargando Proyecto..."
     }
   }
 };
 
 // --- PROJECTS DATA ---
+// NOTE: Ensure your project folders in 'public' match these paths
 const getProjects = (lang) => {
   const isPt = lang === 'pt';
   const isEs = lang === 'es';
@@ -152,6 +159,8 @@ const getProjects = (lang) => {
       title: isPt ? "Simulação de Software Hospitalar" : isEs ? "Simulación de Software Hospitalario" : "Hospital Software Simulation",
       category: isPt ? "Treinamento de Sistemas" : isEs ? "Entrenamiento de Sistemas" : "System Training",
       image: "https://placehold.co/1920x1080/3b82f6/white?text=Software+Sim",
+      // Path to your project in public folder
+      projectUrl: "/projects/hospital-sim/index.html", 
       tags: ["Storyline", "Software Sim", "UX"],
       desc: isPt ? "Simulação de alta fidelidade de software EMR para prática sem riscos." : isEs ? "Simulación de alta fidelidad de software EMR para práctica sin riesgos." : "High-fidelity EMR software simulation for risk-free practice.",
       details: {
@@ -165,6 +174,7 @@ const getProjects = (lang) => {
       title: isPt ? "Cenário de Branching de Cibersegurança" : isEs ? "Escenario de Ciberseguridad" : "Cybersecurity Branching Scenario",
       category: isPt ? "Baseado em Cenário" : isEs ? "Basado en Escenarios" : "Scenario-Based",
       image: "https://placehold.co/1920x1080/6366f1/white?text=Cyber+Security",
+      projectUrl: "/projects/cybersecurity/index.html",
       tags: ["Branching", "Gamification", "Decision Making"],
       desc: isPt ? "Treinamento narrativo de segurança contra phishing." : isEs ? "Entrenamiento narrativo de seguridad contra phishing." : "Narrative-driven security training against phishing.",
       details: {
@@ -178,6 +188,7 @@ const getProjects = (lang) => {
       title: isPt ? "Cenário de Boas Práticas de IA" : isEs ? "Mejores Prácticas de IA" : "AI Best Practices Scenario",
       category: isPt ? "Tecnologia Emergente" : isEs ? "Tecnología Emergente" : "Emerging Tech",
       image: "https://placehold.co/1920x1080/8b5cf6/white?text=AI+Ethics",
+      projectUrl: "/projects/ai-ethics/index.html",
       tags: ["AI", "Ethics", "Light Gamification"],
       desc: isPt ? "Guia sobre uso responsável de IA no trabalho." : isEs ? "Guía sobre el uso responsable de la IA en el trabajo." : "Guide on responsible AI usage in the workplace.",
       details: {
@@ -186,12 +197,12 @@ const getProjects = (lang) => {
         result: isPt ? "Estabeleceu linha de base para adoção de IA." : isEs ? "Estableció una línea base para la adopción de IA." : "Established baseline for AI adoption."
       }
     },
-    // --- POSITION 4: Time Management (Swapped) ---
     {
       id: 5,
       title: isPt ? "Gestão de Tempo Gamificada" : isEs ? "Gestión del Tiempo Gamificada" : "Time Management Gamified",
       category: isPt ? "Soft Skills" : isEs ? "Habilidades Blandas" : "Soft Skills",
       image: "https://placehold.co/1920x1080/ec4899/white?text=Time+Management",
+      projectUrl: "/projects/time-management/index.html",
       tags: ["Storytelling", "Gamification", "Scenario"],
       desc: isPt ? "Cenário de ramificação para priorizar tarefas urgentes vs importantes." : isEs ? "Escenario ramificado para priorizar tareas urgentes vs importantes." : "Branching scenario for prioritizing urgent vs important tasks.",
       details: {
@@ -200,12 +211,12 @@ const getProjects = (lang) => {
         result: isPt ? "Habilidades de priorização melhoradas." : isEs ? "Habilidades de priorización mejoradas." : "Improved prioritization skills."
       }
     },
-    // --- POSITION 5: Restaurant Tour (Swapped) ---
     {
       id: 1,
       title: isPt ? "Tour Interativo 3D em Restaurante" : isEs ? "Recorrido Interactivo 3D en Restaurante" : "Interactive 3D Restaurant Tour",
       category: isPt ? "Aprendizagem Imersiva" : isEs ? "Aprendizaje Inmersivo" : "Immersive Learning",
       image: "https://placehold.co/1920x1080/f59e0b/white?text=Restaurant+Tour",
+      projectUrl: "/projects/restaurant-tour/index.html",
       tags: ["Three.js", "Blender", "Interactive"],
       desc: isPt ? "Um tour 3D baseado em navegador para integração de funcionários." : isEs ? "Un recorrido 3D basado en navegador para la incorporación de personal." : "A browser-based 3D walkthrough for staff onboarding.",
       details: {
@@ -219,6 +230,7 @@ const getProjects = (lang) => {
       title: isPt ? "Simulação 3D de Higiene das Mãos" : isEs ? "Simulación 3D de Higiene de Manos" : "3D Hand Hygiene Simulation",
       category: isPt ? "Treinamento em Saúde" : isEs ? "Formación Sanitaria" : "Healthcare Training",
       image: "https://placehold.co/1920x1080/10b981/white?text=Hand+Hygiene",
+      projectUrl: "/projects/hand-hygiene/index.html",
       tags: ["Simulation", "3D Animation", "Gamification"],
       desc: isPt ? "Simulação 3D interativa para técnicas de higiene das mãos da OMS." : isEs ? "Simulación interactiva 3D para técnicas de higiene de manos de la OMS." : "Interactive 3D simulation for WHO hand hygiene techniques.",
       details: {
@@ -302,6 +314,11 @@ const GlobalStyles = () => (
       100% { background-position: 0% 50%; }
     }
 
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
     .text-gradient-animated {
       background: linear-gradient(270deg, var(--primary-teal), var(--primary-cyan), var(--primary-blue), var(--primary-teal));
       background-size: 300% auto;
@@ -315,6 +332,14 @@ const GlobalStyles = () => (
     }
     @keyframes fadeInUp {
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    .iframe-loader {
+        border: 4px solid rgba(255,255,255,0.1);
+        border-left-color: var(--primary-teal);
+        border-radius: 50%;
+        width: 40px; height: 40px;
+        animation: spin 1s linear infinite;
     }
 
     /* --- COMPONENTS --- */
@@ -642,7 +667,6 @@ const Navigation = ({ activeSection, scrollToSection, lang, setLang, t }) => {
 
   const currentLang = langOptions.find(opt => opt.code === lang);
 
-  // Map nav keys to exact section IDs
   const sectionMap = {
       home: 'hero',
       about: 'about',
@@ -655,7 +679,6 @@ const Navigation = ({ activeSection, scrollToSection, lang, setLang, t }) => {
       <nav className={`header-container ${isScrolled ? 'scrolled' : ''}`}>
         <div className="header-wrapper">
           <div className="header-content">
-              {/* Updated Text: JL-ID */}
               <div className="jl-badge" onClick={() => scrollToSection('hero')}>JL-ID</div>
               
               <div className="hidden md:flex items-center">
@@ -664,7 +687,6 @@ const Navigation = ({ activeSection, scrollToSection, lang, setLang, t }) => {
                 <div className="flex items-center gap-8">
                     {Object.entries(t.nav).map(([key, label]) => {
                         const targetSectionId = sectionMap[key];
-                        // FIXED: Direct comparison between activeSection (which is a section ID) and mapped ID
                         const isActive = activeSection === targetSectionId;
                         return (
                             <button 
@@ -734,11 +756,57 @@ const Navigation = ({ activeSection, scrollToSection, lang, setLang, t }) => {
 
 // --- NEW PROJECT PAGE COMPONENT (Replaces Modal) ---
 const ProjectPage = ({ project, onBack, t }) => {
+  const [isLaunched, setIsLaunched] = useState(false);
+  const [iframeLoading, setIframeLoading] = useState(true);
+
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
+  const handleLaunch = () => {
+    setIsLaunched(true);
+    setIframeLoading(true);
+  };
+
+  const handleCloseProject = () => {
+    setIsLaunched(false);
+  };
+
   if (!project) return null;
+
+  // Iframe View
+  if (isLaunched) {
+      return (
+          <div className="fixed inset-0 z-[100] bg-black flex flex-col h-screen w-screen animate-fade-in">
+              <div className="flex justify-between items-center bg-slate-900 px-6 py-3 border-b border-slate-800 shrink-0">
+                  <div className="text-white font-bold flex items-center gap-3">
+                      <span className="text-teal-500 font-display text-lg">{project.title}</span>
+                  </div>
+                  <div className="flex gap-4">
+                      <button onClick={handleCloseProject} className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-md text-sm font-medium transition-colors border border-slate-700">
+                          <X size={18} /> {t.modal.closeProject}
+                      </button>
+                  </div>
+              </div>
+              <div className="flex-grow relative w-full h-full bg-slate-900">
+                  {iframeLoading && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-white z-0">
+                          <div className="iframe-loader mb-4"></div>
+                          <p>{t.modal.loading}</p>
+                      </div>
+                  )}
+                  {/* Note: The src points to 'project.projectUrl' which should be a path relative to the public folder in Vite */}
+                  <iframe 
+                      src={project.projectUrl} 
+                      className="w-full h-full border-0 relative z-10" 
+                      allowFullScreen 
+                      onLoad={() => setIframeLoading(false)}
+                      title={project.title}
+                  />
+              </div>
+          </div>
+      );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 fade-in-up">
@@ -805,7 +873,8 @@ const ProjectPage = ({ project, onBack, t }) => {
                   <div className="flex flex-wrap gap-2 mb-8">
                      {project.tags.map((tag,i) => (<span key={i} className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-sm text-slate-600 font-medium">{tag}</span>))}
                   </div>
-                  <button className="w-full py-4 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 transform hover:-translate-y-1">
+                  {/* UPDATED: Launch Button now triggers iframe mode */}
+                  <button onClick={handleLaunch} className="w-full py-4 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 transform hover:-translate-y-1">
                      {t.modal.launch} <ArrowUpRight size={20}/>
                   </button>
                </div>
