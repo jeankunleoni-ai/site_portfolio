@@ -42,7 +42,7 @@ const translations = {
       rights: "All rights reserved.",
       privacy: "Privacy Policy"
     },
-    modal: { // Mantido como referência para as chaves usadas na ProjectPage
+    modal: {
       challenge: "The Challenge",
       solution: "The Solution",
       results: "Results",
@@ -145,32 +145,6 @@ const getProjects = (lang) => {
 
   return [
     {
-      id: 1,
-      title: isPt ? "Tour Interativo 3D em Restaurante" : isEs ? "Recorrido Interactivo 3D en Restaurante" : "Interactive 3D Restaurant Tour",
-      category: isPt ? "Aprendizagem Imersiva" : isEs ? "Aprendizaje Inmersivo" : "Immersive Learning",
-      image: "https://placehold.co/1920x1080/f59e0b/white?text=Restaurant+Tour",
-      tags: ["Three.js", "Blender", "Interactive"],
-      desc: isPt ? "Um tour 3D baseado em navegador para integração de funcionários." : isEs ? "Un recorrido 3D basado en navegador para la incorporación de personal." : "A browser-based 3D walkthrough for staff onboarding.",
-      details: {
-        challenge: isPt ? "Alta rotatividade e tempo limitado para orientação no local dificultavam o treinamento de segurança." : isEs ? "La alta rotación y el tiempo limitado dificultaban la capacitación en seguridad." : "High turnover and limited time for on-site orientation made safety training difficult.",
-        solution: isPt ? "Criação de um gêmeo digital 3D da cozinha do restaurante onde os usuários podem clicar em hotspots para aprender protocolos." : isEs ? "Creación de un gemelo digital 3D de la cocina donde los usuarios aprenden protocolos." : "Created a web-based 3D twin of the restaurant kitchen where users can click hotspots to learn safety protocols.",
-        result: isPt ? "Redução de 40% no tempo de orientação e melhoria nas pontuações de conformidade de segurança." : isEs ? "Reducción del 40% en el tiempo de orientación y mejora en el cumplimiento." : "Reduced on-site orientation time by 40% and improved safety compliance scores."
-      }
-    },
-    {
-      id: 2,
-      title: isPt ? "Simulação 3D de Higiene das Mãos" : isEs ? "Simulación 3D de Higiene de Manos" : "3D Hand Hygiene Simulation",
-      category: isPt ? "Treinamento em Saúde" : isEs ? "Formación Sanitaria" : "Healthcare Training",
-      image: "https://placehold.co/1920x1080/10b981/white?text=Hand+Hygiene",
-      tags: ["Simulation", "3D Animation", "Gamification"],
-      desc: isPt ? "Simulação 3D interativa para técnicas de higiene das mãos da OMS." : isEs ? "Simulación interactiva 3D para técnicas de higiene de manos de la OMS." : "Interactive 3D simulation for WHO hand hygiene techniques.",
-      details: {
-        challenge: isPt ? "Conformidade inconsistente da equipe hospitalar com protocolos de higiene." : isEs ? "Cumplimiento inconsistente de los protocolos por parte del personal." : "Inconsistent compliance with protocols.",
-        solution: isPt ? "Simulação de módulo duplo para prática de movimentos e tempo corretos." : isEs ? "Simulación de doble módulo para practicar movimientos y tiempos." : "Dual-module simulation for practice.",
-        result: isPt ? "Técnica padronizada entre departamentos." : isEs ? "Técnica estandarizada entre departamentos." : "Standardized technique across departments."
-      }
-    },
-    {
       id: 3,
       title: isPt ? "Simulação de Software Hospitalar" : isEs ? "Simulación de Software Hospitalario" : "Hospital Software Simulation",
       category: isPt ? "Treinamento de Sistemas" : isEs ? "Entrenamiento de Sistemas" : "System Training",
@@ -197,6 +171,20 @@ const getProjects = (lang) => {
       }
     },
     {
+      id: 6,
+      title: isPt ? "Cenário de Boas Práticas de IA" : isEs ? "Mejores Prácticas de IA" : "AI Best Practices Scenario",
+      category: isPt ? "Tecnologia Emergente" : isEs ? "Tecnología Emergente" : "Emerging Tech",
+      image: "https://placehold.co/1920x1080/8b5cf6/white?text=AI+Ethics",
+      tags: ["AI", "Ethics", "Light Gamification"],
+      desc: isPt ? "Guia sobre uso responsável de IA no trabalho." : isEs ? "Guía sobre el uso responsable de la IA en el trabajo." : "Guide on responsible AI usage in the workplace.",
+      details: {
+        challenge: isPt ? "Diretrizes pouco claras sobre uso de IA." : isEs ? "Pautas poco claras sobre el uso de la IA." : "Unclear guidelines on AI usage.",
+        solution: isPt ? "Cenários destacando armadilhas comuns." : isEs ? "Escenarios que destacan errores comunes." : "Scenarios highlighting pitfalls.",
+        result: isPt ? "Estabeleceu linha de base para adoção de IA." : isEs ? "Estableció una línea base para la adopción de IA." : "Established baseline for AI adoption."
+      }
+    },
+    // --- POSITION 4: Time Management (Swapped) ---
+    {
       id: 5,
       title: isPt ? "Gestão de Tempo Gamificada" : isEs ? "Gestión del Tiempo Gamificada" : "Time Management Gamified",
       category: isPt ? "Soft Skills" : isEs ? "Habilidades Blandas" : "Soft Skills",
@@ -209,17 +197,31 @@ const getProjects = (lang) => {
         result: isPt ? "Habilidades de priorização melhoradas." : isEs ? "Habilidades de priorización mejoradas." : "Improved prioritization skills."
       }
     },
+    // --- POSITION 5: Restaurant Tour (Swapped) ---
     {
-      id: 6,
-      title: isPt ? "Cenário de Boas Práticas de IA" : isEs ? "Mejores Prácticas de IA" : "AI Best Practices Scenario",
-      category: isPt ? "Tecnologia Emergente" : isEs ? "Tecnología Emergente" : "Emerging Tech",
-      image: "https://placehold.co/1920x1080/8b5cf6/white?text=AI+Ethics",
-      tags: ["AI", "Ethics", "Light Gamification"],
-      desc: isPt ? "Guia sobre uso responsável de IA no trabalho." : isEs ? "Guía sobre el uso responsable de la IA en el trabajo." : "Guide on responsible AI usage in the workplace.",
+      id: 1,
+      title: isPt ? "Tour Interativo 3D em Restaurante" : isEs ? "Recorrido Interactivo 3D en Restaurante" : "Interactive 3D Restaurant Tour",
+      category: isPt ? "Aprendizagem Imersiva" : isEs ? "Aprendizaje Inmersivo" : "Immersive Learning",
+      image: "https://placehold.co/1920x1080/f59e0b/white?text=Restaurant+Tour",
+      tags: ["Three.js", "Blender", "Interactive"],
+      desc: isPt ? "Um tour 3D baseado em navegador para integração de funcionários." : isEs ? "Un recorrido 3D basado en navegador para la incorporación de personal." : "A browser-based 3D walkthrough for staff onboarding.",
       details: {
-        challenge: isPt ? "Diretrizes pouco claras sobre uso de IA." : isEs ? "Pautas poco claras sobre el uso de la IA." : "Unclear guidelines on AI usage.",
-        solution: isPt ? "Cenários destacando armadilhas comuns." : isEs ? "Escenarios que destacan errores comunes." : "Scenarios highlighting pitfalls.",
-        result: isPt ? "Estabeleceu linha de base para adoção de IA." : isEs ? "Estableció una línea base para la adopción de IA." : "Established baseline for AI adoption."
+        challenge: isPt ? "Alta rotatividade e tempo limitado para orientação no local dificultavam o treinamento de segurança." : isEs ? "La alta rotación y el tiempo limitado dificultaban la capacitación en seguridad." : "High turnover and limited time for on-site orientation made safety training difficult.",
+        solution: isPt ? "Criação de um gêmeo digital 3D da cozinha do restaurante onde os usuários podem clicar em hotspots para aprender protocolos." : isEs ? "Creación de un gemelo digital 3D de la cocina donde los usuarios aprenden protocolos." : "Created a web-based 3D twin of the restaurant kitchen where users can click hotspots to learn safety protocols.",
+        result: isPt ? "Redução de 40% no tempo de orientação e melhoria nas pontuações de conformidade de segurança." : isEs ? "Reducción del 40% en el tiempo de orientación y mejora en el cumplimiento." : "Reduced on-site orientation time by 40% and improved safety compliance scores."
+      }
+    },
+    {
+      id: 2,
+      title: isPt ? "Simulação 3D de Higiene das Mãos" : isEs ? "Simulación 3D de Higiene de Manos" : "3D Hand Hygiene Simulation",
+      category: isPt ? "Treinamento em Saúde" : isEs ? "Formación Sanitaria" : "Healthcare Training",
+      image: "https://placehold.co/1920x1080/10b981/white?text=Hand+Hygiene",
+      tags: ["Simulation", "3D Animation", "Gamification"],
+      desc: isPt ? "Simulação 3D interativa para técnicas de higiene das mãos da OMS." : isEs ? "Simulación interactiva 3D para técnicas de higiene de manos de la OMS." : "Interactive 3D simulation for WHO hand hygiene techniques.",
+      details: {
+        challenge: isPt ? "Conformidade inconsistente da equipe hospitalar com protocolos de higiene." : isEs ? "Cumplimiento inconsistente de los protocolos por parte del personal." : "Inconsistent compliance with protocols.",
+        solution: isPt ? "Simulação de módulo duplo para prática de movimentos e tempo corretos." : isEs ? "Simulación de doble módulo para practicar movimientos y tiempos." : "Dual-module simulation for practice.",
+        result: isPt ? "Técnica padronizada entre departamentos." : isEs ? "Técnica estandarizada entre departamentos." : "Standardized technique across departments."
       }
     }
   ];
@@ -237,7 +239,8 @@ const GlobalStyles = () => (
       --primary-blue: #3b82f6;   
       
       /* Backgrounds */
-      --bg-light: #F8FAFC;        
+      --bg-light: #F8FAFC; 
+      --bg-darker: #ededed;       
       --text-dark: #0f172a;
       --header-island-bg: #1e293b;
     }
@@ -252,6 +255,11 @@ const GlobalStyles = () => (
       font-family: 'Inter', sans-serif;
       overflow-x: hidden;
       cursor: none; /* Default cursor hidden for custom one on desktop */
+    }
+
+    /* Add scroll margin to sections so header doesn't cover content */
+    section {
+      scroll-margin-top: 100px;
     }
 
     /* Mobile Optimization */
@@ -589,6 +597,15 @@ const TypingEffect = ({ texts }) => {
   );
 };
 
+// --- REUSABLE SCROLL PILL ---
+const ScrollPill = ({ targetId, onClick }) => (
+    <div className="flex justify-center w-full mt-12 pb-8">
+        <div onClick={() => onClick(targetId)} className="scroll-pill-btn group" role="button">
+            <ArrowDown size={24} className="scroll-arrow-icon" />
+        </div>
+    </div>
+);
+
 // --- NAVIGATION ---
 const Navigation = ({ activeSection, scrollToSection, lang, setLang, t }) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -622,27 +639,34 @@ const Navigation = ({ activeSection, scrollToSection, lang, setLang, t }) => {
 
   const currentLang = langOptions.find(opt => opt.code === lang);
 
+  // Map nav keys to exact section IDs
+  const sectionMap = {
+      home: 'hero',
+      about: 'about',
+      portfolio: 'work',
+      contact: 'contact'
+  };
+
   return (
     <>
       <nav className={`header-container ${isScrolled ? 'scrolled' : ''}`}>
         <div className="header-wrapper">
           <div className="header-content">
-              {/* Updated: jl-badge now has the animated class from GlobalStyles */}
-              <div className="jl-badge" onClick={() => scrollToSection('hero')}>JL ID</div>
+              {/* Updated Text: JL-ID */}
+              <div className="jl-badge" onClick={() => scrollToSection('hero')}>JL-ID</div>
               
               <div className="hidden md:flex items-center">
                 <a href="https://linkedin.com" target="_blank" className="bg-[#0077b5] rounded-md p-1.5 hover:opacity-90 transition-opacity mr-6"><Linkedin size={18} fill="white" stroke="none" /></a>
                 <div className="w-px h-5 bg-slate-600 opacity-30 mr-6"></div>
                 <div className="flex items-center gap-8">
                     {Object.entries(t.nav).map(([key, label]) => {
-                        // UPDATED: Correct mapping for Home -> Hero
-                        const sectionId = key === 'home' ? 'hero' : (key === 'portfolio' ? 'work' : key);
-                        
-                        const isActive = activeSection === sectionId;
+                        const targetSectionId = sectionMap[key];
+                        // FIXED: Direct comparison between activeSection (which is a section ID) and mapped ID
+                        const isActive = activeSection === targetSectionId;
                         return (
                             <button 
                               key={key} 
-                              onClick={() => scrollToSection(sectionId)}
+                              onClick={() => scrollToSection(targetSectionId)}
                               className={`nav-item ${isActive ? 'active' : ''}`}
                             >
                               {label}
@@ -685,8 +709,7 @@ const Navigation = ({ activeSection, scrollToSection, lang, setLang, t }) => {
       {/* Mobile Menu Overlay */}
       <div className={`mobile-menu-overlay ${mobileMenuOpen ? 'open' : ''}`}>
          {Object.entries(t.nav).map(([key, label]) => (
-            // UPDATED: Correct mapping for Mobile Home -> Hero
-            <div key={key} className="mobile-nav-item" onClick={() => handleMobileClick(key === 'home' ? 'hero' : (key === 'portfolio' ? 'work' : key))}>
+            <div key={key} className="mobile-nav-item" onClick={() => handleMobileClick(sectionMap[key])}>
                {label}
             </div>
          ))}
@@ -862,7 +885,9 @@ export default function Portfolio() {
         if (element) {
           const { offsetTop, offsetHeight } = element;
           if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
-            setActiveSection(section === 'work' ? 'portfolio' : section);
+             // FIXED: Set active section to the actual section ID ('work' not 'portfolio')
+             // This matches the updated logic in Navigation
+             setActiveSection(section);
           }
         }
       }
@@ -895,8 +920,8 @@ export default function Portfolio() {
 
       {view === 'home' ? (
         <div className="fade-in-up">
-          {/* HERO */}
-          <section id="hero" className="relative h-screen min-h-[700px] flex items-center px-6 overflow-hidden" style={{ backgroundColor: 'var(--bg-light)' }}>
+          {/* HERO - Background color updated to #ededed */}
+          <section id="hero" className="relative h-screen min-h-[700px] flex items-center px-6 overflow-hidden" style={{ backgroundColor: 'var(--bg-darker)' }}>
             <svg className="absolute bottom-0 right-0 w-full md:w-[75%] h-auto max-h-[95vh] pointer-events-none z-0 opacity-60" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMaxYMax meet">
                 <defs>
                 <linearGradient id="gradAnimated" x1="0" y1="0" x2="100%" y2="0">
@@ -928,6 +953,7 @@ export default function Portfolio() {
                  </Reveal>
               </div>
             </div>
+            {/* Scroll Pill for Hero */}
             <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 z-20">
                <div onClick={() => scrollToSection('about')} className="scroll-pill-btn group" role="button"><ArrowDown size={24} className="scroll-arrow-icon" /></div>
             </div>
@@ -955,9 +981,11 @@ export default function Portfolio() {
                 </div>
               </div>
             </div>
+            {/* Scroll Pill for About */}
+            <ScrollPill targetId="work" onClick={scrollToSection} />
           </section>
 
-          {/* WORK */}
+          {/* WORK - Added scroll-margin-top via CSS in global styles to prevent header cut-off */}
           <section id="work" className="py-32 px-6 bg-white/60">
             <div className="max-w-[1440px] mx-auto">
                <Reveal className="mb-16 flex flex-col md:flex-row md:items-end justify-between border-b border-slate-300 pb-6 gap-4">
@@ -970,10 +998,12 @@ export default function Portfolio() {
                 {getProjects(lang).map((project, i) => (<Reveal key={i} delay={i * 100}><ProjectCard project={project} onClick={handleProjectClick} t={t}/></Reveal>))}
               </div>
             </div>
+            {/* Scroll Pill for Work */}
+            <ScrollPill targetId="contact" onClick={scrollToSection} />
           </section>
 
-          {/* CONTACT */}
-          <section id="contact" className="py-32 px-6 relative z-10" style={{ backgroundColor: 'var(--bg-light)' }}>
+          {/* CONTACT - Background color updated to #ededed */}
+          <section id="contact" className="py-32 px-6 relative z-10" style={{ backgroundColor: 'var(--bg-darker)' }}>
             <div className="max-w-[1200px] mx-auto">
               <Reveal className="mb-16 text-center">
                 <h2 className="font-display font-bold text-4xl md:text-6xl text-slate-900 mb-6">{t.contact.title}</h2>
