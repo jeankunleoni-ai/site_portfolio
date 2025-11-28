@@ -148,18 +148,29 @@ const translations = {
 };
 
 // --- PROJECTS DATA ---
-// NOTE: Ensure your project folders in 'public' match these paths
+// NOTE: 
+// 1. Create a folder 'public/banners' and place your images there.
+// 2. Create a folder 'public/projects' and place your project builds there.
 const getProjects = (lang) => {
   const isPt = lang === 'pt';
   const isEs = lang === 'es';
+
+  // Fallback image if local file is missing (for safety during development)
+  // You can replace this logic once all real images are uploaded.
+  const getBanner = (path, fallbackText) => {
+      // In a real scenario, you'd just return the path. 
+      // For this example, if you haven't created the files yet, it will point to the path.
+      // Ensure the file exists at public/banners/{filename}
+      return path; 
+  };
 
   return [
     {
       id: 3,
       title: isPt ? "Simulação de Software Hospitalar" : isEs ? "Simulación de Software Hospitalario" : "Hospital Software Simulation",
       category: isPt ? "Treinamento de Sistemas" : isEs ? "Entrenamiento de Sistemas" : "System Training",
-      image: "https://placehold.co/1920x1080/3b82f6/white?text=Software+Sim",
-      // Path to your project in public folder
+      // ATENÇÃO: Crie o arquivo public/banners/hospital-sim.jpg
+      image: "/banners/hospital-sim.jpg", 
       projectUrl: "/projects/hospital-sim/index.html", 
       tags: ["Storyline", "Software Sim", "UX"],
       desc: isPt ? "Simulação de alta fidelidade de software EMR para prática sem riscos." : isEs ? "Simulación de alta fidelidad de software EMR para práctica sin riesgos." : "High-fidelity EMR software simulation for risk-free practice.",
@@ -173,7 +184,8 @@ const getProjects = (lang) => {
       id: 4,
       title: isPt ? "Cenário de Branching de Cibersegurança" : isEs ? "Escenario de Ciberseguridad" : "Cybersecurity Branching Scenario",
       category: isPt ? "Baseado em Cenário" : isEs ? "Basado en Escenarios" : "Scenario-Based",
-      image: "https://placehold.co/1920x1080/6366f1/white?text=Cyber+Security",
+      // ATENÇÃO: Crie o arquivo public/banners/cybersecurity.jpg
+      image: "/banners/cybersecurity.jpg",
       projectUrl: "/projects/cybersecurity/index.html",
       tags: ["Branching", "Gamification", "Decision Making"],
       desc: isPt ? "Treinamento narrativo de segurança contra phishing." : isEs ? "Entrenamiento narrativo de seguridad contra phishing." : "Narrative-driven security training against phishing.",
@@ -187,7 +199,8 @@ const getProjects = (lang) => {
       id: 6,
       title: isPt ? "Cenário de Boas Práticas de IA" : isEs ? "Mejores Prácticas de IA" : "AI Best Practices Scenario",
       category: isPt ? "Tecnologia Emergente" : isEs ? "Tecnología Emergente" : "Emerging Tech",
-      image: "https://placehold.co/1920x1080/8b5cf6/white?text=AI+Ethics",
+      // ATENÇÃO: Crie o arquivo public/banners/ai-ethics.jpg
+      image: "/banners/ai-ethics.jpg",
       projectUrl: "/projects/ai-ethics/index.html",
       tags: ["AI", "Ethics", "Light Gamification"],
       desc: isPt ? "Guia sobre uso responsável de IA no trabalho." : isEs ? "Guía sobre el uso responsable de la IA en el trabajo." : "Guide on responsible AI usage in the workplace.",
@@ -201,7 +214,8 @@ const getProjects = (lang) => {
       id: 5,
       title: isPt ? "Gestão de Tempo Gamificada" : isEs ? "Gestión del Tiempo Gamificada" : "Time Management Gamified",
       category: isPt ? "Soft Skills" : isEs ? "Habilidades Blandas" : "Soft Skills",
-      image: "https://placehold.co/1920x1080/ec4899/white?text=Time+Management",
+      // ATENÇÃO: Crie o arquivo public/banners/time-management.jpg
+      image: "/banners/time-management.jpg",
       projectUrl: "/projects/time-management/index.html",
       tags: ["Storytelling", "Gamification", "Scenario"],
       desc: isPt ? "Cenário de ramificação para priorizar tarefas urgentes vs importantes." : isEs ? "Escenario ramificado para priorizar tareas urgentes vs importantes." : "Branching scenario for prioritizing urgent vs important tasks.",
@@ -215,7 +229,8 @@ const getProjects = (lang) => {
       id: 1,
       title: isPt ? "Tour Interativo 3D em Restaurante" : isEs ? "Recorrido Interactivo 3D en Restaurante" : "Interactive 3D Restaurant Tour",
       category: isPt ? "Aprendizagem Imersiva" : isEs ? "Aprendizaje Inmersivo" : "Immersive Learning",
-      image: "https://placehold.co/1920x1080/f59e0b/white?text=Restaurant+Tour",
+      // ATENÇÃO: Crie o arquivo public/banners/restaurant-tour.jpg
+      image: "/banners/restaurant-tour.jpg",
       projectUrl: "/projects/restaurant-tour/index.html",
       tags: ["Three.js", "Blender", "Interactive"],
       desc: isPt ? "Um tour 3D baseado em navegador para integração de funcionários." : isEs ? "Un recorrido 3D basado en navegador para la incorporación de personal." : "A browser-based 3D walkthrough for staff onboarding.",
@@ -229,7 +244,8 @@ const getProjects = (lang) => {
       id: 2,
       title: isPt ? "Simulação 3D de Higiene das Mãos" : isEs ? "Simulación 3D de Higiene de Manos" : "3D Hand Hygiene Simulation",
       category: isPt ? "Treinamento em Saúde" : isEs ? "Formación Sanitaria" : "Healthcare Training",
-      image: "https://placehold.co/1920x1080/10b981/white?text=Hand+Hygiene",
+      // ATENÇÃO: Crie o arquivo public/banners/hand-hygiene.jpg
+      image: "/banners/hand-hygiene.jpg",
       projectUrl: "/projects/hand-hygiene/index.html",
       tags: ["Simulation", "3D Animation", "Gamification"],
       desc: isPt ? "Simulação 3D interativa para técnicas de higiene das mãos da OMS." : isEs ? "Simulación interactiva 3D para técnicas de higiene de manos de la OMS." : "Interactive 3D simulation for WHO hand hygiene techniques.",
@@ -755,7 +771,7 @@ const Navigation = ({ activeSection, scrollToSection, lang, setLang, t }) => {
 };
 
 // --- NEW PROJECT PAGE COMPONENT (Replaces Modal) ---
-const ProjectPage = ({ project, onBack, t }) => {
+const ProjectPage = ({ project, onBack, t, onLaunchChange }) => { 
   const [isLaunched, setIsLaunched] = useState(false);
   const [iframeLoading, setIframeLoading] = useState(true);
 
@@ -766,10 +782,12 @@ const ProjectPage = ({ project, onBack, t }) => {
   const handleLaunch = () => {
     setIsLaunched(true);
     setIframeLoading(true);
+    onLaunchChange(true); // Hide custom cursor
   };
 
   const handleCloseProject = () => {
     setIsLaunched(false);
+    onLaunchChange(false); // Show custom cursor
   };
 
   if (!project) return null;
@@ -777,13 +795,15 @@ const ProjectPage = ({ project, onBack, t }) => {
   // Iframe View
   if (isLaunched) {
       return (
-          <div className="fixed inset-0 z-[100] bg-black flex flex-col h-screen w-screen animate-fade-in">
-              <div className="flex justify-between items-center bg-slate-900 px-6 py-3 border-b border-slate-800 shrink-0">
+          // CORRECTION: Added 'cursor-auto' style to force cursor visibility and z-100 to wrapper
+          // The header gets z-50 to ensure it's clickable
+          <div className="fixed inset-0 z-[100] bg-black flex flex-col h-screen w-screen animate-fade-in" style={{ cursor: 'auto' }}>
+              <div className="flex justify-between items-center bg-slate-900 px-6 py-3 border-b border-slate-800 shrink-0 relative z-50">
                   <div className="text-white font-bold flex items-center gap-3">
                       <span className="text-teal-500 font-display text-lg">{project.title}</span>
                   </div>
                   <div className="flex gap-4">
-                      <button onClick={handleCloseProject} className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-md text-sm font-medium transition-colors border border-slate-700">
+                      <button onClick={handleCloseProject} className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-md text-sm font-medium transition-colors border border-slate-700 cursor-pointer">
                           <X size={18} /> {t.modal.closeProject}
                       </button>
                   </div>
@@ -873,7 +893,6 @@ const ProjectPage = ({ project, onBack, t }) => {
                   <div className="flex flex-wrap gap-2 mb-8">
                      {project.tags.map((tag,i) => (<span key={i} className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-sm text-slate-600 font-medium">{tag}</span>))}
                   </div>
-                  {/* UPDATED: Launch Button now triggers iframe mode */}
                   <button onClick={handleLaunch} className="w-full py-4 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 transform hover:-translate-y-1">
                      {t.modal.launch} <ArrowUpRight size={20}/>
                   </button>
@@ -919,6 +938,7 @@ export default function Portfolio() {
   const [view, setView] = useState('home'); // 'home' | 'project'
   const [lang, setLang] = useState('en');
   const [targetSection, setTargetSection] = useState(null);
+  const [isIframeOpen, setIsIframeOpen] = useState(false); // UPDATED: State for iframe visibility
   
   const t = translations[lang];
 
@@ -974,6 +994,7 @@ export default function Portfolio() {
   };
 
   const handleBackToWork = () => {
+    setIsIframeOpen(false); // Ensure it's reset
     scrollToSection('work');
   };
 
@@ -985,7 +1006,9 @@ export default function Portfolio() {
   return (
     <div className="min-h-screen relative bg-slate-50">
       <GlobalStyles />
-      <CustomCursor />
+      
+      {/* UPDATED: Only render CustomCursor if iframe is closed */}
+      {!isIframeOpen && <CustomCursor />}
       
       {/* Navigation remains visible in both views */}
       <Navigation activeSection={activeSection} scrollToSection={scrollToSection} lang={lang} setLang={setLang} t={t} />
@@ -1117,7 +1140,7 @@ export default function Portfolio() {
           </section>
         </div>
       ) : (
-        <ProjectPage project={selectedProject} onBack={handleBackToWork} t={t} />
+        <ProjectPage project={selectedProject} onBack={handleBackToWork} t={t} onLaunchChange={setIsIframeOpen} />
       )}
 
       <footer className="py-12 bg-[#0f172a] text-slate-400 text-sm border-t border-slate-800 relative z-20">
