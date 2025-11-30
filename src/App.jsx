@@ -936,9 +936,18 @@ export default function Portfolio() {
   const [activeSection, setActiveSection] = useState('hero');
   const [selectedProject, setSelectedProject] = useState(null);
   const [view, setView] = useState('home'); // 'home' | 'project'
-  const [lang, setLang] = useState('en');
   const [targetSection, setTargetSection] = useState(null);
   const [isIframeOpen, setIsIframeOpen] = useState(false); // UPDATED: State for iframe visibility
+  
+  // UPDATED: Language detection state initialization
+  const [lang, setLang] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const browserLang = navigator.language || navigator.userLanguage;
+      if (browserLang.toLowerCase().startsWith('pt')) return 'pt';
+      if (browserLang.toLowerCase().startsWith('es')) return 'es';
+    }
+    return 'en';
+  });
   
   const t = translations[lang];
 
