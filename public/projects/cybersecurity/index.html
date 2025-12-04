@@ -1,753 +1,1488 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyber Guardian Mission</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <title>Cortex Security OS - Simulação de Cibersegurança</title>
+    
+    <!-- Tailwind CSS para Estilização -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuração do Tailwind para animações personalizadas -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'fade-in-up': 'fadeInUp 0.8s ease-out',
+                        'slide-in-right': 'slideInRight 0.5s ease-out',
+                        'slide-in-up': 'slideInUp 0.5s ease-out',
+                        'scale-in': 'scaleIn 0.3s ease-out',
+                        'bounce': 'bounce 1s infinite',
+                        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        slideInRight: {
+                            '0%': { opacity: '0', transform: 'translateX(100%)' },
+                            '100%': { opacity: '1', transform: 'translateX(0)' },
+                        },
+                        slideInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(100%)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        scaleIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.9)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Import Map para carregar React e Lucide via ESM -->
+    <script type="importmap">
+        {
+            "imports": {
+                "react": "https://esm.sh/react@18.2.0",
+                "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+                "lucide-react": "https://esm.sh/lucide-react@0.292.0"
+            }
+        }
+    </script>
+
+    <!-- Babel para compilar JSX no navegador -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
     <style>
-        /* --- RESET & BASE --- */
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #2d1b69 0%, #1a103c 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-family: 'Segoe UI', 'Roboto', Helvetica, Arial, sans-serif;
-            color: #333;
-        }
-
-        /* --- MAIN CONTAINER --- */
-        #app-container {
-            width: 100%;
-            max-width: 1100px;
-            aspect-ratio: 16 / 9;
-            background-color: #f4f7fa;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 40px rgba(108, 92, 231, 0.4);
-            border-radius: 16px;
-            display: flex;
-            flex-direction: column;
-            border: 4px solid #6c5ce7;
-        }
-
-        /* --- HUD --- */
-        #game-hud {
-            height: 60px; /* Reduzido levemente para dar mais espaço ao conteúdo */
-            background: #ffffff;
-            border-bottom: 2px solid #dfe6e9;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 30px;
-            z-index: 100;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            flex-shrink: 0;
-        }
-
-        .hud-left { display: flex; align-items: center; gap: 20px; }
-        .hud-title { font-weight: 800; color: #2d3436; text-transform: uppercase; font-size: 1rem; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
-        .hud-title i { color: #6c5ce7; font-size: 1.2rem; }
-
-        .audio-toggle {
-            background: #dfe6e9; border: none; border-radius: 20px; padding: 5px 15px;
-            font-size: 0.8rem; font-weight: bold; color: #636e72; cursor: pointer;
-            display: flex; align-items: center; gap: 8px; transition: all 0.2s;
-        }
-        .audio-toggle:hover { background: #b2bec3; }
-        .audio-toggle.active { background: #00b894; color: white; }
-
-        .shield-status { display: flex; align-items: center; gap: 15px; font-weight: bold; color: #636e72; font-size: 0.9rem; }
-        .health-bar-container { width: 200px; height: 15px; background-color: #dfe6e9; border-radius: 10px; overflow: hidden; border: 2px solid #b2bec3; }
-        .health-fill {
-            height: 100%; width: 100%; background: linear-gradient(90deg, #00b894, #55efc4);
-            transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1), background 0.3s;
-            box-shadow: 0 0 10px rgba(85, 239, 196, 0.6);
-        }
-
-        /* --- SLIDES --- */
-        .slide {
-            flex: 1; position: relative; display: none; opacity: 0;
-            transition: opacity 0.4s ease-in-out; background: #f4f7fa;
-            overflow: hidden; /* Impede scrollbar interna indesejada */
-        }
-        .slide.active { display: flex; opacity: 1; }
-
-        /* --- LAYOUTS --- */
-        .layout-hero {
-            width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; padding: 20px; position: relative;
-            background: url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1920&q=80') no-repeat center center;
-            background-size: cover;
-        }
-        .layout-hero::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(45, 27, 105, 0.92); z-index: 1; }
-        .hero-content { position: relative; z-index: 2; color: white; max-width: 800px; width: 100%; }
+        /* Estilos globais extras */
+        body { margin: 0; overflow: hidden; background-color: #0f172a; }
+        .glitch-text { text-shadow: 2px 0 #ff00c1, -2px 0 #00fff9; }
         
-        /* Texto padrão para slides Hero (Fundo Escuro) */
-        .layout-hero h1, .layout-hero p, .hero-content h1, .hero-content p { 
-            color: #f5f6fa !important; 
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5); 
-        }
-
-        .layout-split { width: 100%; display: flex; height: 100%; }
-        .split-visual {
-            width: 40%; background-color: #e2e8f0; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; position: relative; overflow: hidden;
-            border-right: 1px solid #cbd5e1; padding: 20px;
-        }
-        .split-content { width: 60%; padding: 40px 60px; display: flex; flex-direction: column; justify-content: center; overflow-y: auto; background: white; }
-
-        /* --- TYPOGRAPHY & UI --- */
-        h1 { margin-bottom: 10px; font-size: 2rem; font-weight: 900; letter-spacing: -1px; color: #2d3436;}
-        h2 { color: #6c5ce7; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; font-weight: 800; }
-        p { font-size: 1.1rem; line-height: 1.5; color: #2d3436; margin-bottom: 20px; }
-        
-        .story-bubble {
-            background: #f0f3ff; border-radius: 0 20px 20px 20px; padding: 20px;
-            border-left: 5px solid #6c5ce7; color: #4834d4; font-weight: 500; margin-bottom: 30px;
-            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.1); display: flex; gap: 15px; align-items: flex-start;
-        }
-
-        .cyber-card {
-            background: white; width: 95%; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            border: 1px solid #e2e8f0; overflow: hidden; transform: rotate(-2deg); transition: transform 0.3s;
-        }
-        .cyber-card:hover { transform: rotate(0deg) scale(1.02); }
-        .card-header { background: #6c5ce7; padding: 10px 15px; color: white; font-weight: bold; display: flex; justify-content: space-between;}
-        .card-body { padding: 20px; font-size: 0.9rem; color: #333; }
-        .suspicious-link { color: #0984e3; text-decoration: underline; font-weight: bold; cursor: not-allowed; }
-
-        .btn-hero {
-            background: linear-gradient(45deg, #6c5ce7, #a29bfe); color: white !important; border: none;
-            padding: 14px 36px; border-radius: 50px; font-size: 1.1rem; font-weight: 700; cursor: pointer;
-            transition: all 0.3s; box-shadow: 0 10px 20px rgba(108, 92, 231, 0.4); text-transform: uppercase;
-            letter-spacing: 1px; text-shadow: none !important;
-        }
-        .btn-hero:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 15px 30px rgba(108, 92, 231, 0.5); }
-        
-        /* Restart Button Specific Style - Compact */
-        .btn-restart {
-            background: linear-gradient(45deg, #ff7675, #d63031);
-            margin-top: 10px;
-            font-size: 1rem;
-            padding: 10px 25px;
-        }
-        .btn-restart:hover {
-             box-shadow: 0 15px 30px rgba(214, 48, 49, 0.5);
-        }
-
-        .options-grid { display: grid; gap: 12px; }
-        .option-card {
-            background: white; border: 2px solid #dfe6e9; padding: 12px 18px; border-radius: 12px; cursor: pointer;
-            transition: all 0.2s; display: flex; align-items: center; font-size: 0.95rem; color: #2d3436;
-            font-weight: 600; position: relative; overflow: hidden;
-        }
-        .option-card:hover { border-color: #6c5ce7; background: #f0f3ff; transform: translateX(8px); box-shadow: 0 5px 15px rgba(108, 92, 231, 0.15); }
-        .option-icon {
-            width: 36px; height: 36px; background: #dfe6e9; border-radius: 8px; display: flex;
-            align-items: center; justify-content: center; color: #636e72; margin-right: 15px; flex-shrink: 0; transition: all 0.2s;
-        }
-        .option-card:hover .option-icon { background: #6c5ce7; color: white; }
-
-        .feedback-modal { text-align: center; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        
-        /* --- BADGE ANIMATION SYSTEM --- */
-        .badge-unlock-container {
-            position: relative;
-            display: inline-block;
-            margin: 10px 0;
-        }
-
-        .badge-sunburst {
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 250px; height: 250px;
-            background: radial-gradient(circle, rgba(255,215,0,0.2) 0%, rgba(255,215,0,0) 70%);
-            transform: translate(-50%, -50%);
-            z-index: 0;
-            animation: rotateSun 10s linear infinite;
-        }
-        
-        @keyframes rotateSun { 
-            from { transform: translate(-50%, -50%) rotate(0deg); }
-            to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-
-        .badge-unlock {
-            position: relative;
-            z-index: 1;
-            background: linear-gradient(135deg, #2d3436, #000);
-            color: #ffd700;
-            padding: 15px 30px;
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 2px solid #ffd700;
-            animation: bounceInBadge 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        }
-        
-        @keyframes bounceInBadge {
-            0% { transform: scale(0); opacity: 0; }
-            60% { transform: scale(1.1); opacity: 1; }
-            100% { transform: scale(1); }
-        }
-        
-        .badge-icon-animate {
-            font-size: 3rem;
-            color: #ffd700;
-            filter: drop-shadow(0 0 10px rgba(255,215,0,0.5));
-            animation: pulseBadge 2s infinite;
-        }
-        
-        @keyframes pulseBadge {
-            0% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(255,215,0,0.5)); }
-            50% { transform: scale(1.1); filter: drop-shadow(0 0 20px rgba(255,215,0,0.8)); }
-            100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(255,215,0,0.5)); }
-        }
-
-        .fb-icon-large { font-size: 3rem; margin-bottom: 15px; display: inline-block; }
-        .success-text { color: #55efc4 !important; } /* Lighter green for dark bg */
-        .error-text { color: #ff7675 !important; }
-        .warning-text { color: #ffeaa7 !important; }
-
-        /* Badge Gallery Styles - Optimized for Layout */
-        .report-panel {
-            background: rgba(255,255,255,0.1);
-            padding: 20px 30px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-            max-height: 70vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .badge-gallery {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 15px 0;
-            flex-wrap: wrap;
-            max-width: 100%;
-        }
-        .badge-item {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 10px;
-            padding: 10px;
-            width: 100px; /* Compact Width */
-            height: 90px;
-            text-align: center;
-            color: white;
-            opacity: 0.4; /* Locked state */
-            filter: grayscale(1);
-            transition: all 0.3s;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .badge-item.unlocked {
-            opacity: 1;
-            filter: grayscale(0);
-            border-color: #ffd700;
-            background: rgba(255, 215, 0, 0.1);
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.2);
-        }
-        .badge-item i { font-size: 1.8rem; margin-bottom: 5px; color: #ffd700; }
-        .badge-item span { display: block; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; line-height: 1.2; }
-
+        /* Scrollbar customizada para janelas */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
     </style>
 </head>
 <body>
+    <div id="root"></div>
 
-<div id="app-container">
+    <!-- Lógica do Jogo -->
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useRef, useCallback } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { 
+            Shield, Mail, MessageSquare, Globe, AlertTriangle, 
+            Phone, User, Lock, Wifi, 
+            X, Minus, Square, RefreshCw,
+            Printer, Smartphone, Power, Fingerprint, 
+            CheckCircle, AlertCircle, ChevronRight, Briefcase, Coffee, Terminal,
+            PhoneCall, PhoneOff, Info, Skull, FileCode, FileImage, Trash2, Share2, RefreshCcw,
+            DollarSign, UploadCloud, Users, Key, FileText, XCircle, ArrowRight
+        } from 'lucide-react';
 
-    <!-- HUD -->
-    <div id="game-hud">
-        <div class="hud-left">
-            <div class="hud-title"><i class="fas fa-shield-virus"></i> CYBER GUARDIAN</div>
-            <button class="audio-toggle" id="btn-audio" onclick="toggleAudio()"><i class="fas fa-volume-mute"></i> SOUND OFF</button>
-        </div>
-        <div class="shield-status">
-            <span>SHIELD INTEGRITY:</span>
-            <div class="health-bar-container"><div class="health-fill" id="shield-bar"></div></div>
-            <span id="shield-text">100%</span>
-        </div>
-    </div>
+        // --- 1. CONFIGURAÇÃO E DADOS ESTÁTICOS ---
 
-    <!-- SLIDE 01: HERO INTRO -->
-    <div class="slide active" id="slide-01">
-        <div class="layout-hero">
-            <div class="hero-content">
-                <i class="fas fa-user-secret" style="font-size: 4rem; margin-bottom: 15px; color: #a29bfe;"></i>
-                <h1>Mission: Protect the Network</h1>
-                <p>You start with <strong>100% Shield Integrity</strong>. Every security risk you neutralize keeps the shield up.</p>
-                <p style="font-size: 1rem; color: #fab1a0 !important; margin-bottom: 25px;">WARNING: Mistakes cause damage. Don't let the shield drop below 50%.</p>
-                <button class="btn-hero" onclick="enableAudioAndStart()">INITIALIZE MISSION</button>
-            </div>
-        </div>
-    </div>
+        const CONFIG = {
+            MAX_Z_INDEX: 50,
+            NOTIFICATION_DURATION: 10000, 
+        };
 
-    <!-- SLIDE 02: BRIEFING -->
-    <div class="slide" id="slide-02">
-        <div class="layout-split">
-            <div class="split-visual" style="background: #f0f3ff;">
-                <i class="fas fa-shield-alt" style="font-size: 8rem; color: #a29bfe; text-shadow: 0 10px 20px rgba(0,0,0,0.1);"></i>
-            </div>
-            <div class="split-content">
-                <h2>Mission Briefing</h2>
-                <h1>Protocol Initiated</h1>
-                <div class="story-bubble">
-                    <i class="fas fa-terminal" style="margin-top: 5px;"></i>
+        const WALLPAPER_URL = "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=2074&auto=format&fit=crop";
+
+        const ENDINGS = {
+            PERFECT: {
+                title: "CISO: LÍDER DE SEGURANÇA",
+                desc: "Você alcançou o equilíbrio raro. Manteve a empresa segura sem alienar as pessoas. A cultura de segurança floresceu sob sua gestão.",
+                color: "text-emerald-400",
+                border: "border-emerald-500/50",
+                bg: "bg-emerald-950/90"
+            },
+            BUREAUCRAT: {
+                title: "O 'NÃO' ABSOLUTO (PARANOICO)",
+                desc: "Segurança total, produtividade zero. Ninguém foi hackeado, mas ninguém conseguiu trabalhar. Você é odiado no escritório e o Shadow IT explodiu.",
+                color: "text-blue-400",
+                border: "border-blue-500/50",
+                bg: "bg-blue-950/90"
+            },
+            COMPROMISED: {
+                title: "QUERIDO, MAS PERIGOSO",
+                desc: "Todos amam sua prestatividade, inclusive os hackers. Para não 'atrapalhar', você deixou portas abertas. Vazamento de dados confirmado.",
+                color: "text-amber-400",
+                border: "border-amber-500/50",
+                bg: "bg-amber-950/90"
+            },
+            CHAOS: {
+                title: "DEMISSÃO POR JUSTA CAUSA",
+                desc: "Você falhou tanto na técnica quanto na gestão de pessoas. Ransomware criptografou tudo e os funcionários estão revoltados. Desastre total.",
+                color: "text-rose-500",
+                border: "border-rose-500/50",
+                bg: "bg-rose-950/90"
+            }
+        };
+
+        const INITIAL_EMAILS = [
+            { 
+                id: 'e1', 
+                from: "RH - Benefícios", 
+                fromEmail: "nao-responder@governamental.br-validacao.com",
+                subject: "Atualização Cadastral Obrigatória", 
+                body: "Detectamos inconsistência no seu FGTS. Acesse o portal para corrigir imediatamente sob pena de bloqueio.", 
+                attachment: null, 
+                link: "http://br-validacao.com", 
+                type: "phishing", 
+                read: false, 
+                time: "08:30" 
+            },
+            { 
+                id: 'e2', 
+                from: "Diretoria", 
+                fromEmail: "diretoria@cortex-corp.internal",
+                subject: "Relatório Q3", 
+                body: "Bom dia. Segue a prévia dos resultados do terceiro trimestre. Documento confidencial, não compartilhar externamente.", 
+                attachment: "Resultados_Q3_Confidencial.pdf", 
+                type: "legit", 
+                read: false, 
+                time: "08:45" 
+            },
+        ];
+
+        const CHAT_LOGS = [
+            { id: 'c1', user: "Lucas (Dev)", text: "Bom dia! O servidor de homologação caiu de novo?", time: "08:10" }
+        ];
+
+        const generateUniqueId = () => Date.now().toString(36) + Math.random().toString(36).substr(2);
+
+        // --- 2. CUSTOM HOOKS ---
+
+        const useWindowSystem = (initialState) => {
+            const [windows, setWindows] = useState(initialState);
+            const [maxZ, setMaxZ] = useState(20);
+
+            const openWindow = useCallback((id) => {
+                setWindows(prev => ({ 
+                ...prev, 
+                [id]: { ...prev[id], open: true, minimized: false, z: maxZ + 1 } 
+                }));
+                setMaxZ(p => p + 1);
+            }, [maxZ]);
+
+            const closeWindow = useCallback((id) => setWindows(prev => ({ ...prev, [id]: { ...prev[id], open: false } })), []);
+            const minimizeWindow = useCallback((id) => setWindows(prev => ({ ...prev, [id]: { ...prev[id], minimized: true } })), []);
+            const focusWindow = useCallback((id) => {
+                setWindows(prev => ({ ...prev, [id]: { ...prev[id], z: maxZ + 1 } }));
+                setMaxZ(p => p + 1);
+            }, [maxZ]);
+
+            const moveWindow = useCallback((id, newX, newY) => {
+                setWindows(prev => {
+                const win = prev[id];
+                const maxX = window.innerWidth - 50;
+                const maxY = window.innerHeight - 50;
+                const clampedX = Math.max(-win.w + 50, Math.min(maxX, newX));
+                const clampedY = Math.max(0, Math.min(maxY, newY));
+                return { ...prev, [id]: { ...win, x: clampedX, y: clampedY } };
+                });
+            }, []);
+
+            return { windows, openWindow, closeWindow, minimizeWindow, focusWindow, moveWindow, maxZ };
+        };
+
+        const useGameMetrics = () => {
+            const [riskLevel, setRiskLevel] = useState(0); 
+            const [socialCredit, setSocialCredit] = useState(50); 
+            const [score, setScore] = useState(100);
+            const [notifications, setNotifications] = useState([]);
+            const [reportLog, setReportLog] = useState([]);
+
+            const addNotification = useCallback((msg, type = "info") => {
+                const id = generateUniqueId();
+                setNotifications(prev => [...prev, { id, msg, type }]);
+                setTimeout(() => setNotifications(prev => prev.filter(n => n.id !== id)), CONFIG.NOTIFICATION_DURATION);
+            }, []);
+
+            const logDecision = (action, consequence, type) => {
+                if (type !== 'good') {
+                    setReportLog(prev => [...prev, { action, consequence, type }]);
+                }
+            };
+
+            const adjustMetric = (metric, amount) => {
+                if (metric === 'risk') setRiskLevel(p => Math.max(0, Math.min(100, p + amount)));
+                if (metric === 'social') setSocialCredit(p => Math.max(0, Math.min(100, p + amount)));
+                if (metric === 'score') setScore(p => p + amount);
+            };
+
+            return { riskLevel, socialCredit, score, notifications, addNotification, adjustMetric, setRiskLevel, logDecision, reportLog };
+        };
+
+        // --- 3. UI COMPONENTS ---
+
+        const ConsequenceAlert = ({ type }) => {
+            if (!type) return null;
+
+            return (
+                <div className="absolute inset-0 z-[100] pointer-events-none overflow-hidden">
+                {type === 'bankTransfer' && (
+                    <div className="absolute bottom-24 right-8 bg-white text-slate-900 p-4 rounded-xl shadow-2xl border-l-4 border-rose-500 w-80 flex items-start gap-3 pointer-events-auto animate-bounce">
+                    <div className="bg-rose-100 p-2 rounded-full text-rose-600"><DollarSign size={24}/></div>
                     <div>
-                        "System Status: ONLINE. Agent, you will face threats including Phishing, Data Leaks, Visual Hacking, Wi-Fi Security, Password Hygiene, and Social Engineering. Good luck."
+                        <h4 className="font-bold text-sm">Transferência Agendada</h4>
+                        <p className="text-xs text-slate-600 mt-1">Sua conta ***.456 agendou um PIX de <span className="font-bold text-rose-600">R$ 50.000,00</span>.</p>
+                        <p className="text-[10px] text-slate-400 mt-2">Banco Corp: Se não reconhece, ligue agora.</p>
+                    </div>
+                    </div>
+                )}
+
+                {type === 'publicLeak' && (
+                    <div className="absolute top-24 left-1/2 -translate-x-1/2 bg-slate-800 text-white p-4 rounded-lg shadow-2xl border border-slate-600 w-96 pointer-events-auto animate-pulse">
+                    <div className="flex justify-between items-center mb-2 border-b border-slate-700 pb-2">
+                        <span className="text-xs font-mono text-cyan-400 flex items-center gap-2"><UploadCloud size={14}/> NETWORK MONITOR</span>
+                        <span className="text-[10px] bg-rose-500 px-2 rounded">ALERT</span>
+                    </div>
+                    <div className="space-y-2 font-mono text-xs">
+                        <p>Detectado tráfego de saída anômalo.</p>
+                        <p className="text-slate-400">Arquivo: <span className="text-white">backup_clientes.zip</span></p>
+                        <p>Destino: <span className="text-rose-400">185.xxx.xxx.xx (Moscow, RU)</span></p>
+                        <div className="h-1 w-full bg-slate-700 rounded overflow-hidden mt-2">
+                            <div className="h-full bg-rose-500 w-[80%] animate-pulse"></div>
+                        </div>
+                    </div>
+                    </div>
+                )}
+
+                {type === 'terminal' && (
+                    <div className="absolute top-1/4 left-1/4 bg-black text-green-500 p-2 rounded shadow-2xl border border-slate-700 w-[500px] h-[300px] font-mono text-xs overflow-hidden pointer-events-auto">
+                    <div className="bg-slate-800 text-slate-300 px-2 py-1 text-[10px] mb-2 flex justify-between">
+                        <span>Administrator: CMD</span>
+                        <span>X</span>
+                    </div>
+                    <div className="p-2 space-y-1">
+                        <p>C:\Users\Admin&gt; autorun.inf executed</p>
+                        <p>Injecting payload... [OK]</p>
+                        <p>Bypassing Defender... [OK]</p>
+                        <p>Encrypting C:\Users\Documents\*.* ...</p>
+                        <p className="animate-pulse">_</p>
+                    </div>
+                    </div>
+                )}
+
+                {type === 'gossip' && (
+                    <div className="absolute bottom-24 right-8 flex flex-col gap-2 w-72 pointer-events-auto">
+                    <div className="bg-white p-3 rounded-lg shadow-xl border border-slate-200 animate-bounce">
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-1"><Users size={12}/> Grupo "Happy Hour"</div>
+                        <p className="text-xs">😂😂😂 Mentira que o chefe ganha tudo isso??</p>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg shadow-xl border border-slate-200 animate-bounce delay-100">
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-1"><Users size={12}/> Grupo "Happy Hour"</div>
+                        <p className="text-xs">Vazou a folha?? Manda ai!!! 👀</p>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg shadow-xl border border-slate-200 animate-bounce delay-200">
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-1"><Users size={12}/> Grupo "Happy Hour"</div>
+                        <p className="text-xs">📸 Imagem</p>
+                    </div>
+                    </div>
+                )}
+
+                {type === 'identityTheft' && (
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-rose-600 text-white px-8 py-4 rounded-b-xl shadow-2xl z-[110] flex items-center gap-4 pointer-events-auto">
+                        <Key size={32} className="animate-ping"/>
+                        <div>
+                        <h2 className="font-bold text-lg">ALERTA DE SEGURANÇA</h2>
+                        <p className="text-sm">Sua senha de rede foi redefinida externamente. 2FA Desativado.</p>
+                        </div>
+                    </div>
+                )}
+                </div>
+            );
+        };
+
+        const Modal = ({ title, children, onClose, danger, type = "default" }) => (
+            <div className="fixed inset-0 bg-slate-950/80 flex items-center justify-center z-[100] backdrop-blur-md px-4 animate-scale-in" role="dialog" aria-modal="true">
+                <div className={`
+                relative w-full max-w-lg overflow-hidden rounded-xl border backdrop-blur-xl shadow-2xl transition-all
+                ${danger 
+                    ? 'border-rose-500/50 shadow-[0_0_50px_rgba(244,63,94,0.3)] bg-slate-900/95' 
+                    : 'border-cyan-500/30 shadow-[0_0_50px_rgba(6,182,212,0.1)] bg-slate-900/95'
+                }
+                `}>
+                <div className={`p-4 border-b flex justify-between items-center ${danger ? 'border-rose-500/30 bg-rose-500/10' : 'border-cyan-500/20 bg-cyan-500/5'}`}>
+                    <h3 className={`font-bold font-mono uppercase tracking-widest text-sm flex items-center gap-2 ${danger ? 'text-rose-400' : 'text-cyan-400'}`}>
+                    {danger ? <AlertTriangle size={18} /> : type === 'wifi' ? <Wifi size={18}/> : <Shield size={18} />}
+                    {title}
+                    </h3>
+                    {onClose && <button onClick={onClose} aria-label="Fechar"><X size={18} className="hover:text-white text-slate-400 transition-colors" /></button>}
+                </div>
+                <div className="p-6 text-slate-300 relative">
+                    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none"></div>
+                    <div className="relative z-10">{children}</div>
+                </div>
+                </div>
+            </div>
+        );
+
+        const NotificationToast = ({ notifications }) => (
+            <div className="absolute top-8 right-8 flex flex-col gap-3 z-[90] pointer-events-none">
+                {notifications.map(n => (
+                    <div key={n.id} className="bg-slate-900/90 border-l-4 border-cyan-500 p-4 rounded shadow-2xl backdrop-blur-xl text-white min-w-[320px] animate-slide-in-right flex items-center gap-4">
+                    <div className={`p-2 rounded-full ${n.type === 'alert' ? 'bg-rose-500/20 text-rose-500' : n.type === 'success' ? 'bg-emerald-500/20 text-emerald-500' : 'bg-slate-700/50 text-slate-300'}`}>
+                        {n.type === 'alert' ? <AlertCircle size={20}/> : n.type === 'success' ? <CheckCircle size={20}/> : <Info size={20}/>}
+                    </div>
+                    <span className="text-sm font-medium leading-tight">{n.msg}</span>
+                    </div>
+                ))}
+            </div>
+        );
+
+        // Desktop Component agora recebe props extras e apenas renderiza ícones
+        // O background é tratado no componente pai para evitar transições bruscas
+        const Desktop = ({ activeHighlight, openWindow, wallpaperHacked, onRestoreWallpaper }) => (
+            <div className="absolute inset-0 z-0">
+                {/* Wallpaper Hacked (Troll Face) - Aparece POR CIMA do wallpaper normal quando ativo */}
+                {wallpaperHacked && (
+                <div className="absolute inset-0 z-20 bg-slate-950 flex items-center justify-center flex-col overflow-hidden animate-fade-in">
+                    <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,rgba(0,0,0,0.1)_0,rgba(0,0,0,0.1)_10px,transparent_10px,transparent_20px)]"></div>
+                    <div className="relative z-10 bg-white p-8 rounded-xl shadow-2xl rotate-3 animate-pulse border-4 border-black text-center">
+                        <div className="text-6xl mb-2">🤡</div>
+                        <h1 className="text-4xl font-black text-black tracking-tighter uppercase mb-2">TROLLEI!</h1>
+                        <p className="text-black font-mono font-bold text-lg">Esqueceu desbloqueado = Perdeu moral.</p>
+                        <p className="text-xs text-slate-600 mt-4">Ass: O estagiário da TI</p>
+                    </div>
+                    
+                    <button 
+                        onClick={onRestoreWallpaper}
+                        className="absolute top-1/2 left-8 -translate-y-1/2 flex flex-col items-center gap-2 group z-50 bg-slate-800/80 p-4 rounded-xl border border-white/20 hover:bg-slate-700 transition-all hover:scale-105 cursor-pointer"
+                    >
+                        <RefreshCcw size={32} className="text-emerald-400 group-hover:rotate-180 transition-transform duration-700" />
+                        <span className="text-xs font-bold text-white bg-black/50 px-2 py-1 rounded">Restaurar_Wallpaper.exe</span>
+                    </button>
+                </div>
+                )}
+
+                {/* Icons - Mind the Z-index */}
+                <div className="absolute top-8 left-8 flex flex-col gap-8 z-10">
+                    <DesktopIcon label="Outlook" highlight={activeHighlight === 'mail'} icon={<Mail className="text-blue-400"/>} onClick={() => openWindow('mail')} />
+                    <DesktopIcon label="Teams" highlight={activeHighlight === 'chat'} icon={<MessageSquare className="text-indigo-400"/>} onClick={() => openWindow('chat')} />
+                    <DesktopIcon label="SOC" highlight={activeHighlight === 'soc'} icon={<AlertTriangle className="text-rose-400"/>} onClick={() => openWindow('soc')} />
+                    <DesktopIcon label="Intranet" highlight={activeHighlight === 'browser'} icon={<Globe className="text-cyan-400"/>} onClick={() => openWindow('browser')} />
+                </div>
+            </div>
+        );
+
+        const Taskbar = ({ windows, activeHighlight, openWindow, ransomwareActive }) => (
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 h-16 bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl flex items-center px-8 gap-4 shadow-2xl z-50 transition-all hover:scale-105">
+                <div className="p-2.5 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl text-white shadow-lg shadow-cyan-500/20"><Shield size={24}/></div>
+                <div className="h-8 w-px bg-slate-700/50 mx-2"></div>
+                <TaskbarIcon icon={<Mail size={22}/>} active={windows.mail.open} highlight={activeHighlight === 'mail'} onClick={() => openWindow('mail')} label="Email"/>
+                <TaskbarIcon icon={<MessageSquare size={22}/>} active={windows.chat.open} highlight={activeHighlight === 'chat'} onClick={() => openWindow('chat')} label="Chat"/>
+                <TaskbarIcon icon={<Globe size={22}/>} active={windows.browser.open} highlight={activeHighlight === 'browser'} onClick={() => openWindow('browser')} label="Browser"/>
+                <TaskbarIcon icon={<AlertTriangle size={22}/>} active={windows.soc.open} highlight={activeHighlight === 'soc'} alert={ransomwareActive} onClick={() => openWindow('soc')} label="SOC"/>
+            </div>
+        );
+
+        const DesktopIcon = ({ label, icon, onClick, highlight }) => (
+            <button onClick={onClick} className="group flex flex-col items-center gap-3 w-24 relative focus:outline-none focus:ring-2 focus:ring-cyan-400 rounded-xl p-2" aria-label={`Abrir ${label}`}>
+                <div className={`
+                w-16 h-16 bg-slate-800/40 border border-slate-700/50 rounded-2xl flex items-center justify-center transition-all backdrop-blur-md shadow-lg
+                ${highlight ? 'animate-bounce ring-2 ring-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.4)] border-cyan-400 bg-cyan-900/20' : 'group-hover:scale-110 group-hover:border-cyan-500/50 group-hover:bg-slate-800/60'}
+                `}>
+                {React.cloneElement(icon, { size: 30 })}
+                </div>
+                <span className="text-[10px] text-slate-300 font-bold bg-slate-950/60 px-3 py-1 rounded-full backdrop-blur-md border border-white/5 group-hover:text-cyan-400 transition-colors shadow-sm">{label}</span>
+                {highlight && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-ping"></div>}
+            </button>
+        );
+
+        const TaskbarIcon = ({ icon, active, highlight, alert, onClick, label }) => (
+            <button onClick={onClick} aria-label={label} className={`relative p-3 rounded-xl transition-all duration-300 focus:outline-none focus:bg-white/10 ${active ? 'bg-white/10 text-cyan-400 shadow-inner' : 'text-slate-500 hover:text-slate-200 hover:bg-white/5'} ${highlight ? 'animate-pulse bg-cyan-500/20 text-cyan-300' : ''}`}>
+                {icon}
+                {active && <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-cyan-400 rounded-full shadow-[0_0_8px_cyan]"></div>}
+                {alert && <div className="absolute inset-0 bg-rose-500/20 animate-pulse rounded-xl"></div>}
+            </button>
+        );
+
+        // --- 4. TELAS DE SISTEMA ---
+
+        const BootScreen = () => (
+            <div className="h-screen w-full bg-black flex flex-col items-center justify-center text-slate-400 font-mono text-xs relative z-50">
+                <div className="mb-4 text-cyan-500 animate-pulse">
+                    <Terminal size={48} />
+                </div>
+                <div className="space-y-1">
+                    <p>CORTEX BIOS v5.0.1</p>
+                    <p>Verifying Memory... OK</p>
+                    <p>Loading Kernel... OK</p>
+                    <p>Mounting Filesystem... OK</p>
+                    <p className="animate-pulse">Booting System...</p>
+                </div>
+            </div>
+        );
+
+        // IntroScreen agora é transparente para mostrar o wallpaper de fundo
+        const IntroScreen = ({ onStart }) => (
+            <div className="h-screen w-full flex items-center justify-center p-8 overflow-hidden relative font-sans z-10 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+                
+                <div className="z-10 w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div className="space-y-8 animate-fade-in-up">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-950/30 text-cyan-400 text-xs font-mono tracking-[0.2em] uppercase backdrop-blur-md">
+                        <Terminal size={12} /> Cortex Security OS v5.0
+                    </div>
+                    <div>
+                        <h1 className="text-6xl lg:text-7xl font-bold tracking-tight text-white mb-4">
+                        DEFESA <br/>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600">CIBERNÉTICA</span>
+                        </h1>
+                        <p className="text-slate-400 text-lg leading-relaxed max-w-md border-l-2 border-slate-700 pl-6 bg-slate-900/50 p-4 rounded-r-lg backdrop-blur-sm">
+                        Simulação imersiva de incidentes. Suas decisões serão avaliadas em:
+                        </p>
+                        {/* Métricas Explicadas */}
+                        <div className="grid grid-cols-3 gap-4 mt-6">
+                        <div className="bg-slate-900/80 backdrop-blur p-3 rounded border border-cyan-500/30 text-center">
+                            <div className="text-cyan-400 font-bold text-xl mb-1">100</div>
+                            <div className="text-[10px] text-slate-400 uppercase tracking-widest">Score Técnico</div>
+                        </div>
+                        <div className="bg-slate-900/80 backdrop-blur p-3 rounded border border-blue-500/30 text-center">
+                            <div className="text-blue-400 font-bold text-xl mb-1">50</div>
+                            <div className="text-[10px] text-slate-400 uppercase tracking-widest">Crédito Social</div>
+                        </div>
+                        <div className="bg-slate-900/80 backdrop-blur p-3 rounded border border-rose-500/30 text-center">
+                            <div className="text-rose-400 font-bold text-xl mb-1">0%</div>
+                            <div className="text-[10px] text-slate-400 uppercase tracking-widest">Risco Sistema</div>
+                        </div>
+                        </div>
                     </div>
                 </div>
-                <button class="btn-hero" style="font-size: 1rem; padding: 12px 30px;" onclick="goToSlide('slide-03')">Start Patrol <i class="fas fa-arrow-right"></i></button>
-            </div>
-        </div>
-    </div>
 
-    <!-- SLIDE 03: CHALLENGE 1 (Phishing) -->
-    <div class="slide" id="slide-03">
-        <div class="layout-split">
-            <div class="split-visual">
-                <h3 style="color:#636e72; margin-bottom: 20px;">INCOMING TRANSMISSION</h3>
-                <div class="cyber-card">
-                    <div class="card-header"><span><i class="fas fa-envelope"></i> MAIL.EXE</span><span><i class="fas fa-exclamation-triangle" style="color: #fdcb6e;"></i> SPAM?</span></div>
-                    <div class="card-body">
-                        <strong>From:</strong> Admin (admin@<span style="color:#d63031; background:#fab1a0;">mail-security.net</span>)<br><br>
-                        <strong>Subject:</strong> URGENT: PASSWORD EXPIRY<br>
-                        <span class="suspicious-link">Click here to verify immediately</span> or lose access.
+                <div className="relative">
+                    {/* TELA DE LOGIN (NOVA) */}
+                    <div className="relative bg-slate-900/90 border border-slate-700/50 backdrop-blur-xl p-10 rounded-2xl shadow-2xl w-full max-w-md animate-slide-in-right">
+                        <div className="flex flex-col items-center mb-8">
+                            <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-4 border-2 border-cyan-500/50 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
+                                <User size={40} className="text-cyan-400" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-white tracking-wide">CORTEX LOGIN</h2>
+                            <p className="text-slate-400 text-xs uppercase tracking-widest mt-1">Acesso Restrito</p>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-xs text-slate-400 uppercase font-bold ml-1 mb-1 block">Usuário</label>
+                                <input 
+                                    type="text" 
+                                    value="admin.security" 
+                                    disabled 
+                                    className="w-full bg-slate-800/50 border border-slate-600 rounded p-3 text-white text-sm focus:outline-none focus:border-cyan-500 transition-colors"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs text-slate-400 uppercase font-bold ml-1 mb-1 block">Senha</label>
+                                <input 
+                                    type="password" 
+                                    value="********" 
+                                    disabled 
+                                    className="w-full bg-slate-800/50 border border-slate-600 rounded p-3 text-white text-sm focus:outline-none focus:border-cyan-500 transition-colors"
+                                />
+                            </div>
+                            
+                            <button 
+                                onClick={onStart}
+                                className="w-full mt-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-3 rounded shadow-lg shadow-cyan-500/20 transition-all transform hover:scale-[1.02] flex justify-center items-center gap-2"
+                            >
+                                ENTRAR <ArrowRight size={16} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        );
+
+        const ReportModal = ({ log, onClose }) => (
+            <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[200] backdrop-blur-md p-8 animate-fade-in">
+                <div className="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-3xl h-[80vh] flex flex-col shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-yellow-500"></div>
+                    <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+                        <div className="flex items-center gap-3">
+                            <FileText className="text-slate-400" />
+                            <div>
+                                <h2 className="text-xl font-bold text-white">Relatório de Incidentes</h2>
+                                <p className="text-xs text-slate-500">Log de auditoria de ações do usuário</p>
+                            </div>
+                        </div>
+                        <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full transition-colors"><X size={20} className="text-slate-400"/></button>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-black/20">
+                        {log.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center h-full text-slate-500 opacity-50">
+                                <CheckCircle size={64} className="mb-4 text-emerald-500"/>
+                                <p>Nenhum incidente negativo registrado.</p>
+                            </div>
+                        ) : (
+                            log.map((entry, idx) => (
+                                <div key={idx} className={`p-4 rounded-lg border flex items-start gap-4 ${entry.type === 'risk' ? 'bg-rose-950/20 border-rose-900/50' : 'bg-blue-950/20 border-blue-900/50'}`}>
+                                    <div className={`p-2 rounded-full mt-1 ${entry.type === 'risk' ? 'bg-rose-500/20 text-rose-500' : 'bg-blue-500/20 text-blue-500'}`}>
+                                        {entry.type === 'risk' ? <AlertTriangle size={18}/> : <Users size={18}/>}
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-slate-200 text-sm">{entry.action}</h4>
+                                        <p className="text-xs text-slate-400 mt-1">{entry.consequence}</p>
+                                        <div className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wide bg-black/30 border border-white/5">
+                                            {entry.type === 'risk' ? 'Impacto: Segurança' : 'Impacto: Cultura'}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
             </div>
-            <div class="split-content">
-                <h2>Threat Detected: Level 1</h2>
-                <h1>The Phishing Hook</h1>
-                <p>Suspicious email detected. Sender domain is unverified. How do you proceed?</p>
-                <div class="options-grid">
-                    <div class="option-card" onclick="handleDecision('03', 'A')"><div class="option-icon"><i class="fas fa-mouse-pointer"></i></div><div>Click link to verify.</div></div>
-                    <div class="option-card" onclick="handleDecision('03', 'B')"><div class="option-icon"><i class="fas fa-trash-alt"></i></div><div>Delete immediately.</div></div>
-                    <div class="option-card" onclick="handleDecision('03', 'C')"><div class="option-icon"><i class="fas fa-shield-alt"></i></div><div>Report via Protocol.</div></div>
-                </div>
-            </div>
-        </div>
-    </div>
+        );
 
-    <!-- FEEDBACK SLIDE: SUCCESS (DARK THEME RESTORED) -->
-    <div class="slide" id="slide-feedback-success">
-        <!-- Removed inline style background: white to use default hero dark theme -->
-        <div class="layout-hero">
-            <div class="hero-content">
-                <div class="feedback-modal">
+        const EndScreen = ({ score, riskLevel, socialCredit, reportLog }) => {
+            const [showReport, setShowReport] = useState(false);
+            
+            let endingKey = 'PERFECT';
+            const isHighRisk = riskLevel > 40;
+            const isLowSocial = socialCredit < 50;
+
+            if (!isHighRisk && !isLowSocial) endingKey = 'PERFECT';
+            else if (!isHighRisk && isLowSocial) endingKey = 'BUREAUCRAT';
+            else if (isHighRisk && !isLowSocial) endingKey = 'COMPROMISED';
+            else endingKey = 'CHAOS'; 
+
+            const ending = ENDINGS[endingKey];
+
+            return (
+                <div className="h-screen w-full bg-slate-950 flex items-center justify-center p-8 relative overflow-hidden font-mono z-50">
+                {showReport && <ReportModal log={reportLog} onClose={() => setShowReport(false)} />}
+                
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"></div>
+                <div className={`relative z-10 max-w-4xl w-full ${ending.bg} border-2 ${ending.border} p-12 rounded-2xl shadow-2xl backdrop-blur-xl animate-scale-in`}>
+                    <div className="text-center mb-12">
+                        <div className="inline-block px-4 py-1 rounded-full bg-black/30 text-white text-xs mb-4 border border-white/10">RELATÓRIO FINAL</div>
+                        <h1 className={`text-5xl font-bold mb-4 ${ending.color}`}>{ending.title}</h1>
+                        <p className="text-xl text-slate-200 leading-relaxed">{ending.desc}</p>
+                    </div>
+                    <div className="grid grid-cols-3 gap-8 mb-12">
+                        <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-700 text-center">
+                            <div className="text-xs text-slate-500 uppercase tracking-widest mb-2">Risco do Sistema</div>
+                            <div className={`text-4xl font-bold ${riskLevel > 40 ? 'text-rose-500' : 'text-emerald-500'}`}>{riskLevel}%</div>
+                        </div>
+                        <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-700 text-center">
+                            <div className="text-xs text-slate-500 uppercase tracking-widest mb-2">Crédito Social</div>
+                            <div className={`text-4xl font-bold ${socialCredit < 50 ? 'text-rose-500' : 'text-blue-400'}`}>{socialCredit}/100</div>
+                        </div>
+                        <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-700 text-center">
+                            <div className="text-xs text-slate-500 uppercase tracking-widest mb-2">Score Técnico</div>
+                            <div className="text-4xl font-bold text-white">{score}</div>
+                        </div>
+                    </div>
+                    <div className="flex gap-4">
+                        <button onClick={() => window.location.reload()} className="flex-1 py-4 bg-white text-black font-bold rounded hover:bg-slate-200 transition-colors flex justify-center items-center gap-2 uppercase tracking-wider">
+                            <RefreshCw size={20} /> Reiniciar Simulação
+                        </button>
+                        <button onClick={() => setShowReport(true)} className="flex-1 py-4 bg-slate-800 text-white font-bold rounded border border-slate-600 hover:bg-slate-700 transition-colors flex justify-center items-center gap-2 uppercase tracking-wider">
+                            <FileText size={20} /> Ver Relatório de Incidentes
+                        </button>
+                    </div>
+                </div>
+                </div>
+            );
+        };
+
+        const DraggableWindow = ({ config, children, onClose, onMinimize, onFocus, onMove }) => {
+            const [isDragging, setIsDragging] = useState(false);
+            const [offset, setOffset] = useState({ x: 0, y: 0 });
+
+            const handleMouseDown = (e) => {
+                e.stopPropagation();
+                onFocus();
+                setIsDragging(true);
+                setOffset({
+                x: e.clientX - config.x,
+                y: e.clientY - config.y
+                });
+            };
+
+            const handleMouseMove = useCallback((e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+                onMove(config.id, e.clientX - offset.x, e.clientY - offset.y);
+            }, [isDragging, config.id, onMove, offset]);
+
+            const handleMouseUp = useCallback(() => setIsDragging(false), []);
+
+            useEffect(() => {
+                if (isDragging) {
+                window.addEventListener('mousemove', handleMouseMove);
+                window.addEventListener('mouseup', handleMouseUp);
+                } else {
+                window.removeEventListener('mousemove', handleMouseMove);
+                window.removeEventListener('mouseup', handleMouseUp);
+                }
+                return () => {
+                window.removeEventListener('mousemove', handleMouseMove);
+                window.removeEventListener('mouseup', handleMouseUp);
+                };
+            }, [isDragging, handleMouseMove, handleMouseUp]);
+
+            return (
+                <div 
+                className="absolute flex flex-col bg-slate-900/95 rounded-lg shadow-2xl overflow-hidden border border-slate-700/50 backdrop-blur-xl"
+                style={{ 
+                    top: config.y, 
+                    left: config.x, 
+                    zIndex: config.z, 
+                    width: config.w, 
+                    height: config.h,
+                    transition: isDragging ? 'none' : 'box-shadow 0.2s',
+                    boxShadow: isDragging ? '0 20px 50px rgba(0,0,0,0.5)' : '0 10px 30px rgba(0,0,0,0.3)'
+                }}
+                onMouseDown={onFocus}
+                role="dialog"
+                aria-labelledby={`window-title-${config.id}`}
+                >
+                <div 
+                    className={`h-10 border-b border-white/5 flex items-center justify-between px-4 cursor-move select-none ${isDragging ? 'bg-slate-800' : 'bg-slate-800/50'}`}
+                    onMouseDown={handleMouseDown}
+                >
+                    <div id={`window-title-${config.id}`} className="flex items-center gap-3 text-slate-300 text-xs font-bold uppercase tracking-wider font-mono">
+                    {config.icon} {config.title}
+                    </div>
+                    {/* Botões de Janela Estilo Windows */}
+                    <div className="flex">
+                    <button onClick={(e) => {e.stopPropagation(); onMinimize()}} aria-label="Minimizar" className="w-10 h-10 flex items-center justify-center hover:bg-white/10 transition-colors text-slate-400 hover:text-white">
+                        <Minus size={14} />
+                    </button>
+                    {/* Botão Maximize falso apenas para visual */}
+                    <button onClick={(e) => {e.stopPropagation()}} aria-label="Maximizar" className="w-10 h-10 flex items-center justify-center hover:bg-white/10 transition-colors text-slate-400 hover:text-white cursor-default">
+                        <Square size={12} />
+                    </button>
+                    <button onClick={(e) => {e.stopPropagation(); onClose()}} aria-label="Fechar" className="w-10 h-10 flex items-center justify-center hover:bg-red-600 transition-colors text-slate-400 hover:text-white">
+                        <X size={16} />
+                    </button>
+                    </div>
+                </div>
+                <div className="flex-1 overflow-hidden relative">
+                    {children}
+                </div>
+                </div>
+            );
+        };
+
+        // --- 5. COMPONENTE PRINCIPAL (CONTROLADOR) ---
+
+        function SecurityImmersive() {
+            const [module, setModule] = useState(0); 
+            const [step, setStep] = useState(0); 
+            // Relógio Real
+            const [time, setTime] = useState(new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
+            const [isRebooting, setIsRebooting] = useState(false);
+            const [wallpaperHacked, setWallpaperHacked] = useState(false);
+            
+            // Custom Hooks
+            const { riskLevel, socialCredit, score, notifications, addNotification, adjustMetric, setRiskLevel, logDecision, reportLog } = useGameMetrics();
+            
+            const { windows, openWindow, closeWindow, minimizeWindow, focusWindow, moveWindow, maxZ } = useWindowSystem({
+                mail: { id: 'mail', open: false, minimized: false, x: 100, y: 50, w: 700, h: 500, z: 10, title: "Outlook Corp", icon: <Mail size={16}/> },
+                chat: { id: 'chat', open: false, minimized: false, x: 150, y: 100, w: 400, h: 600, z: 11, title: "Teams", icon: <MessageSquare size={16}/> },
+                browser: { id: 'browser', open: false, minimized: false, x: 200, y: 80, w: 800, h: 600, z: 12, title: "Intranet Gateway", icon: <Globe size={16}/> },
+                soc: { id: 'soc', open: false, minimized: false, x: 80, y: 40, w: 900, h: 650, z: 13, title: "CORTEX SOC v5.0", icon: <AlertTriangle size={16}/> },
+            });
+            
+            const [emails, setEmails] = useState(INITIAL_EMAILS);
+            const [chatHistory, setChatHistory] = useState(CHAT_LOGS);
+            const [activeHighlight, setActiveHighlight] = useState(null);
+            
+            const [waitingForChat, setWaitingForChat] = useState(false); 
+            const [shadowITStage, setShadowITStage] = useState(0); 
+            const [callActive, setCallActive] = useState(false); 
+            
+            const [usbStage, setUsbStage] = useState(0); 
+            const [printerStage, setPrinterStage] = useState(0); 
+            const [expandedEmailId, setExpandedEmailId] = useState(null); 
+            
+            // Estados para consequências visuais
+            const [consequenceState, setConsequenceState] = useState({
+                bankTransfer: false,
+                publicLeak: false,
+                terminal: false,
+                gossip: false,
+                identityTheft: false
+            });
+
+            const [modalState, setModalState] = useState({
+                wifi: false, lock: false, phone: false, usb: false, credential: false, printer: false
+            });
+
+            const [phoneData, setPhoneData] = useState({ status: 'idle', active: false });
+            const [ransomwareActive, setRansomwareActive] = useState(false);
+            const logsEndRef = useRef(null);
+
+            const triggerConsequence = (type, duration = 5000) => {
+                setConsequenceState(prev => ({ ...prev, [type]: true }));
+                if (duration) {
+                setTimeout(() => setConsequenceState(prev => ({ ...prev, [type]: false })), duration);
+                }
+            };
+
+            // --- RELÓGIO REAL ---
+            useEffect(() => {
+                const clock = setInterval(() => {
+                    setTime(new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
+                }, 1000); 
+                return () => clearInterval(clock);
+            }, []);
+
+            // --- ENGINE DE EVENTOS ---
+            useEffect(() => {
+                if (module !== 1) return;
+
+                const triggerEvent = (nextStep, delay, action) => {
+                    setTimeout(() => {
+                    setStep(nextStep);
+                    if (action) action();
+                    }, delay);
+                };
+
+                switch (step) {
+                    case 0: // Start Phishing
+                        triggerEvent(1, 2000, () => {
+                            addNotification("Você tem novos e-mails não lidos.", "mail");
+                            setActiveHighlight('mail');
+                        });
+                        break;
+                }
+            }, [step, module, addNotification]);
+
+            const addChat = (user, text) => {
+                const id = generateUniqueId();
+                setChatHistory(prev => [...prev, { id, user, text, time }]);
+            };
+
+            // 1. EMAIL LOGIC
+            const handleEmailAction = (email, action) => {
+                if (action === 'expand') {
+                    setExpandedEmailId(expandedEmailId === email.id ? null : email.id);
+                    if (!email.read) {
+                        setEmails(prev => prev.map(e => e.id === email.id ? { ...e, read: true } : e));
+                    }
+                    return;
+                }
+
+                if (step === 1 && email.type === 'phishing') {
+                    setActiveHighlight(null); 
+                    if (action === 'click') {
+                        adjustMetric('risk', 20);
+                        logDecision('Clicou em link de Phishing', 'Instalação de malware via drive-by download.', 'risk');
+                        addNotification("⚠️ Malware instalado via drive-by download.", "alert");
+                        setEmails(prev => prev.filter(e => e.id !== email.id));
+                        triggerBrowserStep();
+                    } else if (action === 'report') {
+                        adjustMetric('risk', -5);
+                        logDecision('Reportou e-mail suspeito', 'Ação correta de segurança.', 'good');
+                        if (waitingForChat) adjustMetric('score', 10); 
+                        addNotification("✅ E-mail reportado ao SOC.", "success");
+                        setEmails(prev => prev.filter(e => e.id !== email.id));
+                        triggerBrowserStep();
+                    } else if (action === 'ask') {
+                        addNotification("Abrindo canal com a TI...", "info");
+                        setTimeout(() => {
+                        openWindow('chat');
+                        setActiveHighlight('chat');
+                        addChat("Você", "Recebi um email estranho do RH. Podem validar?");
+                        setWaitingForChat(true);
+                        setTimeout(() => {
+                            addChat("Suporte TI", "Analisando... É golpe. NÃO clique. A URL é falsa (governamental.br-validacao).");
+                            addChat("Suporte TI", "Por favor, reporte como spam no Outlook.");
+                            addNotification("ℹ️ Resposta da TI recebida. Volte ao email.", "info");
+                            setActiveHighlight('mail');
+                        }, 3000);
+                        }, 1000);
+                    }
+                } else if (email.type === 'legit') {
+                    if (action === 'click') {
+                        addNotification("✅ Anexo verificado. Arquivo seguro.", "success");
+                    } else if (action === 'ask') {
+                        addNotification("Abrindo canal com a TI...", "info");
+                        setTimeout(() => {
+                            openWindow('chat');
+                            addChat("Você", "O email da Diretoria com o relatório Q3 é real?");
+                            setTimeout(() => {
+                                addChat("Suporte TI", "Sim, confirmado. Pode abrir.");
+                                addNotification("ℹ️ TI confirmou a veracidade.", "info");
+                            }, 2000);
+                        }, 1000);
+                    } else if (action === 'report') {
+                        adjustMetric('social', -10);
+                        logDecision('Bloqueou e-mail legítimo', 'Atrito com diretoria e interrupção de negócios.', 'social');
+                        addNotification("⚠️ Diretoria reclamou de bloqueio indevido.", "alert");
+                    }
+                }
+            };
+
+            const triggerBrowserStep = () => {
+                setTimeout(() => {
+                    setStep(2);
+                    addNotification("Tentativa de conexão externa detectada.", "alert");
+                    setActiveHighlight('browser'); 
+                }, 4000); 
+            };
+
+            // 2. BROWSER LOGIC
+            const handleBrowserAction = (action) => {
+                setActiveHighlight(null);
+                closeWindow('browser');
+                if (action === 'login') {
+                adjustMetric('risk', 25);
+                triggerConsequence('bankTransfer');
+                logDecision('Login em site falso', 'Roubo de credenciais e prejuízo financeiro.', 'risk');
+                addNotification("⚠️ Credenciais roubadas em site clone.", "alert");
+                } else if (action === 'close') {
+                adjustMetric('risk', -5);
+                logDecision('Fechou site suspeito', 'Evitou roubo de credenciais.', 'good');
+                addNotification("✅ Navegação segura. Site falso fechado.", "success");
+                } else if (action === 'check') {
+                addNotification("ℹ️ Certificado Digital: Inválido.", "info");
+                setTimeout(() => addNotification("✅ Decisão correta: Site fechado.", "success"), 2000);
+                }
+                setTimeout(() => {
+                    setStep(3);
+                    addNotification("Nova mensagem no Teams.", "chat");
+                    setActiveHighlight('chat');
+                    addChat("Lucas (Dev)", "Servidor lento. Posso usar WeTransfer pra mandar o build pro cliente?");
+                    setShadowITStage(0); 
+                }, 5000);
+            };
+
+            // 3. CHAT/SHADOW IT LOGIC
+            const handleShadowITAction = (action) => {
+                setActiveHighlight(null);
+                if (shadowITStage === 0) {
+                    if (action === 'allow') {
+                        adjustMetric('risk', 15);
+                        adjustMetric('social', 15);
+                        addChat("Você", "Ok, manda bala.");
+                        addChat("Lucas (Dev)", "Valeu! Salvou meu dia.");
+                        triggerConsequence('publicLeak');
+                        logDecision('Liberou Shadow IT (WeTransfer)', 'Vazamento de dados corporativos para nuvem pública.', 'risk');
+                        addNotification("⚠️ Risco DLP: Arquivo em nuvem pública.", "alert");
+                        finishChatStep();
+                    } else if (action === 'deny') {
+                        adjustMetric('social', -10);
+                        addChat("Você", "Negativo. Bloqueado.");
+                        setTimeout(() => {
+                            addChat("Lucas (Dev)", "Pô, mas o cliente tá cobrando! O prazo é pra agora. Se eu não mandar, vai dar ruim pra mim.");
+                            setShadowITStage(1); 
+                        }, 1500);
+                    } else if (action === 'alternative') {
+                        adjustMetric('social', 5);
+                        addChat("Você", "Usa o FileDrop na Intranet. É seguro e aprovado.");
+                        addChat("Lucas (Dev)", "Boa, não sabia que tava funcionando. Vou tentar.");
+                        logDecision('Sugeriu alternativa segura', 'Manteve segurança e produtividade.', 'good');
+                        addNotification("✅ Solução segura implementada.", "success");
+                        finishChatStep();
+                    }
+                } else if (shadowITStage === 1) {
+                    if (action === 'rude') {
+                        adjustMetric('social', -30); 
+                        addChat("Você", "Problema seu. Regra é regra. Se vira.");
+                        addChat("Lucas (Dev)", "...");
+                        logDecision('Foi rude com colaborador', 'Dano severo à cultura de segurança e confiança.', 'social');
+                        addNotification("ℹ️ Clima tenso no escritório.", "info");
+                        finishChatStep();
+                    } else if (action === 'educate') {
+                        adjustMetric('social', 10); 
+                        addChat("Você", "Entendo a pressa, mas WeTransfer vaza dados. Vamos abrir um chamado de emergência pro firewall liberar o FTP do cliente?");
+                        addChat("Lucas (Dev)", "Ah, se der pra fazer rápido, beleza. Ajuda aí.");
+                        logDecision('Educou colaborador', 'Resolveu conflito mantendo a segurança.', 'good');
+                        addNotification("✅ Situação contornada com empatia.", "success");
+                        finishChatStep();
+                    }
+                }
+            };
+
+            const finishChatStep = () => {
+                setTimeout(() => {
+                    setStep(4);
+                    setModalState(prev => ({ ...prev, phone: true }));
+                    setPhoneData({ active: true, status: 'ringing' });
+                }, 6000);
+            };
+
+            // 4. PHONE LOGIC
+            const handlePhoneResponse = (action) => {
+                if (action === 'reject') {
+                adjustMetric('social', -5);
+                logDecision('Rejeitou chamada sem verificar', 'Potencial perda de contato importante.', 'social');
+                addNotification("Chamada recusada.", "info");
+                setModalState(prev => ({ ...prev, phone: false }));
+                triggerLockStep();
+                } else if (action === 'accept') {
+                    setPhoneData({ active: true, status: 'talking' });
+                    setCallActive(true);
+                } else if (action === 'hangup_active') {
+                    addNotification("Ligação encerrada.", "info");
+                    setCallActive(false);
+                    setModalState(prev => ({ ...prev, phone: false }));
+                    triggerLockStep();
+                } else if (action === 'give_info_active') {
+                    adjustMetric('risk', 30);
+                    triggerConsequence('identityTheft', 6000);
+                    logDecision('Forneceu dados por telefone', 'Engenharia social bem-sucedida, conta comprometida.', 'risk');
+                    addNotification("⚠️ Vazamento crítico de dados (Engenharia Social).", "alert");
+                    setCallActive(false);
+                    setModalState(prev => ({ ...prev, phone: false }));
+                    triggerLockStep();
+                }
+            };
+
+            const triggerLockStep = () => {
+                setTimeout(() => {
+                    setStep(5);
+                    setModalState(prev => ({ ...prev, lock: true }));
+                }, 5000);
+            };
+
+            // 5. LOCK SCREEN LOGIC
+            const handleLockAction = (action) => {
+                setModalState(prev => ({ ...prev, lock: false }));
+                if (action === 'leave') {
+                adjustMetric('risk', 15);
+                setWallpaperHacked(true);
+                logDecision('Saiu sem bloquear a tela', 'Acesso físico não autorizado (pegadinha ou malware).', 'risk');
+                addNotification("⚠️ PC desbloqueado em área comum.", "alert");
+                setTimeout(() => {
+                    addNotification("ℹ️ Colega de trabalho trocou seu wallpaper como lição.", "info");
+                }, 2000);
+                } else if (action === 'lock') {
+                addNotification("✅ Estação bloqueada.", "success");
+                } else if (action === 'shutdown') {
+                adjustMetric('social', -5); 
+                setIsRebooting(true);
+                logDecision('Desligou computador', 'Perda de produtividade desnecessária.', 'social');
+                setTimeout(() => {
+                    setIsRebooting(false);
+                    addNotification("ℹ️ Sistema reinicializado.", "info");
+                }, 3000);
+                }
+                setTimeout(() => {
+                    setStep(6);
+                    setUsbStage(0);
+                    setModalState(prev => ({ ...prev, usb: true }));
+                }, 6000);
+            };
+
+            const restoreWallpaper = () => {
+                setWallpaperHacked(false);
+                addNotification("✅ Wallpaper restaurado.", "success");
+            }
+
+            // 6. USB LOGIC
+            const handleUsbAction = (action) => {
+                if (usbStage === 0) {
+                    if (action === 'open') {
+                        setUsbStage(1); 
+                    } else if (action === 'ignore') {
+                        setModalState(prev => ({ ...prev, usb: false }));
+                        addNotification("ℹ️ Dispositivo ignorado.", "info");
+                        finishUsbStep();
+                    } else if (action === 'deliver') {
+                        setModalState(prev => ({ ...prev, usb: false }));
+                        addNotification("ℹ️ Entregando à TI...", "info");
+                        setTimeout(() => {
+                            addNotification("🗣️ TI: 'Você plugou o drive?'", "info");
+                            setTimeout(() => {
+                                adjustMetric('risk', -10);
+                                adjustMetric('score', 10);
+                                logDecision('Entregou USB à TI', 'Seguiu protocolo de mídia removível.', 'good');
+                                addNotification("✅ Protocolo seguido corretamente.", "success");
+                                finishUsbStep();
+                            }, 2000);
+                        }, 1000);
+                    }
+                } else if (usbStage === 1) {
+                    setModalState(prev => ({ ...prev, usb: false }));
+                    if (action === 'malware') {
+                        adjustMetric('risk', 40);
+                        triggerConsequence('terminal', 6000);
+                        logDecision('Executou arquivo suspeito (USB)', 'Infecção por Ransomware via autorun.', 'risk');
+                        addNotification("⚠️ RANSOMWARE EXECUTADO VIA AUTORUN.", "alert");
+                    } else if (action === 'photos') {
+                        adjustMetric('risk', 10); 
+                        logDecision('Abriu arquivos pessoais (USB)', 'Violação de política de segurança.', 'risk');
+                        addNotification("⚠️ Violação de política: Abrir arquivos desconhecidos.", "alert");
+                    }
+                    finishUsbStep();
+                }
+            };
+
+            const finishUsbStep = () => {
+                setTimeout(() => {
+                    setStep(7);
+                    setPrinterStage(0);
+                    setModalState(prev => ({ ...prev, printer: true }));
+                }, 5000);
+            };
+
+            // 7. PRINTER LOGIC
+            const handlePrinterAction = (action) => {
+                if (printerStage === 0) {
+                    if (action === 'ignore') {
+                        setModalState(prev => ({ ...prev, printer: false }));
+                        adjustMetric('risk', 10); 
+                        logDecision('Ignorou documentos na impressora', 'Informação sensível exposta a terceiros.', 'risk');
+                        addNotification("⚠️ Documentos sensíveis deixados na impressora.", "alert");
+                        finishPrinterStep();
+                    } else if (action === 'secure') {
+                        setModalState(prev => ({ ...prev, printer: false }));
+                        logDecision('Recolheu documentos', 'Protegeu dados sensíveis esquecidos.', 'good');
+                        addNotification("✅ Documentos recolhidos e entregues ao dono.", "success");
+                        finishPrinterStep();
+                    } else if (action === 'read') {
+                        setPrinterStage(1); 
+                    }
+                } else if (printerStage === 1) {
+                    setModalState(prev => ({ ...prev, printer: false }));
+                    if (action === 'gossip') {
+                        adjustMetric('social', -20);
+                        adjustMetric('risk', 20); 
+                        triggerConsequence('gossip', 6000);
+                        logDecision('Compartilhou foto de salário', 'Quebra de sigilo e ética grave.', 'social');
+                        addNotification("⚠️ Violação grave de ética e confidencialidade.", "alert");
+                    } else if (action === 'shred') {
+                        adjustMetric('social', -5); 
+                        adjustMetric('score', 5); 
+                        logDecision('Triturou documento alheio', 'Protegeu dados mas destruiu propriedade.', 'social');
+                        addNotification("✅ Dados protegidos (embora drástico).", "success");
+                    } else if (action === 'leave') {
+                        adjustMetric('risk', 10);
+                        logDecision('Leu e abandonou documento', 'Curiosidade satisfeita, mas risco mantido.', 'risk');
+                        addNotification("⚠️ Informação sensível abandonada.", "alert");
+                    }
+                    finishPrinterStep();
+                }
+            };
+
+            const finishPrinterStep = () => {
+                setTimeout(() => {
+                setStep(8);
+                addNotification("ALERTA CRÍTICO: ATIVIDADE ANÔMALA", "alert");
+                setActiveHighlight('soc');
+                setRansomwareActive(true);
+                }, 6000);
+            };
+
+            // 8. SOC (FINAL) LOGIC
+            const handleSocAction = (action) => {
+                setActiveHighlight(null);
+                if (action === 'isolate') {
+                setRansomwareActive(false);
+                logDecision('Isolou hosts infectados', 'Contenção efetiva de danos.', 'good');
+                addNotification("✅ Hosts isolados.", "success");
+                finalizeGame();
+                } else if (action === 'shutdown') {
+                addNotification("⚠️ Shutdown global iniciado.", "alert");
+                logDecision('Shutdown Global', 'Interrupção total do negócio (medida extrema).', 'social');
+                setTimeout(() => finalizeGame(), 4000);
+                } else if (action === 'trace') {
+                if (riskLevel > 50) {
+                    addNotification("⚠️ Falha ao rastrear.", "alert");
+                    setRiskLevel(100);
+                    logDecision('Tentou rastrear ataque (Alto Risco)', 'Perda de tempo crucial durante incidente.', 'risk');
+                } else {
+                    addNotification("✅ Origem bloqueada.", "success");
+                    setRiskLevel(0);
+                    logDecision('Rastreou origem com sucesso', 'Ataque mitigado na fonte.', 'good');
+                }
+                setTimeout(() => finalizeGame(), 4000);
+                }
+            };
+
+            const finalizeGame = () => {
+                setTimeout(() => setModule(2), 3000);
+            };
+            
+            const handleWifiAction = (action) => {
+                setModalState(prev => ({ ...prev, wifi: false }));
+                if (action === 'connect') {
+                    logDecision('Conectou em Wi-Fi Público', 'Tráfego interceptado em rede não segura.', 'risk');
+                }
+            }
+
+            // --- RENDER ---
+
+            if (isRebooting) return <BootScreen />;
+            if (module === 0) return <IntroScreen onStart={() => setModule(1)} />;
+            if (module === 2) return <EndScreen score={score} riskLevel={riskLevel} socialCredit={socialCredit} reportLog={reportLog} />;
+
+            return (
+                // WALLPAPER PADRÃO FICA AQUI PARA PERSISTIR ENTRE MÓDULOS
+                <div 
+                    className={`h-screen w-full overflow-hidden relative select-none font-sans bg-cover bg-center transition-all duration-1000`} 
+                    style={{ 
+                        filter: `grayscale(${riskLevel}%) contrast(${100 + (riskLevel/2)}%)`,
+                        backgroundImage: `url('${WALLPAPER_URL}')`
+                    }}
+                >
+                    {/* Overlay padrão para legibilidade */}
+                    <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-[1px] pointer-events-none"></div>
                     
-                    <!-- Feedback Title & Msg -->
-                    <i class="fas fa-check-circle fb-icon-large success-text" id="fb-icon-default"></i>
-                    <!-- Colors updated for dark background contrast -->
-                    <h1 class="success-text" id="fb-success-title">Well Done</h1>
-                    <p id="fb-success-msg" style="color: #f5f6fa !important;">...</p>
+                    {riskLevel > 50 && <div className="absolute inset-0 bg-rose-900/10 z-0 animate-pulse pointer-events-none mix-blend-overlay"></div>}
+
+                    {/* CLOCK */}
+                    <div className="absolute bottom-8 right-8 text-right z-0 pointer-events-none select-none text-white drop-shadow-md">
+                        <div className="text-6xl font-thin font-mono tracking-tighter opacity-90">{time}</div>
+                        <div className="text-xs text-cyan-200 font-bold tracking-[0.3em] uppercase mt-1">SecurOS v5.2</div>
+                    </div>
+
+                    <NotificationToast notifications={notifications} />
+
+                    {/* RENDERIZAR CONSEQUÊNCIAS VISUAIS - ITERANDO SOBRE O ESTADO */}
+                    {Object.keys(consequenceState).map(key => (
+                        consequenceState[key] && <ConsequenceAlert key={key} type={key} />
+                    ))}
+
+                    <Desktop activeHighlight={activeHighlight} openWindow={openWindow} wallpaperHacked={wallpaperHacked} onRestoreWallpaper={restoreWallpaper} />
+                    <Taskbar windows={windows} activeHighlight={activeHighlight} openWindow={openWindow} ransomwareActive={ransomwareActive} />
+
+                    {/* MODAIS DO SISTEMA */}
                     
-                    <!-- DYNAMIC BADGE CONTAINER -->
-                    <div id="badge-popup" style="display: none;">
-                        <div class="badge-unlock-container">
-                            <div class="badge-sunburst"></div>
-                            <div class="badge-unlock">
-                                <i class="fas fa-medal badge-icon-animate"></i>
-                                <div style="text-align: center;">
-                                    <div style="font-size: 0.8rem; opacity: 0.9; color: #fff; letter-spacing: 2px;">ACHIEVEMENT UNLOCKED</div>
-                                    <div id="badge-name" style="font-weight: 900; font-size: 1.2rem; color: #ffd700; margin-top: 5px;">BADGE NAME</div>
+                    {modalState.wifi && (
+                        <Modal title="Rede Pública Detectada" type="wifi">
+                        <div className="text-center space-y-6">
+                            <div className="w-20 h-20 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto animate-pulse border border-amber-500/50">
+                            <Wifi size={40} className="text-amber-500" />
+                            </div>
+                            <div>
+                            <h2 className="text-xl font-bold text-white mb-2">Cortex_Free_WiFi</h2>
+                            <p className="text-sm text-slate-400">Rede aberta detectada. Sinal forte, sem criptografia.</p>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                            <button onClick={() => handleWifiAction('connect')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700 transition-colors">Conectar</button>
+                            <button onClick={() => handleWifiAction('tethering')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700 transition-colors">Usar 4G Pessoal</button>
+                            <button onClick={() => handleWifiAction('ignore')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700 transition-colors">Ignorar</button>
+                            </div>
+                        </div>
+                        </Modal>
+                    )}
+
+                    {modalState.lock && (
+                        <Modal title="Pausa para Café" danger={false}>
+                        <div className="text-center space-y-6">
+                            <Coffee size={48} className="mx-auto text-slate-400" />
+                            <div>
+                            <h2 className="text-lg font-bold text-white">Intervalo Necessário</h2>
+                            <p className="text-sm text-slate-400">Você precisa sair da mesa por 15 minutos.</p>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                            <button onClick={() => handleLockAction('leave')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Apenas Sair</button>
+                            <button onClick={() => handleLockAction('lock')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Bloquear Tela (Win+L)</button>
+                            <button onClick={() => handleLockAction('shutdown')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Desligar Máquina</button>
+                            </div>
+                        </div>
+                        </Modal>
+                    )}
+
+                    {modalState.usb && (
+                        <div className="absolute top-24 right-8 z-[100] bg-slate-900/90 border-l-4 border-amber-500 p-6 rounded-r-xl shadow-2xl w-96 animate-slide-in-right backdrop-blur-md">
+                        <div className="flex gap-4">
+                            <div className="text-amber-500 bg-amber-500/10 p-2 rounded h-fit"><AlertTriangle size={24} /></div>
+                            <div className="flex-1">
+                            <h4 className="font-bold text-white text-sm tracking-wide">MÍDIA REMOVÍVEL DETECTADA</h4>
+                            {usbStage === 0 ? (
+                                <>
+                                    <p className="text-xs text-slate-400 mb-4 mt-1">Drive 'E: SALARIOS_DIRETORIA.xlsx'. O que fazer?</p>
+                                    <div className="flex gap-2 flex-col">
+                                        <button onClick={() => handleUsbAction('open')} className="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded text-white text-left transition-colors">Abrir</button>
+                                        <button onClick={() => handleUsbAction('ignore')} className="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded text-white text-left transition-colors">Ignorar</button>
+                                        <button onClick={() => handleUsbAction('deliver')} className="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded text-white font-bold text-left transition-colors">Entregar à TI</button>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <p className="text-xs text-slate-400 mb-4 mt-1 animate-fade-in">Conteúdo do Drive E:</p>
+                                    <div className="flex flex-col gap-2 animate-fade-in">
+                                        <button onClick={() => handleUsbAction('malware')} className="flex items-center gap-2 text-xs bg-slate-800 hover:bg-slate-700 p-2 rounded text-white border border-slate-700">
+                                        <FileCode size={16} className="text-slate-400"/> Salarios_2024.exe
+                                        </button>
+                                        <button onClick={() => handleUsbAction('photos')} className="flex items-center gap-2 text-xs bg-slate-800 hover:bg-slate-700 p-2 rounded text-white border border-slate-700">
+                                        <FileImage size={16} className="text-slate-400"/> Fotos_Festa.jpg
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                            </div>
+                        </div>
+                        </div>
+                    )}
+
+                    {modalState.printer && (
+                        <Modal title="Impressora do Corredor">
+                        <div className="text-center space-y-6">
+                            <Printer size={48} className="mx-auto text-cyan-200" />
+                            {printerStage === 0 ? (
+                                <>
+                                    <div>
+                                        <h2 className="text-lg font-bold text-white">Documentos Esquecidos</h2>
+                                        <p className="text-sm text-slate-400">Alguém esqueceu uma folha de pagamento na bandeja de saída.</p>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <button onClick={() => handlePrinterAction('read')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Ler</button>
+                                        <button onClick={() => handlePrinterAction('ignore')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Ignorar</button>
+                                        <button onClick={() => handlePrinterAction('secure')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-white font-bold text-xs">Recolher e Destruir</button>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="animate-fade-in">
+                                    <div className="bg-white text-black p-4 rounded text-left text-xs font-mono mb-4 shadow-inner">
+                                        <p className="font-bold border-b border-black mb-2">CONFIDENCIAL: SALÁRIOS</p>
+                                        <p>CEO: R$ 85.000,00</p>
+                                        <p>DIRETOR: R$ 45.000,00</p>
+                                        <p>VOCÊ: R$ 3.500,00</p>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <button onClick={() => handlePrinterAction('gossip')} className="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded text-white font-bold text-xs"><Share2 size={14}/> Tirar foto e mandar no grupo</button>
+                                        <button onClick={() => handlePrinterAction('shred')} className="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs"><Trash2 size={14}/> Triturar imediatamente</button>
+                                        <button onClick={() => handlePrinterAction('leave')} className="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs">Deixar lá (fingir que não viu)</button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        </Modal>
+                    )}
+
+                    {modalState.phone && (
+                        <Modal title={callActive ? "Em Chamada" : "Chamada Externa"}>
+                        <div className="text-center py-6">
+                            {!callActive ? (
+                            <>
+                                <div className="relative w-24 h-24 mx-auto mb-6">
+                                    <div className="absolute inset-0 bg-cyan-500 rounded-full animate-ping opacity-20"></div>
+                                    <div className="relative w-full h-full bg-slate-800 rounded-full flex items-center justify-center border-2 border-cyan-500 shadow-xl shadow-cyan-500/20">
+                                    <Phone size={32} className="text-cyan-400" />
+                                    </div>
+                                </div>
+                                <h2 className="text-2xl font-bold text-white mb-1">Número Desconhecido</h2>
+                                <p className="text-xs text-slate-500 mb-8 font-mono">00:00</p>
+                                <div className="flex justify-center gap-8">
+                                <button onClick={() => handlePhoneResponse('reject')} className="bg-rose-500 hover:bg-rose-600 p-4 rounded-full text-white shadow-lg transition-transform hover:scale-110"><PhoneOff size={24}/></button>
+                                <button onClick={() => handlePhoneResponse('accept')} className="bg-emerald-500 hover:bg-emerald-600 p-4 rounded-full text-white shadow-lg transition-transform hover:scale-110"><PhoneCall size={24}/></button>
+                                </div>
+                            </>
+                            ) : (
+                                <div className="text-left space-y-6 animate-fade-in">
+                                <div className="p-4 bg-slate-800/50 rounded-lg border-l-4 border-amber-500 text-amber-100 text-sm italic relative">
+                                    <span className="absolute -top-3 -left-2 bg-amber-500 text-black text-[10px] font-bold px-2 py-0.5 rounded">Voz</span>
+                                    "Alô? Aqui é do Suporte Técnico da Microsoft. Detectamos um comportamento anômalo no seu IP. Preciso que confirme seu CPF para não bloquearmos sua máquina agora."
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <button onClick={() => handlePhoneResponse('give_info_active')} className="w-full text-left p-3 text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-colors">A. "Ah não! Meu CPF é 002.332..."</button>
+                                    <button onClick={() => handlePhoneResponse('hangup_active')} className="w-full text-left p-3 text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-colors">B. Desligar na cara</button>
+                                    <button onClick={() => handlePhoneResponse('hangup_active')} className="w-full text-left p-3 text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-colors">C. "Vou verificar seu chamado no sistema interno."</button>
+                                </div>
+                                </div>
+                            )}
+                        </div>
+                        </Modal>
+                    )}
+
+                    {/* JANELAS DE APLICATIVOS (Reutilizando componente DraggableWindow) */}
+
+                    {windows.mail.open && !windows.mail.minimized && (
+                        <DraggableWindow config={windows.mail} onClose={() => closeWindow('mail')} onMinimize={() => minimizeWindow('mail')} onFocus={() => focusWindow('mail')} onMove={moveWindow}>
+                        <div className="flex h-full flex-col bg-slate-50 text-slate-900">
+                            <div className="bg-[#0078D4] text-white p-3 text-xs font-bold flex justify-between items-center shadow-md z-10">
+                                <span className="flex items-center gap-2"><Mail size={14}/> Caixa de Entrada</span>
+                                <span className="bg-white/20 px-2 py-0.5 rounded text-[10px]">{emails.filter(e => !e.read).length} não lidos</span>
+                            </div>
+                            <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-slate-100/50">
+                            {emails.map(e => (
+                                <div key={e.id} 
+                                    className={`p-4 bg-white border-b border-l-4 ${e.read ? 'border-l-transparent' : 'border-l-[#0078D4]'} hover:bg-slate-50 transition-all cursor-pointer relative overflow-hidden group ${expandedEmailId === e.id ? 'bg-blue-50/50' : ''}`}
+                                    onClick={() => handleEmailAction(e, 'expand')}
+                                >
+                                    <div className="flex justify-between items-center mb-1 pointer-events-none">
+                                    <span className={`${e.read ? 'font-normal text-slate-600' : 'font-bold text-slate-800'} text-xs flex items-center gap-2`}>
+                                        <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] text-slate-500">{e.from[0]}</div>
+                                        {e.from}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 font-mono">{e.time}</span>
+                                    </div>
+                                    <div className={`${e.read ? 'font-normal text-slate-600' : 'font-bold text-[#0078D4]'} text-sm mb-2 pl-8 pointer-events-none`}>{e.subject}</div>
+                                    
+                                    {expandedEmailId !== e.id && <p className="text-xs text-slate-500 mb-1 pl-8 leading-relaxed line-clamp-2 pointer-events-none">{e.body}</p>}
+
+                                    {expandedEmailId === e.id && (
+                                        <div className="pl-8 mt-2 animate-fade-in cursor-default" onClick={ev => ev.stopPropagation()}>
+                                            <div className="bg-slate-50 p-2 rounded mb-3 text-[10px] text-slate-500 border border-slate-100">
+                                                <p><span className="font-bold">De:</span> {e.from} &lt;{e.fromEmail}&gt;</p>
+                                                <p><span className="font-bold">Para:</span> Você &lt;admin.security@cortex-corp.internal&gt;</p>
+                                                <p><span className="font-bold">Data:</span> Hoje, {e.time}</p>
+                                            </div>
+                                            <p className="text-xs text-slate-700 mb-4 leading-relaxed">{e.body}</p>
+                                            
+                                            <div className="flex gap-2">
+                                                <button 
+                                                    onClick={() => handleEmailAction(e, 'click')} 
+                                                    className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-[10px] text-slate-600 hover:bg-slate-100 transition-colors"
+                                                >
+                                                    {e.attachment ? "Baixar Anexo" : "Acessar Link"}
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleEmailAction(e, 'ask')} 
+                                                    className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-[10px] text-slate-600 hover:bg-slate-100 transition-colors"
+                                                >
+                                                    Perguntar no Chat
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleEmailAction(e, 'report')} 
+                                                    className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-[10px] text-slate-600 hover:bg-slate-100 transition-colors"
+                                                >
+                                                    Reportar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                            {emails.length === 0 && (
+                                <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-2 opacity-50">
+                                    <CheckCircle size={48} className="text-emerald-500"/>
+                                    <span className="text-xs uppercase tracking-widest font-bold">Tudo limpo</span>
+                                </div>
+                            )}
+                            </div>
+                        </div>
+                        </DraggableWindow>
+                    )}
+
+                    {windows.chat.open && !windows.chat.minimized && (
+                        <DraggableWindow config={windows.chat} onClose={() => closeWindow('chat')} onMinimize={() => minimizeWindow('chat')} onFocus={() => focusWindow('chat')} onMove={moveWindow}>
+                        <div className="flex flex-col h-full bg-[#f3f2f1] text-slate-900">
+                            <div className="bg-white border-b p-3 shadow-sm flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                                <span className="text-xs font-bold text-slate-700">Chat Corporativo</span>
+                                </div>
+                                <div className="text-[10px] text-slate-400">Online</div>
+                            </div>
+                            <div className="flex-1 p-4 space-y-4 overflow-y-auto bg-slate-50/50">
+                                {chatHistory.map(c => (
+                                <div key={c.id} className={`flex flex-col ${c.user === 'Você' ? 'items-end' : 'items-start'} animate-fade-in`}>
+                                    <div className={`p-3 rounded-2xl max-w-[85%] text-xs shadow-sm relative ${c.user === 'Você' ? 'bg-[#6264A7] text-white rounded-tr-sm' : 'bg-white border border-slate-200 text-slate-700 rounded-tl-sm'}`}>
+                                    <div className={`font-bold text-[9px] uppercase mb-1 opacity-70 ${c.user === 'Você' ? 'text-indigo-200 text-right' : 'text-slate-400'}`}>{c.user}</div>
+                                    {c.text}
+                                    </div>
+                                </div>
+                                ))}
+                                <div ref={logsEndRef}/>
+                                
+                                {/* BRANCHING LÓGICO DO CHAT */}
+                                {step === 3 && shadowITStage === 0 && chatHistory[chatHistory.length-1].user === "Lucas (Dev)" && (
+                                <div className="flex flex-col gap-2 mt-4 p-2 bg-white/50 rounded border border-slate-200 animate-slide-in-up">
+                                    <div className="text-[10px] text-center text-slate-400 uppercase tracking-widest mb-1">Como responder?</div>
+                                    <button onClick={() => handleShadowITAction('allow')} className="w-full text-left text-xs bg-white border border-slate-200 p-2 rounded hover:bg-slate-100 hover:border-slate-300 hover:shadow-sm text-slate-600 transition-all">"Pode mandar."</button>
+                                    <button onClick={() => handleShadowITAction('deny')} className="w-full text-left text-xs bg-white border border-slate-200 p-2 rounded hover:bg-slate-100 hover:border-slate-300 hover:shadow-sm text-slate-600 transition-all">"Negativo. Bloqueado."</button>
+                                    <button onClick={() => handleShadowITAction('alternative')} className="w-full text-left text-xs bg-white border border-slate-200 p-2 rounded hover:bg-slate-100 hover:border-slate-300 hover:shadow-sm text-slate-600 transition-all">"Usa o FileDrop Interno."</button>
+                                </div>
+                                )}
+                                {step === 3 && shadowITStage === 1 && chatHistory[chatHistory.length-1].user === "Lucas (Dev)" && (
+                                <div className="flex flex-col gap-2 mt-4 p-2 bg-rose-50 rounded border border-rose-200 animate-slide-in-up">
+                                    <div className="text-[10px] text-center text-rose-400 uppercase tracking-widest mb-1">Ele insistiu. E agora?</div>
+                                    <button onClick={() => handleShadowITAction('rude')} className="w-full text-left text-xs bg-white border border-rose-200 p-2 rounded hover:bg-rose-50 hover:border-rose-300 hover:shadow-sm text-rose-700 transition-all">"Problema seu. Regra é regra."</button>
+                                    <button onClick={() => handleShadowITAction('educate')} className="w-full text-left text-xs bg-white border border-emerald-200 p-2 rounded hover:bg-emerald-50 hover:border-emerald-300 hover:shadow-sm text-emerald-700 transition-all">"Vamos abrir um chamado de emergência."</button>
+                                </div>
+                                )}
+                            </div>
+                        </div>
+                        </DraggableWindow>
+                    )}
+
+                    {windows.browser.open && !windows.browser.minimized && (
+                        <DraggableWindow config={windows.browser} onClose={() => closeWindow('browser')} onMinimize={() => minimizeWindow('browser')} onFocus={() => focusWindow('browser')} onMove={moveWindow}>
+                        <div className="flex flex-col h-full bg-white text-slate-900">
+                            <div className="bg-slate-100 p-2 border-b flex items-center justify-center relative">
+                                <div className="bg-white border px-3 py-1 rounded-full text-xs text-slate-500 font-mono flex items-center gap-2 shadow-sm w-3/4">
+                                    <Lock size={10} className="text-slate-400"/> 
+                                    https://br-validacao.com/login 
+                                </div>
+                            </div>
+                            <div className="flex-1 flex items-center justify-center bg-slate-50 relative overflow-hidden">
+                                <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+                                <div className="bg-white p-8 rounded-xl shadow-2xl border w-72 text-center relative z-10">
+                                    <div className="w-16 h-16 bg-blue-600 rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg shadow-blue-600/30"><Globe size={32} className="text-white"/></div>
+                                    <h3 className="font-bold text-slate-800 mb-6 text-lg">Portal do Colaborador</h3>
+                                    <input className="w-full border p-3 text-xs rounded mb-3 bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500 transition-all" disabled placeholder="Usuário Corporativo"/>
+                                    <input className="w-full border p-3 text-xs rounded mb-6 bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500 transition-all" disabled placeholder="Senha de Rede"/>
+                                    
+                                    <div className="space-y-2">
+                                    <button onClick={() => handleBrowserAction('login')} className="w-full bg-blue-600 text-white py-3 rounded text-xs font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">Entrar</button>
+                                    <button onClick={() => handleBrowserAction('check')} className="w-full bg-slate-100 text-slate-600 py-3 rounded text-xs hover:bg-slate-200 transition-colors">Verificar Certificado</button>
+                                    <button onClick={() => handleBrowserAction('close')} className="w-full text-rose-500 text-[10px] hover:underline mt-2">Fechar Página</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                        </DraggableWindow>
+                    )}
 
-                    <div style="margin-top: 20px;">
-                        <button class="btn-hero" onclick="nextSlideFromFeedback()">Next Sector <i class="fas fa-forward"></i></button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- FEEDBACK SLIDE: FAILURE -->
-    <div class="slide" id="slide-feedback-fail">
-        <div class="layout-hero" style="background: #2d3436;">
-            <div class="hero-content">
-                <div class="feedback-modal">
-                    <i class="fas fa-radiation-alt fb-icon-large error-text"></i>
-                    <h1 class="error-text" id="fb-fail-title">Shields Damaged!</h1>
-                    <p id="fb-fail-msg">...</p>
-                    <button class="btn-hero" style="background: #ff7675;" onclick="nextSlideFromFeedback()">Emergency Reroute <i class="fas fa-forward"></i></button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SLIDE 05: CHALLENGE 2 (Data Leak) -->
-    <div class="slide" id="slide-05">
-        <div class="layout-split">
-            <div class="split-visual">
-                <i class="fas fa-file-contract" style="font-size: 5rem; color: #a29bfe; margin-bottom: 20px;"></i>
-                <div style="background: white; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.1);"><i class="fas fa-lock"></i> ENCRYPTED?</div>
-            </div>
-            <div class="split-content">
-                <h2>Threat Detected: Level 2</h2>
-                <h1>Data Extraction</h1>
-                <p>Transfer 'Project Omega' financials to Marketing. Choose transfer method.</p>
-                <div class="options-grid">
-                    <div class="option-card" onclick="handleDecision('05', 'A')"><div class="option-icon"><i class="fab fa-google-drive"></i></div><div>Public Team Drive.</div></div>
-                    <div class="option-card" onclick="handleDecision('05', 'B')"><div class="option-icon"><i class="fas fa-envelope-open"></i></div><div>Personal Gmail.</div></div>
-                    <div class="option-card" onclick="handleDecision('05', 'C')"><div class="option-icon"><i class="fas fa-key"></i></div><div>Encrypted Vault.</div></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SLIDE 07: CHALLENGE 3 (Visual Hacking) -->
-    <div class="slide" id="slide-07">
-        <div class="layout-split">
-            <div class="split-visual">
-                <img src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=600&q=80" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.8;" alt="Office">
-                <div style="position: absolute; top: 20px; left: 20px; background: #d63031; color: white; padding: 5px 10px; font-weight: bold; border-radius: 5px;"><i class="fas fa-eye"></i> VISITOR</div>
-            </div>
-            <div class="split-content">
-                <h2>Threat Detected: Level 3</h2>
-                <h1>Visual Hackers</h1>
-                <p>You are coding in the lounge. An unknown visitor is walking behind you.</p>
-                <div class="options-grid">
-                    <div class="option-card" onclick="handleDecision('07', 'A')"><div class="option-icon"><i class="fas fa-desktop"></i></div><div>Lock Screen (Win + L).</div></div>
-                    <div class="option-card" onclick="handleDecision('07', 'B')"><div class="option-icon"><i class="fas fa-hand-paper"></i></div><div>Block with body.</div></div>
-                    <div class="option-card" onclick="handleDecision('07', 'C')"><div class="option-icon"><i class="fas fa-coffee"></i></div><div>Ignore them.</div></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SLIDE 09: CHALLENGE 4 (Wi-Fi) -->
-    <div class="slide" id="slide-09">
-        <div class="layout-split">
-            <div class="split-visual">
-                <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=600&q=80" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.8;" alt="Cafe">
-                <div style="position: absolute; top: 20px; left: 20px; background: #fdcb6e; color: white; padding: 5px 10px; font-weight: bold; border-radius: 5px;"><i class="fas fa-wifi"></i> UNSECURED</div>
-            </div>
-            <div class="split-content">
-                <h2>Threat Detected: Level 4</h2>
-                <h1>Remote Connection</h1>
-                <p>You are at a coffee shop and need to upload a contract. Available networks found.</p>
-                <div class="options-grid">
-                    <div class="option-card" onclick="handleDecision('09', 'A')"><div class="option-icon"><i class="fas fa-mug-hot"></i></div><div>Connect to "Cafe_Free_WiFi".</div></div>
-                    <div class="option-card" onclick="handleDecision('09', 'B')"><div class="option-icon"><i class="fas fa-mobile-alt"></i></div><div>Use Personal Hotspot.</div></div>
-                    <div class="option-card" onclick="handleDecision('09', 'C')"><div class="option-icon"><i class="fas fa-user-secret"></i></div><div>Use Company VPN + WiFi.</div></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SLIDE 11: CHALLENGE 5 (Password) -->
-    <div class="slide" id="slide-11">
-        <div class="layout-split">
-            <div class="split-visual" style="background: #2d3436; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                <i class="fas fa-key" style="font-size: 5rem; margin-bottom: 20px; color: #fdcb6e;"></i>
-                <h3>CHANGE PASSWORD</h3>
-            </div>
-            <div class="split-content">
-                <h2>Threat Detected: Level 5</h2>
-                <h1>Credentials</h1>
-                <p>Your password has expired. Choose a new, secure password.</p>
-                <div class="options-grid">
-                    <div class="option-card" onclick="handleDecision('11', 'A')"><div class="option-icon"><i class="fas fa-cat"></i></div><div>"Fluffy2024" (Pet's name).</div></div>
-                    <div class="option-card" onclick="handleDecision('11', 'B')"><div class="option-icon"><i class="fas fa-sync"></i></div><div>Reuse old password with a '1'.</div></div>
-                    <div class="option-card" onclick="handleDecision('11', 'C')"><div class="option-icon"><i class="fas fa-fingerprint"></i></div><div>Passphrase: "Blue!Sky$Walk77".</div></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SLIDE 13: CHALLENGE 6 (Social Engineering) -->
-    <div class="slide" id="slide-13">
-        <div class="layout-split">
-            <div class="split-visual">
-                <i class="fas fa-phone-volume" style="font-size: 5rem; color: #ff7675; animation: shake 0.5s infinite;"></i>
-                <h3 style="color: #2d3436; margin-top: 20px;">CALLER ID: UNKNOWN</h3>
-            </div>
-            <div class="split-content">
-                <h2>Threat Detected: Level 6</h2>
-                <h1>Vishing Attack</h1>
-                <p>Caller claims to be "IT Director". Says your account is flagged and demands your 2FA code immediately.</p>
-                <div class="options-grid">
-                    <div class="option-card" onclick="handleDecision('13', 'A')"><div class="option-icon"><i class="fas fa-check"></i></div><div>Give the code to help.</div></div>
-                    <div class="option-card" onclick="handleDecision('13', 'B')"><div class="option-icon"><i class="fas fa-phone-slash"></i></div><div>Hang up and call IT Support.</div></div>
-                    <div class="option-card" onclick="handleDecision('13', 'C')"><div class="option-icon"><i class="fas fa-question"></i></div><div>Argue with them.</div></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SLIDE REPORT: FINAL -->
-    <div class="slide" id="slide-report">
-        <div class="layout-hero">
-            <div class="hero-content">
-                
-                <div class="report-panel">
-                    <i class="fas fa-clipboard-check" style="font-size: 3rem; margin-bottom: 10px; color: #fab1a0;"></i>
-                    <h1 style="font-size: 1.8rem; margin-bottom: 5px;">Mission Report</h1>
-                    
-                    <h2 style="color: white; font-size: 1.2rem;" id="final-grade">CALCULATING...</h2>
-                    <p id="final-message" style="font-size: 0.9rem; margin-bottom: 10px;">Reviewing integrity logs...</p>
-                    
-                    <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.2); margin: 10px 0; width: 100%;">
-                    <h3 style="color: #dfe6e9; font-size: 0.8rem;">MEDALS AWARDED</h3>
-                    
-                    <!-- BADGE GALLERY (COMPACT FOR VISIBILITY) -->
-                    <div class="badge-gallery">
-                        <div class="badge-item" id="badge-detective">
-                            <i class="fas fa-user-secret"></i>
-                            <span>Cyber Detective</span>
+                    {windows.soc.open && !windows.soc.minimized && (
+                        <DraggableWindow config={windows.soc} onClose={() => closeWindow('soc')} onMinimize={() => minimizeWindow('soc')} onFocus={() => focusWindow('soc')} onMove={moveWindow}>
+                        <div className="h-full bg-slate-950 text-cyan-500 font-mono flex flex-col p-1 border-2 border-slate-800">
+                            <div className="border-b border-cyan-900/50 p-2 flex justify-between items-center bg-cyan-900/10">
+                                <div className="font-bold flex items-center gap-2 text-sm tracking-widest"><AlertTriangle size={14}/> CORTEX SENTINEL</div>
+                                <div className="text-[10px] animate-pulse text-emerald-500 bg-emerald-950/50 px-2 py-0.5 rounded border border-emerald-500/30">LIVE FEED</div>
+                            </div>
+                            <div className="flex-1 bg-black/50 p-4 flex flex-col items-center justify-center relative overflow-hidden">
+                                {ransomwareActive ? (
+                                <div className="text-center z-10 animate-scale-in">
+                                    <Lock size={80} className="text-rose-600 mx-auto mb-6 animate-pulse" />
+                                    <h1 className="text-5xl font-bold text-rose-600 tracking-tighter mb-2 glitch-text">LOCKDOWN</h1>
+                                    <p className="text-rose-400 mt-2 font-mono border border-rose-500/30 bg-rose-950/50 px-4 py-1 rounded inline-block">RANSOMWARE DETECTED: CRYPT_X</p>
+                                    
+                                    <div className="grid grid-cols-3 gap-4 mt-8 w-full max-w-2xl">
+                                        <button onClick={() => handleSocAction('shutdown')} className="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded transition-colors flex flex-col items-center gap-2 text-xs">
+                                            <Power size={20}/> DESLIGAR TUDO
+                                        </button>
+                                        <button onClick={() => handleSocAction('isolate')} className="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded transition-colors flex flex-col items-center gap-2 text-xs">
+                                            <Shield size={20}/> ISOLAR INFECTADOS
+                                        </button>
+                                        <button onClick={() => handleSocAction('trace')} className="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded transition-colors flex flex-col items-center gap-2 text-xs">
+                                            <Fingerprint size={20}/> RASTREAR ORIGEM
+                                        </button>
+                                    </div>
+                                </div>
+                                ) : (
+                                    <div className="text-center opacity-30">
+                                    <Globe size={100} className="mx-auto mb-6 text-cyan-600" />
+                                    <p className="tracking-[0.5em] text-sm">SYSTEM MONITORING ACTIVE</p>
+                                    </div>
+                                )}
+                                <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.1)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none"></div>
+                            </div>
                         </div>
-                        <div class="badge-item" id="badge-data">
-                            <i class="fas fa-database"></i>
-                            <span>Data Keeper</span>
-                        </div>
-                        <div class="badge-item" id="badge-privacy">
-                            <i class="fas fa-eye-slash"></i>
-                            <span>Privacy Guardian</span>
-                        </div>
-                        <div class="badge-item" id="badge-wifi">
-                            <i class="fas fa-wifi"></i>
-                            <span>Secure Surfer</span>
-                        </div>
-                        <div class="badge-item" id="badge-cipher">
-                            <i class="fas fa-key"></i>
-                            <span>Cipher Master</span>
-                        </div>
-                        <div class="badge-item" id="badge-firewall">
-                            <i class="fas fa-user-shield"></i>
-                            <span>Human Firewall</span>
-                        </div>
-                    </div>
+                        </DraggableWindow>
+                    )}
 
-                    <button class="btn-hero btn-restart" onclick="location.reload()">
-                        <i class="fas fa-power-off"></i> SYSTEM REBOOT
-                    </button>
                 </div>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-<script>
-    // --- STATE ---
-    let shieldIntegrity = 100;
-    let audioEnabled = false;
-    let currentLevel = ''; 
-    let earnedBadges = []; // Store IDs of badges earned
-
-    // --- BADGE DEFINITIONS (ALL 6 LEVELS) ---
-    const badgeDefs = {
-        '03': { id: 'badge-detective', name: 'CYBER DETECTIVE' },
-        '05': { id: 'badge-data', name: 'DATA KEEPER' },
-        '07': { id: 'badge-privacy', name: 'PRIVACY GUARDIAN' },
-        '09': { id: 'badge-wifi', name: 'SECURE SURFER' },
-        '11': { id: 'badge-cipher', name: 'CIPHER MASTER' },
-        '13': { id: 'badge-firewall', name: 'HUMAN FIREWALL' }
-    };
-    
-    // --- FEEDBACK DATABASE ---
-    const feedbackData = {
-        '03': {
-            'A': { damage: 35, title: "Malware Installed", msg: "Clicking unverified links executes scripts instantly. Always check the URL domain first." },
-            'B': { damage: 10, title: "Threat Ignored", msg: "Deleting protects you, but not your team. The attacker will just email your colleague next." },
-            'C': { damage: 0, title: "Threat Blocked", msg: "Reporting allows IT to block this sender domain-wide, protecting the entire company." }
-        },
-        '05': {
-            'A': { damage: 20, title: "Permissions Error", msg: "Public shared drives often have lax permissions. Anyone with the link could access financial data." },
-            'B': { damage: 35, title: "Data Exfiltrated", msg: "Personal accounts lack corporate encryption and audit logs. If hacked, client data is exposed." },
-            'C': { damage: 0, title: "Secure Transfer", msg: "Encrypted vaults ensure only the intended recipient with the correct key can access the files." }
-        },
-        '07': {
-            'A': { damage: 0, title: "Screen Secure", msg: "Locking your workstation (Win+L) is the only 100% effective way to prevent visual snooping." },
-            'B': { damage: 20, title: "Partial Exposure", msg: "Your body cannot cover the entire screen. Side angles still reveal code to the visitor." },
-            'C': { damage: 35, title: "Credentials Stolen", msg: "The visitor photographed your screen. Never code sensitive logic in public view." }
-        },
-        '09': {
-            'A': { damage: 35, title: "Man-in-the-Middle", msg: "Public Wi-Fi is often unencrypted. Hackers can intercept everything you upload." },
-            'B': { damage: 0, title: "Private Connection", msg: "Using your own hotspot isolates you from the public network risk. Good choice." },
-            'C': { damage: 0, title: "Encrypted Tunnel", msg: "VPNs encrypt your traffic, making it unreadable to anyone snooping on the network." }
-        },
-        '11': {
-            'A': { damage: 35, title: "Brute Forced", msg: "Pet names are easily found on social media. This password would be cracked in seconds." },
-            'B': { damage: 20, title: "Domino Effect", msg: "Reusing passwords means if one site is breached, your work account is also compromised." },
-            'C': { damage: 0, title: "High Entropy", msg: "Long passphrases are mathematically difficult to crack but easy for humans to remember." }
-        },
-        '13': {
-            'A': { damage: 50, title: "Account Takeover", msg: "IT Support will NEVER ask for your password or 2FA code. You just handed over your account." },
-            'B': { damage: 0, title: "Attack Thwarted", msg: "Verifying identity by calling the official internal number is the only safe procedure." },
-            'C': { damage: 20, title: "Information Leak", msg: "Arguing gives the attacker voice samples and confirms your shift hours. Just hang up." }
-        }
-    };
-
-    // --- NARRATION ---
-    const narrations = {
-        'slide-01': "Mission: Protect the Network. You start with 100% Shield Integrity. Every security risk you neutralize keeps the shield up. Warning: Mistakes cause damage.",
-        'slide-02': "System Status: ONLINE. Agent, you will face threats including Phishing, Data Leaks, Visual Hacking, Wi-Fi Security, Password Hygiene, and Social Engineering.",
-        'slide-03': "Threat Detected: Level 1. Phishing. Suspicious email detected. Sender domain is unverified. How do you proceed?",
-        'slide-05': "Threat Detected: Level 2. Data Extraction. Transfer Project Omega financials. Choose transfer method.",
-        'slide-07': "Threat Detected: Level 3. Visual Hacking. Unknown visitor is walking behind you while you code.",
-        'slide-09': "Threat Detected: Level 4. Remote Connection. You are at a coffee shop. How do you connect to the internet safely?",
-        'slide-11': "Threat Detected: Level 5. Credentials. Your password has expired. Choose a secure replacement.",
-        'slide-13': "Threat Detected: Level 6. Vishing Attack. Caller claims to be IT Director demanding your access code.",
-        'slide-report': "Mission Complete. Generating final report."
-    };
-
-    function toggleAudio() {
-        audioEnabled = !audioEnabled;
-        const btn = document.getElementById('btn-audio');
-        if(audioEnabled) {
-            btn.innerHTML = '<i class="fas fa-volume-up"></i> SOUND ON'; btn.classList.add('active');
-            const currentSlide = document.querySelector('.slide.active');
-            if(currentSlide && narrations[currentSlide.id]) playText(narrations[currentSlide.id]);
-        } else {
-            btn.innerHTML = '<i class="fas fa-volume-mute"></i> SOUND OFF'; btn.classList.remove('active');
-            window.speechSynthesis.cancel();
-        }
-    }
-
-    function enableAudioAndStart() {
-        audioEnabled = true;
-        const btn = document.getElementById('btn-audio');
-        btn.innerHTML = '<i class="fas fa-volume-up"></i> SOUND ON'; btn.classList.add('active');
-        goToSlide('slide-02');
-    }
-
-    function playText(text) {
-        window.speechSynthesis.cancel();
-        if(!audioEnabled || !text) return;
-        const msg = new SpeechSynthesisUtterance();
-        msg.text = text;
-        msg.lang = 'en-US';
-        window.speechSynthesis.speak(msg);
-    }
-
-    // --- NAVIGATION ---
-    function goToSlide(slideId) {
-        document.querySelectorAll('.slide').forEach(s => {
-            s.classList.remove('active'); s.style.opacity = 0;
-            setTimeout(() => { if(!s.classList.contains('active')) s.style.display = 'none'; }, 400);
-        });
-        const target = document.getElementById(slideId);
-        target.style.display = 'flex';
-        
-        if(narrations[slideId]) playText(narrations[slideId]);
-        setTimeout(() => { target.classList.add('active'); target.style.opacity = 1; }, 50);
-    }
-
-    function nextSlideFromFeedback() {
-        if(currentLevel === '03') goToSlide('slide-05');
-        else if(currentLevel === '05') goToSlide('slide-07');
-        else if(currentLevel === '07') goToSlide('slide-09');
-        else if(currentLevel === '09') goToSlide('slide-11');
-        else if(currentLevel === '11') goToSlide('slide-13');
-        else if(currentLevel === '13') generateReport();
-    }
-
-    // --- GAMEPLAY LOGIC ---
-    function handleDecision(level, choice) {
-        currentLevel = level;
-        const data = feedbackData[level][choice];
-        const popup = document.getElementById('badge-popup');
-        const defaultIcon = document.getElementById('fb-icon-default');
-        
-        // Default Hide Popup & Show Standard Icon
-        popup.style.display = 'none';
-        defaultIcon.style.display = 'inline-block';
-
-        // Check Logic
-        let feedbackSlide = '';
-        if (data.damage === 0) {
-            feedbackSlide = 'slide-feedback-success';
-            document.getElementById('fb-success-title').innerText = data.title;
-            document.getElementById('fb-success-msg').innerText = data.msg;
-
-            // BADGE CHECK (Now checks ALL levels)
-            if (badgeDefs[level]) {
-                const badgeInfo = badgeDefs[level];
-                // Show Badge, Hide Default Icon
-                popup.style.display = 'block';
-                defaultIcon.style.display = 'none';
-                
-                document.getElementById('badge-name').innerText = badgeInfo.name;
-                
-                if(!earnedBadges.includes(badgeInfo.id)) earnedBadges.push(badgeInfo.id);
-                
-                // Play special audio
-                updateShield(data.damage);
-                goToSlide(feedbackSlide);
-                playText("Achievement Unlocked: " + badgeInfo.name + ". " + data.msg);
-                return;
-            }
-
-        } else {
-            feedbackSlide = 'slide-feedback-fail';
-            document.getElementById('fb-fail-title').innerText = data.title;
-            document.getElementById('fb-fail-msg').innerText = data.msg;
+            );
         }
 
-        updateShield(data.damage);
-        goToSlide(feedbackSlide);
-        playText(data.title + ". " + data.msg);
-    }
-
-    function updateShield(damage) {
-        shieldIntegrity -= damage;
-        if(shieldIntegrity < 0) shieldIntegrity = 0;
-        const bar = document.getElementById('shield-bar');
-        const text = document.getElementById('shield-text');
-        bar.style.width = shieldIntegrity + '%';
-        text.innerText = shieldIntegrity + '%';
-        if(shieldIntegrity < 50) {
-            bar.style.background = 'linear-gradient(90deg, #ff7675, #d63031)';
-            bar.style.boxShadow = '0 0 15px rgba(214, 48, 49, 0.7)';
-        }
-    }
-
-    function generateReport() {
-        goToSlide('slide-report');
-        const gradeEl = document.getElementById('final-grade');
-        const msgEl = document.getElementById('final-message');
-        
-        if(shieldIntegrity >= 80) {
-            gradeEl.innerText = "GRADE: S (ELITE)"; gradeEl.style.color = "#55efc4";
-            msgEl.innerText = "Outstanding performance. Mainframe secure.";
-        } else if (shieldIntegrity >= 50) {
-            gradeEl.innerText = "GRADE: B (PASSED)"; gradeEl.style.color = "#ffeaa7";
-            msgEl.innerText = "Mission accomplished. Review protocols.";
-        } else {
-            gradeEl.innerText = "GRADE: F (FAILED)"; gradeEl.style.color = "#ff7675";
-            msgEl.innerText = "Critical failure. Retraining required.";
-        }
-
-        // UNLOCK BADGES IN GALLERY
-        earnedBadges.forEach(badgeId => {
-            const badgeEl = document.getElementById(badgeId);
-            if(badgeEl) badgeEl.classList.add('unlocked');
-        });
-        
-        if(narrations['slide-report']) playText(narrations['slide-report']);
-    }
-</script>
-
+        // Initialize the app
+        const root = createRoot(document.getElementById('root'));
+        root.render(<SecurityImmersive />);
+    </script>
 </body>
 </html>
