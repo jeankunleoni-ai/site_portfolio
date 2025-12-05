@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cortex Security OS - Simulação de Cibersegurança</title>
+    <title>Cortex Security OS - Cyber Security Simulation</title>
     
-    <!-- Tailwind CSS para Estilização -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Configuração do Tailwind para animações personalizadas -->
+    <!-- Tailwind Config for Animations -->
     <script>
         tailwind.config = {
             theme: {
@@ -49,7 +49,7 @@
         }
     </script>
 
-    <!-- Import Map para carregar React e Lucide via ESM -->
+    <!-- Import Map -->
     <script type="importmap">
         {
             "imports": {
@@ -60,15 +60,15 @@
         }
     </script>
 
-    <!-- Babel para compilar JSX no navegador -->
+    <!-- Babel Standalone -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        /* Estilos globais extras */
+        /* Global Styles */
         body { margin: 0; overflow: hidden; background-color: #0f172a; }
         .glitch-text { text-shadow: 2px 0 #ff00c1, -2px 0 #00fff9; }
         
-        /* Scrollbar customizada para janelas */
+        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
@@ -78,7 +78,7 @@
 <body>
     <div id="root"></div>
 
-    <!-- Lógica do Jogo -->
+    <!-- Game Logic -->
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect, useRef, useCallback } from 'react';
         import { createRoot } from 'react-dom/client';
@@ -92,7 +92,7 @@
             DollarSign, UploadCloud, Users, Key, FileText, XCircle, ArrowRight
         } from 'lucide-react';
 
-        // --- 1. CONFIGURAÇÃO E DADOS ESTÁTICOS ---
+        // --- 1. CONFIG & STATIC DATA ---
 
         const CONFIG = {
             MAX_Z_INDEX: 50,
@@ -103,29 +103,29 @@
 
         const ENDINGS = {
             PERFECT: {
-                title: "CISO: LÍDER DE SEGURANÇA",
-                desc: "Você alcançou o equilíbrio raro. Manteve a empresa segura sem alienar as pessoas. A cultura de segurança floresceu sob sua gestão.",
+                title: "CISO: SECURITY LEADER",
+                desc: "You achieved a rare balance. You kept the company secure without alienating people. Security culture flourished under your management.",
                 color: "text-emerald-400",
                 border: "border-emerald-500/50",
                 bg: "bg-emerald-950/90"
             },
             BUREAUCRAT: {
-                title: "O 'NÃO' ABSOLUTO (PARANOICO)",
-                desc: "Segurança total, produtividade zero. Ninguém foi hackeado, mas ninguém conseguiu trabalhar. Você é odiado no escritório e o Shadow IT explodiu.",
+                title: "THE ABSOLUTE 'NO' (PARANOID)",
+                desc: "Total security, zero productivity. No one got hacked, but no one could work either. You are hated in the office, and Shadow IT has exploded.",
                 color: "text-blue-400",
                 border: "border-blue-500/50",
                 bg: "bg-blue-950/90"
             },
             COMPROMISED: {
-                title: "QUERIDO, MAS PERIGOSO",
-                desc: "Todos amam sua prestatividade, inclusive os hackers. Para não 'atrapalhar', você deixou portas abertas. Vazamento de dados confirmado.",
+                title: "WELL-LIKED BUT DANGEROUS",
+                desc: "Everyone loves your helpfulness, including hackers. To avoid 'getting in the way', you left doors open. Data breach confirmed.",
                 color: "text-amber-400",
                 border: "border-amber-500/50",
                 bg: "bg-amber-950/90"
             },
             CHAOS: {
-                title: "DEMISSÃO POR JUSTA CAUSA",
-                desc: "Você falhou tanto na técnica quanto na gestão de pessoas. Ransomware criptografou tudo e os funcionários estão revoltados. Desastre total.",
+                title: "TERMINATED FOR CAUSE",
+                desc: "You failed in both technical security and people management. Ransomware encrypted everything, and employees are revolting. Total disaster.",
                 color: "text-rose-500",
                 border: "border-rose-500/50",
                 bg: "bg-rose-950/90"
@@ -135,23 +135,23 @@
         const INITIAL_EMAILS = [
             { 
                 id: 'e1', 
-                from: "RH - Benefícios", 
-                fromEmail: "nao-responder@governamental.br-validacao.com",
-                subject: "Atualização Cadastral Obrigatória", 
-                body: "Detectamos inconsistência no seu FGTS. Acesse o portal para corrigir imediatamente sob pena de bloqueio.", 
+                from: "HR - Benefits", 
+                fromEmail: "no-reply@gov-validation-secure.com",
+                subject: "Mandatory 401(k) Update", 
+                body: "We detected inconsistencies in your 401(k)/Tax filings. Access the portal immediately to correct this, or your account will be locked.", 
                 attachment: null, 
-                link: "http://br-validacao.com", 
+                link: "http://gov-validation.com", 
                 type: "phishing", 
                 read: false, 
                 time: "08:30" 
             },
             { 
                 id: 'e2', 
-                from: "Diretoria", 
-                fromEmail: "diretoria@cortex-corp.internal",
-                subject: "Relatório Q3", 
-                body: "Bom dia. Segue a prévia dos resultados do terceiro trimestre. Documento confidencial, não compartilhar externamente.", 
-                attachment: "Resultados_Q3_Confidencial.pdf", 
+                from: "Board of Directors", 
+                fromEmail: "board@cortex-corp.internal",
+                subject: "Q3 Report", 
+                body: "Good morning. Attached is the preview of the Q3 results. This document is strictly confidential, do not share externally.", 
+                attachment: "Q3_Results_Confidential.pdf", 
                 type: "legit", 
                 read: false, 
                 time: "08:45" 
@@ -159,7 +159,7 @@
         ];
 
         const CHAT_LOGS = [
-            { id: 'c1', user: "Lucas (Dev)", text: "Bom dia! O servidor de homologação caiu de novo?", time: "08:10" }
+            { id: 'c1', user: "Luke (Dev)", text: "Morning! Is the staging server down again?", time: "08:10" }
         ];
 
         const generateUniqueId = () => Date.now().toString(36) + Math.random().toString(36).substr(2);
@@ -238,9 +238,9 @@
                     <div className="absolute bottom-24 right-8 bg-white text-slate-900 p-4 rounded-xl shadow-2xl border-l-4 border-rose-500 w-80 flex items-start gap-3 pointer-events-auto animate-bounce">
                     <div className="bg-rose-100 p-2 rounded-full text-rose-600"><DollarSign size={24}/></div>
                     <div>
-                        <h4 className="font-bold text-sm">Transferência Agendada</h4>
-                        <p className="text-xs text-slate-600 mt-1">Sua conta ***.456 agendou um PIX de <span className="font-bold text-rose-600">R$ 50.000,00</span>.</p>
-                        <p className="text-[10px] text-slate-400 mt-2">Banco Corp: Se não reconhece, ligue agora.</p>
+                        <h4 className="font-bold text-sm">Wire Transfer Scheduled</h4>
+                        <p className="text-xs text-slate-600 mt-1">Your account ***.456 scheduled a transfer of <span className="font-bold text-rose-600">$ 50,000.00</span>.</p>
+                        <p className="text-[10px] text-slate-400 mt-2">Corp Bank: If unauthorized, call now.</p>
                     </div>
                     </div>
                 )}
@@ -252,9 +252,9 @@
                         <span className="text-[10px] bg-rose-500 px-2 rounded">ALERT</span>
                     </div>
                     <div className="space-y-2 font-mono text-xs">
-                        <p>Detectado tráfego de saída anômalo.</p>
-                        <p className="text-slate-400">Arquivo: <span className="text-white">backup_clientes.zip</span></p>
-                        <p>Destino: <span className="text-rose-400">185.xxx.xxx.xx (Moscow, RU)</span></p>
+                        <p>Anomalous outbound traffic detected.</p>
+                        <p className="text-slate-400">File: <span className="text-white">client_backups.zip</span></p>
+                        <p>Destination: <span className="text-rose-400">185.xxx.xxx.xx (Moscow, RU)</span></p>
                         <div className="h-1 w-full bg-slate-700 rounded overflow-hidden mt-2">
                             <div className="h-full bg-rose-500 w-[80%] animate-pulse"></div>
                         </div>
@@ -281,16 +281,16 @@
                 {type === 'gossip' && (
                     <div className="absolute bottom-24 right-8 flex flex-col gap-2 w-72 pointer-events-auto">
                     <div className="bg-white p-3 rounded-lg shadow-xl border border-slate-200 animate-bounce">
-                        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-1"><Users size={12}/> Grupo "Happy Hour"</div>
-                        <p className="text-xs">😂😂😂 Mentira que o chefe ganha tudo isso??</p>
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-1"><Users size={12}/> Group "Water Cooler"</div>
+                        <p className="text-xs">😂😂😂 No way the boss earns that much??</p>
                     </div>
                     <div className="bg-white p-3 rounded-lg shadow-xl border border-slate-200 animate-bounce delay-100">
-                        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-1"><Users size={12}/> Grupo "Happy Hour"</div>
-                        <p className="text-xs">Vazou a folha?? Manda ai!!! 👀</p>
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-1"><Users size={12}/> Group "Water Cooler"</div>
+                        <p className="text-xs">Did the payroll leak?? Send it!!! 👀</p>
                     </div>
                     <div className="bg-white p-3 rounded-lg shadow-xl border border-slate-200 animate-bounce delay-200">
-                        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-1"><Users size={12}/> Grupo "Happy Hour"</div>
-                        <p className="text-xs">📸 Imagem</p>
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-1"><Users size={12}/> Group "Water Cooler"</div>
+                        <p className="text-xs">📸 Image</p>
                     </div>
                     </div>
                 )}
@@ -299,8 +299,8 @@
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-rose-600 text-white px-8 py-4 rounded-b-xl shadow-2xl z-[110] flex items-center gap-4 pointer-events-auto">
                         <Key size={32} className="animate-ping"/>
                         <div>
-                        <h2 className="font-bold text-lg">ALERTA DE SEGURANÇA</h2>
-                        <p className="text-sm">Sua senha de rede foi redefinida externamente. 2FA Desativado.</p>
+                        <h2 className="font-bold text-lg">SECURITY ALERT</h2>
+                        <p className="text-sm">Your network password was reset externally. 2FA Disabled.</p>
                         </div>
                     </div>
                 )}
@@ -322,7 +322,7 @@
                     {danger ? <AlertTriangle size={18} /> : type === 'wifi' ? <Wifi size={18}/> : <Shield size={18} />}
                     {title}
                     </h3>
-                    {onClose && <button onClick={onClose} aria-label="Fechar"><X size={18} className="hover:text-white text-slate-400 transition-colors" /></button>}
+                    {onClose && <button onClick={onClose} aria-label="Close"><X size={18} className="hover:text-white text-slate-400 transition-colors" /></button>}
                 </div>
                 <div className="p-6 text-slate-300 relative">
                     <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none"></div>
@@ -345,32 +345,37 @@
             </div>
         );
 
-        // Desktop Component agora recebe props extras e apenas renderiza ícones
-        // O background é tratado no componente pai para evitar transições bruscas
         const Desktop = ({ activeHighlight, openWindow, wallpaperHacked, onRestoreWallpaper }) => (
             <div className="absolute inset-0 z-0">
-                {/* Wallpaper Hacked (Troll Face) - Aparece POR CIMA do wallpaper normal quando ativo */}
-                {wallpaperHacked && (
-                <div className="absolute inset-0 z-20 bg-slate-950 flex items-center justify-center flex-col overflow-hidden animate-fade-in">
+                {/* Wallpaper Logic */}
+                {wallpaperHacked ? (
+                <div className="w-full h-full bg-slate-950 flex items-center justify-center flex-col relative overflow-hidden">
                     <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,rgba(0,0,0,0.1)_0,rgba(0,0,0,0.1)_10px,transparent_10px,transparent_20px)]"></div>
+                    {/* TROLL FACE SIMPLIFIED WITH SVG/CSS */}
                     <div className="relative z-10 bg-white p-8 rounded-xl shadow-2xl rotate-3 animate-pulse border-4 border-black text-center">
                         <div className="text-6xl mb-2">🤡</div>
-                        <h1 className="text-4xl font-black text-black tracking-tighter uppercase mb-2">TROLLEI!</h1>
-                        <p className="text-black font-mono font-bold text-lg">Esqueceu desbloqueado = Perdeu moral.</p>
-                        <p className="text-xs text-slate-600 mt-4">Ass: O estagiário da TI</p>
+                        <h1 className="text-4xl font-black text-black tracking-tighter uppercase mb-2">GOTCHA!</h1>
+                        <p className="text-black font-mono font-bold text-lg">Left unlocked = Lost respect.</p>
+                        <p className="text-xs text-slate-600 mt-4">Signed: The IT Intern</p>
                     </div>
                     
+                    {/* RESTORE BUTTON */}
                     <button 
                         onClick={onRestoreWallpaper}
                         className="absolute top-1/2 left-8 -translate-y-1/2 flex flex-col items-center gap-2 group z-50 bg-slate-800/80 p-4 rounded-xl border border-white/20 hover:bg-slate-700 transition-all hover:scale-105 cursor-pointer"
                     >
                         <RefreshCcw size={32} className="text-emerald-400 group-hover:rotate-180 transition-transform duration-700" />
-                        <span className="text-xs font-bold text-white bg-black/50 px-2 py-1 rounded">Restaurar_Wallpaper.exe</span>
+                        <span className="text-xs font-bold text-white bg-black/50 px-2 py-1 rounded">Restore_Wallpaper.exe</span>
                     </button>
                 </div>
+                ) : (
+                <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url('${WALLPAPER_URL}')` }}>
+                    {/* Overlay to ensure icons are readable and make it subtle */}
+                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]"></div>
+                </div> 
                 )}
 
-                {/* Icons - Mind the Z-index */}
+                {/* Icons */}
                 <div className="absolute top-8 left-8 flex flex-col gap-8 z-10">
                     <DesktopIcon label="Outlook" highlight={activeHighlight === 'mail'} icon={<Mail className="text-blue-400"/>} onClick={() => openWindow('mail')} />
                     <DesktopIcon label="Teams" highlight={activeHighlight === 'chat'} icon={<MessageSquare className="text-indigo-400"/>} onClick={() => openWindow('chat')} />
@@ -392,7 +397,7 @@
         );
 
         const DesktopIcon = ({ label, icon, onClick, highlight }) => (
-            <button onClick={onClick} className="group flex flex-col items-center gap-3 w-24 relative focus:outline-none focus:ring-2 focus:ring-cyan-400 rounded-xl p-2" aria-label={`Abrir ${label}`}>
+            <button onClick={onClick} className="group flex flex-col items-center gap-3 w-24 relative focus:outline-none focus:ring-2 focus:ring-cyan-400 rounded-xl p-2" aria-label={`Open ${label}`}>
                 <div className={`
                 w-16 h-16 bg-slate-800/40 border border-slate-700/50 rounded-2xl flex items-center justify-center transition-all backdrop-blur-md shadow-lg
                 ${highlight ? 'animate-bounce ring-2 ring-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.4)] border-cyan-400 bg-cyan-900/20' : 'group-hover:scale-110 group-hover:border-cyan-500/50 group-hover:bg-slate-800/60'}
@@ -412,7 +417,7 @@
             </button>
         );
 
-        // --- 4. TELAS DE SISTEMA ---
+        // --- 4. SYSTEM SCREENS ---
 
         const BootScreen = () => (
             <div className="h-screen w-full bg-black flex flex-col items-center justify-center text-slate-400 font-mono text-xs relative z-50">
@@ -429,7 +434,7 @@
             </div>
         );
 
-        // IntroScreen agora é transparente para mostrar o wallpaper de fundo
+        // IntroScreen is transparent to show the wallpaper
         const IntroScreen = ({ onStart }) => (
             <div className="h-screen w-full flex items-center justify-center p-8 overflow-hidden relative font-sans z-10 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
                 
@@ -440,44 +445,44 @@
                     </div>
                     <div>
                         <h1 className="text-6xl lg:text-7xl font-bold tracking-tight text-white mb-4">
-                        DEFESA <br/>
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600">CIBERNÉTICA</span>
+                        CYBER <br/>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600">DEFENSE</span>
                         </h1>
                         <p className="text-slate-400 text-lg leading-relaxed max-w-md border-l-2 border-slate-700 pl-6 bg-slate-900/50 p-4 rounded-r-lg backdrop-blur-sm">
-                        Simulação imersiva de incidentes. Suas decisões serão avaliadas em:
+                        Immersive incident simulation. Your decisions will be evaluated on:
                         </p>
-                        {/* Métricas Explicadas */}
+                        {/* Metrics Explained */}
                         <div className="grid grid-cols-3 gap-4 mt-6">
                         <div className="bg-slate-900/80 backdrop-blur p-3 rounded border border-cyan-500/30 text-center">
                             <div className="text-cyan-400 font-bold text-xl mb-1">100</div>
-                            <div className="text-[10px] text-slate-400 uppercase tracking-widest">Score Técnico</div>
+                            <div className="text-[10px] text-slate-400 uppercase tracking-widest">Tech Score</div>
                         </div>
                         <div className="bg-slate-900/80 backdrop-blur p-3 rounded border border-blue-500/30 text-center">
                             <div className="text-blue-400 font-bold text-xl mb-1">50</div>
-                            <div className="text-[10px] text-slate-400 uppercase tracking-widest">Crédito Social</div>
+                            <div className="text-[10px] text-slate-400 uppercase tracking-widest">Social Credit</div>
                         </div>
                         <div className="bg-slate-900/80 backdrop-blur p-3 rounded border border-rose-500/30 text-center">
                             <div className="text-rose-400 font-bold text-xl mb-1">0%</div>
-                            <div className="text-[10px] text-slate-400 uppercase tracking-widest">Risco Sistema</div>
+                            <div className="text-[10px] text-slate-400 uppercase tracking-widest">System Risk</div>
                         </div>
                         </div>
                     </div>
                 </div>
 
                 <div className="relative">
-                    {/* TELA DE LOGIN (NOVA) */}
+                    {/* LOGIN SCREEN */}
                     <div className="relative bg-slate-900/90 border border-slate-700/50 backdrop-blur-xl p-10 rounded-2xl shadow-2xl w-full max-w-md animate-slide-in-right">
                         <div className="flex flex-col items-center mb-8">
                             <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-4 border-2 border-cyan-500/50 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
                                 <User size={40} className="text-cyan-400" />
                             </div>
                             <h2 className="text-2xl font-bold text-white tracking-wide">CORTEX LOGIN</h2>
-                            <p className="text-slate-400 text-xs uppercase tracking-widest mt-1">Acesso Restrito</p>
+                            <p className="text-slate-400 text-xs uppercase tracking-widest mt-1">Restricted Access</p>
                         </div>
 
                         <div className="space-y-4">
                             <div>
-                                <label className="text-xs text-slate-400 uppercase font-bold ml-1 mb-1 block">Usuário</label>
+                                <label className="text-xs text-slate-400 uppercase font-bold ml-1 mb-1 block">Username</label>
                                 <input 
                                     type="text" 
                                     value="admin.security" 
@@ -486,7 +491,7 @@
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-400 uppercase font-bold ml-1 mb-1 block">Senha</label>
+                                <label className="text-xs text-slate-400 uppercase font-bold ml-1 mb-1 block">Password</label>
                                 <input 
                                     type="password" 
                                     value="********" 
@@ -499,7 +504,7 @@
                                 onClick={onStart}
                                 className="w-full mt-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-3 rounded shadow-lg shadow-cyan-500/20 transition-all transform hover:scale-[1.02] flex justify-center items-center gap-2"
                             >
-                                ENTRAR <ArrowRight size={16} />
+                                LOGIN <ArrowRight size={16} />
                             </button>
                         </div>
                     </div>
@@ -516,8 +521,8 @@
                         <div className="flex items-center gap-3">
                             <FileText className="text-slate-400" />
                             <div>
-                                <h2 className="text-xl font-bold text-white">Relatório de Incidentes</h2>
-                                <p className="text-xs text-slate-500">Log de auditoria de ações do usuário</p>
+                                <h2 className="text-xl font-bold text-white">Incident Report</h2>
+                                <p className="text-xs text-slate-500">User Action Audit Log</p>
                             </div>
                         </div>
                         <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full transition-colors"><X size={20} className="text-slate-400"/></button>
@@ -526,7 +531,7 @@
                         {log.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-full text-slate-500 opacity-50">
                                 <CheckCircle size={64} className="mb-4 text-emerald-500"/>
-                                <p>Nenhum incidente negativo registrado.</p>
+                                <p>No negative incidents recorded.</p>
                             </div>
                         ) : (
                             log.map((entry, idx) => (
@@ -538,7 +543,7 @@
                                         <h4 className="font-bold text-slate-200 text-sm">{entry.action}</h4>
                                         <p className="text-xs text-slate-400 mt-1">{entry.consequence}</p>
                                         <div className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wide bg-black/30 border border-white/5">
-                                            {entry.type === 'risk' ? 'Impacto: Segurança' : 'Impacto: Cultura'}
+                                            {entry.type === 'risk' ? 'Impact: Security' : 'Impact: Culture'}
                                         </div>
                                     </div>
                                 </div>
@@ -570,30 +575,30 @@
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"></div>
                 <div className={`relative z-10 max-w-4xl w-full ${ending.bg} border-2 ${ending.border} p-12 rounded-2xl shadow-2xl backdrop-blur-xl animate-scale-in`}>
                     <div className="text-center mb-12">
-                        <div className="inline-block px-4 py-1 rounded-full bg-black/30 text-white text-xs mb-4 border border-white/10">RELATÓRIO FINAL</div>
+                        <div className="inline-block px-4 py-1 rounded-full bg-black/30 text-white text-xs mb-4 border border-white/10">FINAL REPORT</div>
                         <h1 className={`text-5xl font-bold mb-4 ${ending.color}`}>{ending.title}</h1>
                         <p className="text-xl text-slate-200 leading-relaxed">{ending.desc}</p>
                     </div>
                     <div className="grid grid-cols-3 gap-8 mb-12">
                         <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-700 text-center">
-                            <div className="text-xs text-slate-500 uppercase tracking-widest mb-2">Risco do Sistema</div>
+                            <div className="text-xs text-slate-500 uppercase tracking-widest mb-2">System Risk</div>
                             <div className={`text-4xl font-bold ${riskLevel > 40 ? 'text-rose-500' : 'text-emerald-500'}`}>{riskLevel}%</div>
                         </div>
                         <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-700 text-center">
-                            <div className="text-xs text-slate-500 uppercase tracking-widest mb-2">Crédito Social</div>
+                            <div className="text-xs text-slate-500 uppercase tracking-widest mb-2">Social Credit</div>
                             <div className={`text-4xl font-bold ${socialCredit < 50 ? 'text-rose-500' : 'text-blue-400'}`}>{socialCredit}/100</div>
                         </div>
                         <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-700 text-center">
-                            <div className="text-xs text-slate-500 uppercase tracking-widest mb-2">Score Técnico</div>
+                            <div className="text-xs text-slate-500 uppercase tracking-widest mb-2">Tech Score</div>
                             <div className="text-4xl font-bold text-white">{score}</div>
                         </div>
                     </div>
                     <div className="flex gap-4">
                         <button onClick={() => window.location.reload()} className="flex-1 py-4 bg-white text-black font-bold rounded hover:bg-slate-200 transition-colors flex justify-center items-center gap-2 uppercase tracking-wider">
-                            <RefreshCw size={20} /> Reiniciar Simulação
+                            <RefreshCw size={20} /> Restart Simulation
                         </button>
                         <button onClick={() => setShowReport(true)} className="flex-1 py-4 bg-slate-800 text-white font-bold rounded border border-slate-600 hover:bg-slate-700 transition-colors flex justify-center items-center gap-2 uppercase tracking-wider">
-                            <FileText size={20} /> Ver Relatório de Incidentes
+                            <FileText size={20} /> View Incident Report
                         </button>
                     </div>
                 </div>
@@ -660,16 +665,16 @@
                     <div id={`window-title-${config.id}`} className="flex items-center gap-3 text-slate-300 text-xs font-bold uppercase tracking-wider font-mono">
                     {config.icon} {config.title}
                     </div>
-                    {/* Botões de Janela Estilo Windows */}
+                    {/* Windows Style Buttons */}
                     <div className="flex">
-                    <button onClick={(e) => {e.stopPropagation(); onMinimize()}} aria-label="Minimizar" className="w-10 h-10 flex items-center justify-center hover:bg-white/10 transition-colors text-slate-400 hover:text-white">
+                    <button onClick={(e) => {e.stopPropagation(); onMinimize()}} aria-label="Minimize" className="w-10 h-10 flex items-center justify-center hover:bg-white/10 transition-colors text-slate-400 hover:text-white">
                         <Minus size={14} />
                     </button>
-                    {/* Botão Maximize falso apenas para visual */}
-                    <button onClick={(e) => {e.stopPropagation()}} aria-label="Maximizar" className="w-10 h-10 flex items-center justify-center hover:bg-white/10 transition-colors text-slate-400 hover:text-white cursor-default">
+                    {/* Fake Maximize Button */}
+                    <button onClick={(e) => {e.stopPropagation()}} aria-label="Maximize" className="w-10 h-10 flex items-center justify-center hover:bg-white/10 transition-colors text-slate-400 hover:text-white cursor-default">
                         <Square size={12} />
                     </button>
-                    <button onClick={(e) => {e.stopPropagation(); onClose()}} aria-label="Fechar" className="w-10 h-10 flex items-center justify-center hover:bg-red-600 transition-colors text-slate-400 hover:text-white">
+                    <button onClick={(e) => {e.stopPropagation(); onClose()}} aria-label="Close" className="w-10 h-10 flex items-center justify-center hover:bg-red-600 transition-colors text-slate-400 hover:text-white">
                         <X size={16} />
                     </button>
                     </div>
@@ -681,13 +686,13 @@
             );
         };
 
-        // --- 5. COMPONENTE PRINCIPAL (CONTROLADOR) ---
+        // --- 5. MAIN COMPONENT (CONTROLLER) ---
 
         function SecurityImmersive() {
             const [module, setModule] = useState(0); 
             const [step, setStep] = useState(0); 
-            // Relógio Real
-            const [time, setTime] = useState(new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
+            // Real Clock
+            const [time, setTime] = useState(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
             const [isRebooting, setIsRebooting] = useState(false);
             const [wallpaperHacked, setWallpaperHacked] = useState(false);
             
@@ -713,7 +718,7 @@
             const [printerStage, setPrinterStage] = useState(0); 
             const [expandedEmailId, setExpandedEmailId] = useState(null); 
             
-            // Estados para consequências visuais
+            // Visual Consequence State
             const [consequenceState, setConsequenceState] = useState({
                 bankTransfer: false,
                 publicLeak: false,
@@ -737,15 +742,15 @@
                 }
             };
 
-            // --- RELÓGIO REAL ---
+            // --- REAL CLOCK ---
             useEffect(() => {
                 const clock = setInterval(() => {
-                    setTime(new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
+                    setTime(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
                 }, 1000); 
                 return () => clearInterval(clock);
             }, []);
 
-            // --- ENGINE DE EVENTOS ---
+            // --- EVENT ENGINE ---
             useEffect(() => {
                 if (module !== 1) return;
 
@@ -759,7 +764,7 @@
                 switch (step) {
                     case 0: // Start Phishing
                         triggerEvent(1, 2000, () => {
-                            addNotification("Você tem novos e-mails não lidos.", "mail");
+                            addNotification("You have new unread emails.", "mail");
                             setActiveHighlight('mail');
                         });
                         break;
@@ -785,49 +790,49 @@
                     setActiveHighlight(null); 
                     if (action === 'click') {
                         adjustMetric('risk', 20);
-                        logDecision('Clicou em link de Phishing', 'Instalação de malware via drive-by download.', 'risk');
-                        addNotification("⚠️ Malware instalado via drive-by download.", "alert");
+                        logDecision('Clicked Phishing link', 'Malware installed via drive-by download.', 'risk');
+                        addNotification("⚠️ Malware installed via drive-by download.", "alert");
                         setEmails(prev => prev.filter(e => e.id !== email.id));
                         triggerBrowserStep();
                     } else if (action === 'report') {
                         adjustMetric('risk', -5);
-                        logDecision('Reportou e-mail suspeito', 'Ação correta de segurança.', 'good');
+                        logDecision('Reported suspicious email', 'Correct security action.', 'good');
                         if (waitingForChat) adjustMetric('score', 10); 
-                        addNotification("✅ E-mail reportado ao SOC.", "success");
+                        addNotification("✅ Email reported to SOC.", "success");
                         setEmails(prev => prev.filter(e => e.id !== email.id));
                         triggerBrowserStep();
                     } else if (action === 'ask') {
-                        addNotification("Abrindo canal com a TI...", "info");
+                        addNotification("Opening channel with IT...", "info");
                         setTimeout(() => {
                         openWindow('chat');
                         setActiveHighlight('chat');
-                        addChat("Você", "Recebi um email estranho do RH. Podem validar?");
+                        addChat("You", "Received a weird email from HR. Can you validate?");
                         setWaitingForChat(true);
                         setTimeout(() => {
-                            addChat("Suporte TI", "Analisando... É golpe. NÃO clique. A URL é falsa (governamental.br-validacao).");
-                            addChat("Suporte TI", "Por favor, reporte como spam no Outlook.");
-                            addNotification("ℹ️ Resposta da TI recebida. Volte ao email.", "info");
+                            addChat("IT Support", "Analyzing... It's a scam. DO NOT click. The URL is fake (gov-validation).");
+                            addChat("IT Support", "Please report as spam in Outlook.");
+                            addNotification("ℹ️ IT response received. Return to email.", "info");
                             setActiveHighlight('mail');
                         }, 3000);
                         }, 1000);
                     }
                 } else if (email.type === 'legit') {
                     if (action === 'click') {
-                        addNotification("✅ Anexo verificado. Arquivo seguro.", "success");
+                        addNotification("✅ Attachment verified. Safe file.", "success");
                     } else if (action === 'ask') {
-                        addNotification("Abrindo canal com a TI...", "info");
+                        addNotification("Opening channel with IT...", "info");
                         setTimeout(() => {
                             openWindow('chat');
-                            addChat("Você", "O email da Diretoria com o relatório Q3 é real?");
+                            addChat("You", "Is the Board email regarding Q3 real?");
                             setTimeout(() => {
-                                addChat("Suporte TI", "Sim, confirmado. Pode abrir.");
-                                addNotification("ℹ️ TI confirmou a veracidade.", "info");
+                                addChat("IT Support", "Yes, confirmed. Safe to open.");
+                                addNotification("ℹ️ IT confirmed veracity.", "info");
                             }, 2000);
                         }, 1000);
                     } else if (action === 'report') {
                         adjustMetric('social', -10);
-                        logDecision('Bloqueou e-mail legítimo', 'Atrito com diretoria e interrupção de negócios.', 'social');
-                        addNotification("⚠️ Diretoria reclamou de bloqueio indevido.", "alert");
+                        logDecision('Blocked legitimate email', 'Friction with management and business interruption.', 'social');
+                        addNotification("⚠️ Management complained about improper blocking.", "alert");
                     }
                 }
             };
@@ -835,7 +840,7 @@
             const triggerBrowserStep = () => {
                 setTimeout(() => {
                     setStep(2);
-                    addNotification("Tentativa de conexão externa detectada.", "alert");
+                    addNotification("External connection attempt detected.", "alert");
                     setActiveHighlight('browser'); 
                 }, 4000); 
             };
@@ -847,21 +852,21 @@
                 if (action === 'login') {
                 adjustMetric('risk', 25);
                 triggerConsequence('bankTransfer');
-                logDecision('Login em site falso', 'Roubo de credenciais e prejuízo financeiro.', 'risk');
-                addNotification("⚠️ Credenciais roubadas em site clone.", "alert");
+                logDecision('Login on fake site', 'Credential theft and financial loss.', 'risk');
+                addNotification("⚠️ Credentials stolen on clone site.", "alert");
                 } else if (action === 'close') {
                 adjustMetric('risk', -5);
-                logDecision('Fechou site suspeito', 'Evitou roubo de credenciais.', 'good');
-                addNotification("✅ Navegação segura. Site falso fechado.", "success");
+                logDecision('Closed suspicious site', 'Avoided credential theft.', 'good');
+                addNotification("✅ Safe browsing. Fake site closed.", "success");
                 } else if (action === 'check') {
-                addNotification("ℹ️ Certificado Digital: Inválido.", "info");
-                setTimeout(() => addNotification("✅ Decisão correta: Site fechado.", "success"), 2000);
+                addNotification("ℹ️ Digital Certificate: Invalid.", "info");
+                setTimeout(() => addNotification("✅ Correct decision: Site closed.", "success"), 2000);
                 }
                 setTimeout(() => {
                     setStep(3);
-                    addNotification("Nova mensagem no Teams.", "chat");
+                    addNotification("New message on Teams.", "chat");
                     setActiveHighlight('chat');
-                    addChat("Lucas (Dev)", "Servidor lento. Posso usar WeTransfer pra mandar o build pro cliente?");
+                    addChat("Luke (Dev)", "Server is slow. Can I use WeTransfer to send the client build?");
                     setShadowITStage(0); 
                 }, 5000);
             };
@@ -873,41 +878,41 @@
                     if (action === 'allow') {
                         adjustMetric('risk', 15);
                         adjustMetric('social', 15);
-                        addChat("Você", "Ok, manda bala.");
-                        addChat("Lucas (Dev)", "Valeu! Salvou meu dia.");
+                        addChat("You", "Ok, go ahead.");
+                        addChat("Luke (Dev)", "Thanks! Saved my day.");
                         triggerConsequence('publicLeak');
-                        logDecision('Liberou Shadow IT (WeTransfer)', 'Vazamento de dados corporativos para nuvem pública.', 'risk');
-                        addNotification("⚠️ Risco DLP: Arquivo em nuvem pública.", "alert");
+                        logDecision('Allowed Shadow IT (WeTransfer)', 'Corporate data leak to public cloud.', 'risk');
+                        addNotification("⚠️ DLP Risk: File in public cloud.", "alert");
                         finishChatStep();
                     } else if (action === 'deny') {
                         adjustMetric('social', -10);
-                        addChat("Você", "Negativo. Bloqueado.");
+                        addChat("You", "Negative. Blocked.");
                         setTimeout(() => {
-                            addChat("Lucas (Dev)", "Pô, mas o cliente tá cobrando! O prazo é pra agora. Se eu não mandar, vai dar ruim pra mim.");
+                            addChat("Luke (Dev)", "Man, the client is pushing! Deadline is now. If I don't send, it's on me.");
                             setShadowITStage(1); 
                         }, 1500);
                     } else if (action === 'alternative') {
                         adjustMetric('social', 5);
-                        addChat("Você", "Usa o FileDrop na Intranet. É seguro e aprovado.");
-                        addChat("Lucas (Dev)", "Boa, não sabia que tava funcionando. Vou tentar.");
-                        logDecision('Sugeriu alternativa segura', 'Manteve segurança e produtividade.', 'good');
-                        addNotification("✅ Solução segura implementada.", "success");
+                        addChat("You", "Use the Internal FileDrop. It's secure and approved.");
+                        addChat("Luke (Dev)", "Nice, didn't know it was working. Will try.");
+                        logDecision('Suggested secure alternative', 'Maintained security and productivity.', 'good');
+                        addNotification("✅ Secure solution implemented.", "success");
                         finishChatStep();
                     }
                 } else if (shadowITStage === 1) {
                     if (action === 'rude') {
                         adjustMetric('social', -30); 
-                        addChat("Você", "Problema seu. Regra é regra. Se vira.");
-                        addChat("Lucas (Dev)", "...");
-                        logDecision('Foi rude com colaborador', 'Dano severo à cultura de segurança e confiança.', 'social');
-                        addNotification("ℹ️ Clima tenso no escritório.", "info");
+                        addChat("You", "Your problem. Rules are rules. Deal with it.");
+                        addChat("Luke (Dev)", "...");
+                        logDecision('Was rude to colleague', 'Severe damage to security culture and trust.', 'social');
+                        addNotification("ℹ️ Tense atmosphere in the office.", "info");
                         finishChatStep();
                     } else if (action === 'educate') {
                         adjustMetric('social', 10); 
-                        addChat("Você", "Entendo a pressa, mas WeTransfer vaza dados. Vamos abrir um chamado de emergência pro firewall liberar o FTP do cliente?");
-                        addChat("Lucas (Dev)", "Ah, se der pra fazer rápido, beleza. Ajuda aí.");
-                        logDecision('Educou colaborador', 'Resolveu conflito mantendo a segurança.', 'good');
-                        addNotification("✅ Situação contornada com empatia.", "success");
+                        addChat("You", "I understand the rush, but WeTransfer leaks data. Let's open an emergency ticket to unblock the client FTP?");
+                        addChat("Luke (Dev)", "Ah, if we can do it fast, cool. Help me out.");
+                        logDecision('Educated colleague', 'Resolved conflict while maintaining security.', 'good');
+                        addNotification("✅ Situation handled with empathy.", "success");
                         finishChatStep();
                     }
                 }
@@ -925,23 +930,23 @@
             const handlePhoneResponse = (action) => {
                 if (action === 'reject') {
                 adjustMetric('social', -5);
-                logDecision('Rejeitou chamada sem verificar', 'Potencial perda de contato importante.', 'social');
-                addNotification("Chamada recusada.", "info");
+                logDecision('Rejected call without verifying', 'Potential loss of important contact.', 'social');
+                addNotification("Call rejected.", "info");
                 setModalState(prev => ({ ...prev, phone: false }));
                 triggerLockStep();
                 } else if (action === 'accept') {
                     setPhoneData({ active: true, status: 'talking' });
                     setCallActive(true);
                 } else if (action === 'hangup_active') {
-                    addNotification("Ligação encerrada.", "info");
+                    addNotification("Call ended.", "info");
                     setCallActive(false);
                     setModalState(prev => ({ ...prev, phone: false }));
                     triggerLockStep();
                 } else if (action === 'give_info_active') {
                     adjustMetric('risk', 30);
                     triggerConsequence('identityTheft', 6000);
-                    logDecision('Forneceu dados por telefone', 'Engenharia social bem-sucedida, conta comprometida.', 'risk');
-                    addNotification("⚠️ Vazamento crítico de dados (Engenharia Social).", "alert");
+                    logDecision('Provided data over phone', 'Successful social engineering, account compromised.', 'risk');
+                    addNotification("⚠️ Critical data leak (Social Engineering).", "alert");
                     setCallActive(false);
                     setModalState(prev => ({ ...prev, phone: false }));
                     triggerLockStep();
@@ -961,20 +966,20 @@
                 if (action === 'leave') {
                 adjustMetric('risk', 15);
                 setWallpaperHacked(true);
-                logDecision('Saiu sem bloquear a tela', 'Acesso físico não autorizado (pegadinha ou malware).', 'risk');
-                addNotification("⚠️ PC desbloqueado em área comum.", "alert");
+                logDecision('Left without locking screen', 'Unauthorized physical access (prank or malware).', 'risk');
+                addNotification("⚠️ PC unlocked in common area.", "alert");
                 setTimeout(() => {
-                    addNotification("ℹ️ Colega de trabalho trocou seu wallpaper como lição.", "info");
+                    addNotification("ℹ️ Colleague changed your wallpaper as a lesson.", "info");
                 }, 2000);
                 } else if (action === 'lock') {
-                addNotification("✅ Estação bloqueada.", "success");
+                addNotification("✅ Station locked.", "success");
                 } else if (action === 'shutdown') {
                 adjustMetric('social', -5); 
                 setIsRebooting(true);
-                logDecision('Desligou computador', 'Perda de produtividade desnecessária.', 'social');
+                logDecision('Shutdown computer', 'Unnecessary productivity loss.', 'social');
                 setTimeout(() => {
                     setIsRebooting(false);
-                    addNotification("ℹ️ Sistema reinicializado.", "info");
+                    addNotification("ℹ️ System rebooted.", "info");
                 }, 3000);
                 }
                 setTimeout(() => {
@@ -986,7 +991,7 @@
 
             const restoreWallpaper = () => {
                 setWallpaperHacked(false);
-                addNotification("✅ Wallpaper restaurado.", "success");
+                addNotification("✅ Wallpaper restored.", "success");
             }
 
             // 6. USB LOGIC
@@ -996,18 +1001,18 @@
                         setUsbStage(1); 
                     } else if (action === 'ignore') {
                         setModalState(prev => ({ ...prev, usb: false }));
-                        addNotification("ℹ️ Dispositivo ignorado.", "info");
+                        addNotification("ℹ️ Device ignored.", "info");
                         finishUsbStep();
                     } else if (action === 'deliver') {
                         setModalState(prev => ({ ...prev, usb: false }));
-                        addNotification("ℹ️ Entregando à TI...", "info");
+                        addNotification("ℹ️ Handing over to IT...", "info");
                         setTimeout(() => {
-                            addNotification("🗣️ TI: 'Você plugou o drive?'", "info");
+                            addNotification("🗣️ IT: 'Did you plug in the drive?'", "info");
                             setTimeout(() => {
                                 adjustMetric('risk', -10);
                                 adjustMetric('score', 10);
-                                logDecision('Entregou USB à TI', 'Seguiu protocolo de mídia removível.', 'good');
-                                addNotification("✅ Protocolo seguido corretamente.", "success");
+                                logDecision('Handed USB to IT', 'Followed removable media protocol.', 'good');
+                                addNotification("✅ Protocol followed correctly.", "success");
                                 finishUsbStep();
                             }, 2000);
                         }, 1000);
@@ -1017,12 +1022,12 @@
                     if (action === 'malware') {
                         adjustMetric('risk', 40);
                         triggerConsequence('terminal', 6000);
-                        logDecision('Executou arquivo suspeito (USB)', 'Infecção por Ransomware via autorun.', 'risk');
-                        addNotification("⚠️ RANSOMWARE EXECUTADO VIA AUTORUN.", "alert");
+                        logDecision('Executed suspicious file (USB)', 'Ransomware infection via autorun.', 'risk');
+                        addNotification("⚠️ RANSOMWARE EXECUTED VIA AUTORUN.", "alert");
                     } else if (action === 'photos') {
                         adjustMetric('risk', 10); 
-                        logDecision('Abriu arquivos pessoais (USB)', 'Violação de política de segurança.', 'risk');
-                        addNotification("⚠️ Violação de política: Abrir arquivos desconhecidos.", "alert");
+                        logDecision('Opened personal files (USB)', 'Security policy violation.', 'risk');
+                        addNotification("⚠️ Policy violation: Opening unknown files.", "alert");
                     }
                     finishUsbStep();
                 }
@@ -1042,13 +1047,13 @@
                     if (action === 'ignore') {
                         setModalState(prev => ({ ...prev, printer: false }));
                         adjustMetric('risk', 10); 
-                        logDecision('Ignorou documentos na impressora', 'Informação sensível exposta a terceiros.', 'risk');
-                        addNotification("⚠️ Documentos sensíveis deixados na impressora.", "alert");
+                        logDecision('Ignored documents on printer', 'Sensitive info exposed to third parties.', 'risk');
+                        addNotification("⚠️ Sensitive documents left on printer.", "alert");
                         finishPrinterStep();
                     } else if (action === 'secure') {
                         setModalState(prev => ({ ...prev, printer: false }));
-                        logDecision('Recolheu documentos', 'Protegeu dados sensíveis esquecidos.', 'good');
-                        addNotification("✅ Documentos recolhidos e entregues ao dono.", "success");
+                        logDecision('Collected documents', 'Protected forgotten sensitive data.', 'good');
+                        addNotification("✅ Documents collected and returned to owner.", "success");
                         finishPrinterStep();
                     } else if (action === 'read') {
                         setPrinterStage(1); 
@@ -1059,17 +1064,17 @@
                         adjustMetric('social', -20);
                         adjustMetric('risk', 20); 
                         triggerConsequence('gossip', 6000);
-                        logDecision('Compartilhou foto de salário', 'Quebra de sigilo e ética grave.', 'social');
-                        addNotification("⚠️ Violação grave de ética e confidencialidade.", "alert");
+                        logDecision('Shared payroll photo', 'Severe ethics and confidentiality breach.', 'social');
+                        addNotification("⚠️ Severe ethics and confidentiality breach.", "alert");
                     } else if (action === 'shred') {
                         adjustMetric('social', -5); 
                         adjustMetric('score', 5); 
-                        logDecision('Triturou documento alheio', 'Protegeu dados mas destruiu propriedade.', 'social');
-                        addNotification("✅ Dados protegidos (embora drástico).", "success");
+                        logDecision('Shredded someone else\'s document', 'Protected data but destroyed property.', 'social');
+                        addNotification("✅ Data protected (though drastic).", "success");
                     } else if (action === 'leave') {
                         adjustMetric('risk', 10);
-                        logDecision('Leu e abandonou documento', 'Curiosidade satisfeita, mas risco mantido.', 'risk');
-                        addNotification("⚠️ Informação sensível abandonada.", "alert");
+                        logDecision('Read and abandoned document', 'Curiosity satisfied, but risk maintained.', 'risk');
+                        addNotification("⚠️ Sensitive info abandoned.", "alert");
                     }
                     finishPrinterStep();
                 }
@@ -1078,7 +1083,7 @@
             const finishPrinterStep = () => {
                 setTimeout(() => {
                 setStep(8);
-                addNotification("ALERTA CRÍTICO: ATIVIDADE ANÔMALA", "alert");
+                addNotification("CRITICAL ALERT: ANOMALOUS ACTIVITY", "alert");
                 setActiveHighlight('soc');
                 setRansomwareActive(true);
                 }, 6000);
@@ -1089,22 +1094,22 @@
                 setActiveHighlight(null);
                 if (action === 'isolate') {
                 setRansomwareActive(false);
-                logDecision('Isolou hosts infectados', 'Contenção efetiva de danos.', 'good');
-                addNotification("✅ Hosts isolados.", "success");
+                logDecision('Isolated infected hosts', 'Effective damage containment.', 'good');
+                addNotification("✅ Hosts isolated.", "success");
                 finalizeGame();
                 } else if (action === 'shutdown') {
-                addNotification("⚠️ Shutdown global iniciado.", "alert");
-                logDecision('Shutdown Global', 'Interrupção total do negócio (medida extrema).', 'social');
+                addNotification("⚠️ Global Shutdown initiated.", "alert");
+                logDecision('Global Shutdown', 'Total business interruption (extreme measure).', 'social');
                 setTimeout(() => finalizeGame(), 4000);
                 } else if (action === 'trace') {
                 if (riskLevel > 50) {
-                    addNotification("⚠️ Falha ao rastrear.", "alert");
+                    addNotification("⚠️ Failed to trace.", "alert");
                     setRiskLevel(100);
-                    logDecision('Tentou rastrear ataque (Alto Risco)', 'Perda de tempo crucial durante incidente.', 'risk');
+                    logDecision('Tried to trace attack (High Risk)', 'Lost crucial time during incident.', 'risk');
                 } else {
-                    addNotification("✅ Origem bloqueada.", "success");
+                    addNotification("✅ Origin blocked.", "success");
                     setRiskLevel(0);
-                    logDecision('Rastreou origem com sucesso', 'Ataque mitigado na fonte.', 'good');
+                    logDecision('Successfully traced origin', 'Attack mitigated at source.', 'good');
                 }
                 setTimeout(() => finalizeGame(), 4000);
                 }
@@ -1117,7 +1122,7 @@
             const handleWifiAction = (action) => {
                 setModalState(prev => ({ ...prev, wifi: false }));
                 if (action === 'connect') {
-                    logDecision('Conectou em Wi-Fi Público', 'Tráfego interceptado em rede não segura.', 'risk');
+                    logDecision('Connected to Public Wi-Fi', 'Traffic intercepted on unsecured network.', 'risk');
                 }
             }
 
@@ -1128,7 +1133,7 @@
             if (module === 2) return <EndScreen score={score} riskLevel={riskLevel} socialCredit={socialCredit} reportLog={reportLog} />;
 
             return (
-                // WALLPAPER PADRÃO FICA AQUI PARA PERSISTIR ENTRE MÓDULOS
+                // DEFAULT WALLPAPER IS HERE TO PERSIST BETWEEN MODULES
                 <div 
                     className={`h-screen w-full overflow-hidden relative select-none font-sans bg-cover bg-center transition-all duration-1000`} 
                     style={{ 
@@ -1136,7 +1141,7 @@
                         backgroundImage: `url('${WALLPAPER_URL}')`
                     }}
                 >
-                    {/* Overlay padrão para legibilidade */}
+                    {/* Default overlay for readability */}
                     <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-[1px] pointer-events-none"></div>
                     
                     {riskLevel > 50 && <div className="absolute inset-0 bg-rose-900/10 z-0 animate-pulse pointer-events-none mix-blend-overlay"></div>}
@@ -1149,7 +1154,7 @@
 
                     <NotificationToast notifications={notifications} />
 
-                    {/* RENDERIZAR CONSEQUÊNCIAS VISUAIS - ITERANDO SOBRE O ESTADO */}
+                    {/* RENDER VISUAL CONSEQUENCES - ITERATING OVER STATE */}
                     {Object.keys(consequenceState).map(key => (
                         consequenceState[key] && <ConsequenceAlert key={key} type={key} />
                     ))}
@@ -1157,39 +1162,39 @@
                     <Desktop activeHighlight={activeHighlight} openWindow={openWindow} wallpaperHacked={wallpaperHacked} onRestoreWallpaper={restoreWallpaper} />
                     <Taskbar windows={windows} activeHighlight={activeHighlight} openWindow={openWindow} ransomwareActive={ransomwareActive} />
 
-                    {/* MODAIS DO SISTEMA */}
+                    {/* SYSTEM MODALS */}
                     
                     {modalState.wifi && (
-                        <Modal title="Rede Pública Detectada" type="wifi">
+                        <Modal title="Public Network Detected" type="wifi">
                         <div className="text-center space-y-6">
                             <div className="w-20 h-20 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto animate-pulse border border-amber-500/50">
                             <Wifi size={40} className="text-amber-500" />
                             </div>
                             <div>
                             <h2 className="text-xl font-bold text-white mb-2">Cortex_Free_WiFi</h2>
-                            <p className="text-sm text-slate-400">Rede aberta detectada. Sinal forte, sem criptografia.</p>
+                            <p className="text-sm text-slate-400">Open network detected. Strong signal, no encryption.</p>
                             </div>
                             <div className="flex flex-col gap-2">
-                            <button onClick={() => handleWifiAction('connect')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700 transition-colors">Conectar</button>
-                            <button onClick={() => handleWifiAction('tethering')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700 transition-colors">Usar 4G Pessoal</button>
-                            <button onClick={() => handleWifiAction('ignore')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700 transition-colors">Ignorar</button>
+                            <button onClick={() => handleWifiAction('connect')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700 transition-colors">Connect</button>
+                            <button onClick={() => handleWifiAction('tethering')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700 transition-colors">Use Personal Hotspot</button>
+                            <button onClick={() => handleWifiAction('ignore')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700 transition-colors">Ignore</button>
                             </div>
                         </div>
                         </Modal>
                     )}
 
                     {modalState.lock && (
-                        <Modal title="Pausa para Café" danger={false}>
+                        <Modal title="Coffee Break" danger={false}>
                         <div className="text-center space-y-6">
                             <Coffee size={48} className="mx-auto text-slate-400" />
                             <div>
-                            <h2 className="text-lg font-bold text-white">Intervalo Necessário</h2>
-                            <p className="text-sm text-slate-400">Você precisa sair da mesa por 15 minutos.</p>
+                            <h2 className="text-lg font-bold text-white">Break Required</h2>
+                            <p className="text-sm text-slate-400">You need to leave your desk for 15 minutes.</p>
                             </div>
                             <div className="flex flex-col gap-2">
-                            <button onClick={() => handleLockAction('leave')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Apenas Sair</button>
-                            <button onClick={() => handleLockAction('lock')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Bloquear Tela (Win+L)</button>
-                            <button onClick={() => handleLockAction('shutdown')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Desligar Máquina</button>
+                            <button onClick={() => handleLockAction('leave')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Just Leave</button>
+                            <button onClick={() => handleLockAction('lock')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Lock Screen (Win+L)</button>
+                            <button onClick={() => handleLockAction('shutdown')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Shutdown Machine</button>
                             </div>
                         </div>
                         </Modal>
@@ -1200,25 +1205,25 @@
                         <div className="flex gap-4">
                             <div className="text-amber-500 bg-amber-500/10 p-2 rounded h-fit"><AlertTriangle size={24} /></div>
                             <div className="flex-1">
-                            <h4 className="font-bold text-white text-sm tracking-wide">MÍDIA REMOVÍVEL DETECTADA</h4>
+                            <h4 className="font-bold text-white text-sm tracking-wide">REMOVABLE MEDIA DETECTED</h4>
                             {usbStage === 0 ? (
                                 <>
-                                    <p className="text-xs text-slate-400 mb-4 mt-1">Drive 'E: SALARIOS_DIRETORIA.xlsx'. O que fazer?</p>
+                                    <p className="text-xs text-slate-400 mb-4 mt-1">Drive 'E: BOARD_SALARIES.xlsx'. What to do?</p>
                                     <div className="flex gap-2 flex-col">
-                                        <button onClick={() => handleUsbAction('open')} className="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded text-white text-left transition-colors">Abrir</button>
-                                        <button onClick={() => handleUsbAction('ignore')} className="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded text-white text-left transition-colors">Ignorar</button>
-                                        <button onClick={() => handleUsbAction('deliver')} className="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded text-white font-bold text-left transition-colors">Entregar à TI</button>
+                                        <button onClick={() => handleUsbAction('open')} className="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded text-white text-left transition-colors">Open</button>
+                                        <button onClick={() => handleUsbAction('ignore')} className="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded text-white text-left transition-colors">Ignore</button>
+                                        <button onClick={() => handleUsbAction('deliver')} className="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded text-white font-bold text-left transition-colors">Hand over to IT</button>
                                     </div>
                                 </>
                             ) : (
                                 <>
-                                    <p className="text-xs text-slate-400 mb-4 mt-1 animate-fade-in">Conteúdo do Drive E:</p>
+                                    <p className="text-xs text-slate-400 mb-4 mt-1 animate-fade-in">Drive E: Content:</p>
                                     <div className="flex flex-col gap-2 animate-fade-in">
                                         <button onClick={() => handleUsbAction('malware')} className="flex items-center gap-2 text-xs bg-slate-800 hover:bg-slate-700 p-2 rounded text-white border border-slate-700">
-                                        <FileCode size={16} className="text-slate-400"/> Salarios_2024.exe
+                                        <FileCode size={16} className="text-slate-400"/> Salaries_2024.exe
                                         </button>
                                         <button onClick={() => handleUsbAction('photos')} className="flex items-center gap-2 text-xs bg-slate-800 hover:bg-slate-700 p-2 rounded text-white border border-slate-700">
-                                        <FileImage size={16} className="text-slate-400"/> Fotos_Festa.jpg
+                                        <FileImage size={16} className="text-slate-400"/> Party_Photos.jpg
                                         </button>
                                     </div>
                                 </>
@@ -1229,33 +1234,33 @@
                     )}
 
                     {modalState.printer && (
-                        <Modal title="Impressora do Corredor">
+                        <Modal title="Hallway Printer">
                         <div className="text-center space-y-6">
                             <Printer size={48} className="mx-auto text-cyan-200" />
                             {printerStage === 0 ? (
                                 <>
                                     <div>
-                                        <h2 className="text-lg font-bold text-white">Documentos Esquecidos</h2>
-                                        <p className="text-sm text-slate-400">Alguém esqueceu uma folha de pagamento na bandeja de saída.</p>
+                                        <h2 className="text-lg font-bold text-white">Forgotten Documents</h2>
+                                        <p className="text-sm text-slate-400">Someone left a payroll sheet on the output tray.</p>
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <button onClick={() => handlePrinterAction('read')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Ler</button>
-                                        <button onClick={() => handlePrinterAction('ignore')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Ignorar</button>
-                                        <button onClick={() => handlePrinterAction('secure')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-white font-bold text-xs">Recolher e Destruir</button>
+                                        <button onClick={() => handlePrinterAction('read')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Read</button>
+                                        <button onClick={() => handlePrinterAction('ignore')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Ignore</button>
+                                        <button onClick={() => handlePrinterAction('secure')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-white font-bold text-xs">Collect & Shred</button>
                                     </div>
                                 </>
                             ) : (
                                 <div className="animate-fade-in">
                                     <div className="bg-white text-black p-4 rounded text-left text-xs font-mono mb-4 shadow-inner">
-                                        <p className="font-bold border-b border-black mb-2">CONFIDENCIAL: SALÁRIOS</p>
-                                        <p>CEO: R$ 85.000,00</p>
-                                        <p>DIRETOR: R$ 45.000,00</p>
-                                        <p>VOCÊ: R$ 3.500,00</p>
+                                        <p className="font-bold border-b border-black mb-2">CONFIDENTIAL: SALARIES</p>
+                                        <p>CEO: $ 85,000.00</p>
+                                        <p>DIRECTOR: $ 45,000.00</p>
+                                        <p>YOU: $ 3,500.00</p>
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <button onClick={() => handlePrinterAction('gossip')} className="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded text-white font-bold text-xs"><Share2 size={14}/> Tirar foto e mandar no grupo</button>
-                                        <button onClick={() => handlePrinterAction('shred')} className="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs"><Trash2 size={14}/> Triturar imediatamente</button>
-                                        <button onClick={() => handlePrinterAction('leave')} className="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs">Deixar lá (fingir que não viu)</button>
+                                        <button onClick={() => handlePrinterAction('gossip')} className="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded text-white font-bold text-xs"><Share2 size={14}/> Take pic & share</button>
+                                        <button onClick={() => handlePrinterAction('shred')} className="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs"><Trash2 size={14}/> Shred immediately</button>
+                                        <button onClick={() => handlePrinterAction('leave')} className="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs">Leave it (pretend didn't see)</button>
                                     </div>
                                 </div>
                             )}
@@ -1264,7 +1269,7 @@
                     )}
 
                     {modalState.phone && (
-                        <Modal title={callActive ? "Em Chamada" : "Chamada Externa"}>
+                        <Modal title={callActive ? "In Call" : "External Call"}>
                         <div className="text-center py-6">
                             {!callActive ? (
                             <>
@@ -1274,7 +1279,7 @@
                                     <Phone size={32} className="text-cyan-400" />
                                     </div>
                                 </div>
-                                <h2 className="text-2xl font-bold text-white mb-1">Número Desconhecido</h2>
+                                <h2 className="text-2xl font-bold text-white mb-1">Unknown Number</h2>
                                 <p className="text-xs text-slate-500 mb-8 font-mono">00:00</p>
                                 <div className="flex justify-center gap-8">
                                 <button onClick={() => handlePhoneResponse('reject')} className="bg-rose-500 hover:bg-rose-600 p-4 rounded-full text-white shadow-lg transition-transform hover:scale-110"><PhoneOff size={24}/></button>
@@ -1284,13 +1289,13 @@
                             ) : (
                                 <div className="text-left space-y-6 animate-fade-in">
                                 <div className="p-4 bg-slate-800/50 rounded-lg border-l-4 border-amber-500 text-amber-100 text-sm italic relative">
-                                    <span className="absolute -top-3 -left-2 bg-amber-500 text-black text-[10px] font-bold px-2 py-0.5 rounded">Voz</span>
-                                    "Alô? Aqui é do Suporte Técnico da Microsoft. Detectamos um comportamento anômalo no seu IP. Preciso que confirme seu CPF para não bloquearmos sua máquina agora."
+                                    <span className="absolute -top-3 -left-2 bg-amber-500 text-black text-[10px] font-bold px-2 py-0.5 rounded">Voice</span>
+                                    "Hello? This is Microsoft Technical Support. We detected anomalous behavior on your IP. I need you to confirm your SSN/Employee ID so we don't lock your machine right now."
                                 </div>
                                 <div className="flex flex-col gap-2">
-                                    <button onClick={() => handlePhoneResponse('give_info_active')} className="w-full text-left p-3 text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-colors">A. "Ah não! Meu CPF é 002.332..."</button>
-                                    <button onClick={() => handlePhoneResponse('hangup_active')} className="w-full text-left p-3 text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-colors">B. Desligar na cara</button>
-                                    <button onClick={() => handlePhoneResponse('hangup_active')} className="w-full text-left p-3 text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-colors">C. "Vou verificar seu chamado no sistema interno."</button>
+                                    <button onClick={() => handlePhoneResponse('give_info_active')} className="w-full text-left p-3 text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-colors">A. "Oh no! My SSN is 002-33-..."</button>
+                                    <button onClick={() => handlePhoneResponse('hangup_active')} className="w-full text-left p-3 text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-colors">B. Hang up immediately</button>
+                                    <button onClick={() => handlePhoneResponse('hangup_active')} className="w-full text-left p-3 text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-colors">C. "I'll check your ticket internally."</button>
                                 </div>
                                 </div>
                             )}
@@ -1298,14 +1303,14 @@
                         </Modal>
                     )}
 
-                    {/* JANELAS DE APLICATIVOS (Reutilizando componente DraggableWindow) */}
+                    {/* APP WINDOWS (Reusing DraggableWindow component) */}
 
                     {windows.mail.open && !windows.mail.minimized && (
                         <DraggableWindow config={windows.mail} onClose={() => closeWindow('mail')} onMinimize={() => minimizeWindow('mail')} onFocus={() => focusWindow('mail')} onMove={moveWindow}>
                         <div className="flex h-full flex-col bg-slate-50 text-slate-900">
                             <div className="bg-[#0078D4] text-white p-3 text-xs font-bold flex justify-between items-center shadow-md z-10">
-                                <span className="flex items-center gap-2"><Mail size={14}/> Caixa de Entrada</span>
-                                <span className="bg-white/20 px-2 py-0.5 rounded text-[10px]">{emails.filter(e => !e.read).length} não lidos</span>
+                                <span className="flex items-center gap-2"><Mail size={14}/> Inbox</span>
+                                <span className="bg-white/20 px-2 py-0.5 rounded text-[10px]">{emails.filter(e => !e.read).length} unread</span>
                             </div>
                             <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-slate-100/50">
                             {emails.map(e => (
@@ -1327,9 +1332,9 @@
                                     {expandedEmailId === e.id && (
                                         <div className="pl-8 mt-2 animate-fade-in cursor-default" onClick={ev => ev.stopPropagation()}>
                                             <div className="bg-slate-50 p-2 rounded mb-3 text-[10px] text-slate-500 border border-slate-100">
-                                                <p><span className="font-bold">De:</span> {e.from} &lt;{e.fromEmail}&gt;</p>
-                                                <p><span className="font-bold">Para:</span> Você &lt;admin.security@cortex-corp.internal&gt;</p>
-                                                <p><span className="font-bold">Data:</span> Hoje, {e.time}</p>
+                                                <p><span className="font-bold">From:</span> {e.from} &lt;{e.fromEmail}&gt;</p>
+                                                <p><span className="font-bold">To:</span> You &lt;admin.security@cortex-corp.internal&gt;</p>
+                                                <p><span className="font-bold">Date:</span> Today, {e.time}</p>
                                             </div>
                                             <p className="text-xs text-slate-700 mb-4 leading-relaxed">{e.body}</p>
                                             
@@ -1338,19 +1343,19 @@
                                                     onClick={() => handleEmailAction(e, 'click')} 
                                                     className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-[10px] text-slate-600 hover:bg-slate-100 transition-colors"
                                                 >
-                                                    {e.attachment ? "Baixar Anexo" : "Acessar Link"}
+                                                    {e.attachment ? "Download Attachment" : "Access Link"}
                                                 </button>
                                                 <button 
                                                     onClick={() => handleEmailAction(e, 'ask')} 
                                                     className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-[10px] text-slate-600 hover:bg-slate-100 transition-colors"
                                                 >
-                                                    Perguntar no Chat
+                                                    Ask in Chat
                                                 </button>
                                                 <button 
                                                     onClick={() => handleEmailAction(e, 'report')} 
                                                     className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-[10px] text-slate-600 hover:bg-slate-100 transition-colors"
                                                 >
-                                                    Reportar
+                                                    Report
                                                 </button>
                                             </div>
                                         </div>
@@ -1360,7 +1365,7 @@
                             {emails.length === 0 && (
                                 <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-2 opacity-50">
                                     <CheckCircle size={48} className="text-emerald-500"/>
-                                    <span className="text-xs uppercase tracking-widest font-bold">Tudo limpo</span>
+                                    <span className="text-xs uppercase tracking-widest font-bold">All clear</span>
                                 </div>
                             )}
                             </div>
@@ -1374,35 +1379,35 @@
                             <div className="bg-white border-b p-3 shadow-sm flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                                <span className="text-xs font-bold text-slate-700">Chat Corporativo</span>
+                                <span className="text-xs font-bold text-slate-700">Corporate Chat</span>
                                 </div>
                                 <div className="text-[10px] text-slate-400">Online</div>
                             </div>
                             <div className="flex-1 p-4 space-y-4 overflow-y-auto bg-slate-50/50">
                                 {chatHistory.map(c => (
-                                <div key={c.id} className={`flex flex-col ${c.user === 'Você' ? 'items-end' : 'items-start'} animate-fade-in`}>
-                                    <div className={`p-3 rounded-2xl max-w-[85%] text-xs shadow-sm relative ${c.user === 'Você' ? 'bg-[#6264A7] text-white rounded-tr-sm' : 'bg-white border border-slate-200 text-slate-700 rounded-tl-sm'}`}>
-                                    <div className={`font-bold text-[9px] uppercase mb-1 opacity-70 ${c.user === 'Você' ? 'text-indigo-200 text-right' : 'text-slate-400'}`}>{c.user}</div>
+                                <div key={c.id} className={`flex flex-col ${c.user === 'You' ? 'items-end' : 'items-start'} animate-fade-in`}>
+                                    <div className={`p-3 rounded-2xl max-w-[85%] text-xs shadow-sm relative ${c.user === 'You' ? 'bg-[#6264A7] text-white rounded-tr-sm' : 'bg-white border border-slate-200 text-slate-700 rounded-tl-sm'}`}>
+                                    <div className={`font-bold text-[9px] uppercase mb-1 opacity-70 ${c.user === 'You' ? 'text-indigo-200 text-right' : 'text-slate-400'}`}>{c.user}</div>
                                     {c.text}
                                     </div>
                                 </div>
                                 ))}
                                 <div ref={logsEndRef}/>
                                 
-                                {/* BRANCHING LÓGICO DO CHAT */}
-                                {step === 3 && shadowITStage === 0 && chatHistory[chatHistory.length-1].user === "Lucas (Dev)" && (
+                                {/* CHAT BRANCHING LOGIC */}
+                                {step === 3 && shadowITStage === 0 && chatHistory[chatHistory.length-1].user === "Luke (Dev)" && (
                                 <div className="flex flex-col gap-2 mt-4 p-2 bg-white/50 rounded border border-slate-200 animate-slide-in-up">
-                                    <div className="text-[10px] text-center text-slate-400 uppercase tracking-widest mb-1">Como responder?</div>
-                                    <button onClick={() => handleShadowITAction('allow')} className="w-full text-left text-xs bg-white border border-slate-200 p-2 rounded hover:bg-slate-100 hover:border-slate-300 hover:shadow-sm text-slate-600 transition-all">"Pode mandar."</button>
-                                    <button onClick={() => handleShadowITAction('deny')} className="w-full text-left text-xs bg-white border border-slate-200 p-2 rounded hover:bg-slate-100 hover:border-slate-300 hover:shadow-sm text-slate-600 transition-all">"Negativo. Bloqueado."</button>
-                                    <button onClick={() => handleShadowITAction('alternative')} className="w-full text-left text-xs bg-white border border-slate-200 p-2 rounded hover:bg-slate-100 hover:border-slate-300 hover:shadow-sm text-slate-600 transition-all">"Usa o FileDrop Interno."</button>
+                                    <div className="text-[10px] text-center text-slate-400 uppercase tracking-widest mb-1">How to reply?</div>
+                                    <button onClick={() => handleShadowITAction('allow')} className="w-full text-left text-xs bg-white border border-slate-200 p-2 rounded hover:bg-slate-100 hover:border-slate-300 hover:shadow-sm text-slate-600 transition-all">"Go ahead."</button>
+                                    <button onClick={() => handleShadowITAction('deny')} className="w-full text-left text-xs bg-white border border-slate-200 p-2 rounded hover:bg-slate-100 hover:border-slate-300 hover:shadow-sm text-slate-600 transition-all">"Negative. Blocked."</button>
+                                    <button onClick={() => handleShadowITAction('alternative')} className="w-full text-left text-xs bg-white border border-slate-200 p-2 rounded hover:bg-slate-100 hover:border-slate-300 hover:shadow-sm text-slate-600 transition-all">"Use Internal FileDrop."</button>
                                 </div>
                                 )}
-                                {step === 3 && shadowITStage === 1 && chatHistory[chatHistory.length-1].user === "Lucas (Dev)" && (
+                                {step === 3 && shadowITStage === 1 && chatHistory[chatHistory.length-1].user === "Luke (Dev)" && (
                                 <div className="flex flex-col gap-2 mt-4 p-2 bg-rose-50 rounded border border-rose-200 animate-slide-in-up">
-                                    <div className="text-[10px] text-center text-rose-400 uppercase tracking-widest mb-1">Ele insistiu. E agora?</div>
-                                    <button onClick={() => handleShadowITAction('rude')} className="w-full text-left text-xs bg-white border border-rose-200 p-2 rounded hover:bg-rose-50 hover:border-rose-300 hover:shadow-sm text-rose-700 transition-all">"Problema seu. Regra é regra."</button>
-                                    <button onClick={() => handleShadowITAction('educate')} className="w-full text-left text-xs bg-white border border-emerald-200 p-2 rounded hover:bg-emerald-50 hover:border-emerald-300 hover:shadow-sm text-emerald-700 transition-all">"Vamos abrir um chamado de emergência."</button>
+                                    <div className="text-[10px] text-center text-rose-400 uppercase tracking-widest mb-1">He insisted. Now what?</div>
+                                    <button onClick={() => handleShadowITAction('rude')} className="w-full text-left text-xs bg-white border border-rose-200 p-2 rounded hover:bg-rose-50 hover:border-rose-300 hover:shadow-sm text-rose-700 transition-all">"Your problem. Rules are rules."</button>
+                                    <button onClick={() => handleShadowITAction('educate')} className="w-full text-left text-xs bg-white border border-emerald-200 p-2 rounded hover:bg-emerald-50 hover:border-emerald-300 hover:shadow-sm text-emerald-700 transition-all">"Let's open an emergency ticket."</button>
                                 </div>
                                 )}
                             </div>
@@ -1416,21 +1421,21 @@
                             <div className="bg-slate-100 p-2 border-b flex items-center justify-center relative">
                                 <div className="bg-white border px-3 py-1 rounded-full text-xs text-slate-500 font-mono flex items-center gap-2 shadow-sm w-3/4">
                                     <Lock size={10} className="text-slate-400"/> 
-                                    https://br-validacao.com/login 
+                                    https://gov-validation.com/login 
                                 </div>
                             </div>
                             <div className="flex-1 flex items-center justify-center bg-slate-50 relative overflow-hidden">
                                 <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
                                 <div className="bg-white p-8 rounded-xl shadow-2xl border w-72 text-center relative z-10">
                                     <div className="w-16 h-16 bg-blue-600 rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg shadow-blue-600/30"><Globe size={32} className="text-white"/></div>
-                                    <h3 className="font-bold text-slate-800 mb-6 text-lg">Portal do Colaborador</h3>
-                                    <input className="w-full border p-3 text-xs rounded mb-3 bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500 transition-all" disabled placeholder="Usuário Corporativo"/>
-                                    <input className="w-full border p-3 text-xs rounded mb-6 bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500 transition-all" disabled placeholder="Senha de Rede"/>
+                                    <h3 className="font-bold text-slate-800 mb-6 text-lg">Employee Portal</h3>
+                                    <input className="w-full border p-3 text-xs rounded mb-3 bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500 transition-all" disabled placeholder="Corporate User"/>
+                                    <input className="w-full border p-3 text-xs rounded mb-6 bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500 transition-all" disabled placeholder="Network Password"/>
                                     
                                     <div className="space-y-2">
-                                    <button onClick={() => handleBrowserAction('login')} className="w-full bg-blue-600 text-white py-3 rounded text-xs font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">Entrar</button>
-                                    <button onClick={() => handleBrowserAction('check')} className="w-full bg-slate-100 text-slate-600 py-3 rounded text-xs hover:bg-slate-200 transition-colors">Verificar Certificado</button>
-                                    <button onClick={() => handleBrowserAction('close')} className="w-full text-rose-500 text-[10px] hover:underline mt-2">Fechar Página</button>
+                                    <button onClick={() => handleBrowserAction('login')} className="w-full bg-blue-600 text-white py-3 rounded text-xs font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">Login</button>
+                                    <button onClick={() => handleBrowserAction('check')} className="w-full bg-slate-100 text-slate-600 py-3 rounded text-xs hover:bg-slate-200 transition-colors">Check Certificate</button>
+                                    <button onClick={() => handleBrowserAction('close')} className="w-full text-rose-500 text-[10px] hover:underline mt-2">Close Page</button>
                                     </div>
                                 </div>
                             </div>
@@ -1454,13 +1459,13 @@
                                     
                                     <div className="grid grid-cols-3 gap-4 mt-8 w-full max-w-2xl">
                                         <button onClick={() => handleSocAction('shutdown')} className="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded transition-colors flex flex-col items-center gap-2 text-xs">
-                                            <Power size={20}/> DESLIGAR TUDO
+                                            <Power size={20}/> SHUTDOWN ALL
                                         </button>
                                         <button onClick={() => handleSocAction('isolate')} className="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded transition-colors flex flex-col items-center gap-2 text-xs">
-                                            <Shield size={20}/> ISOLAR INFECTADOS
+                                            <Shield size={20}/> ISOLATE HOSTS
                                         </button>
                                         <button onClick={() => handleSocAction('trace')} className="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded transition-colors flex flex-col items-center gap-2 text-xs">
-                                            <Fingerprint size={20}/> RASTREAR ORIGEM
+                                            <Fingerprint size={20}/> TRACE ORIGIN
                                         </button>
                                     </div>
                                 </div>

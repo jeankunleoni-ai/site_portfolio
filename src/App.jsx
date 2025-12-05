@@ -171,7 +171,7 @@ const getProjects = (lang) => {
       category: isPt ? "Treinamento de Sistemas" : isEs ? "Entrenamiento de Sistemas" : "System Training",
       // ATENÇÃO: Crie o arquivo public/banners/hospital-sim.jpg
       image: "/banners/hospital-sim.jpg", 
-      projectUrl: "/projects/hospital-sim/index.html", 
+      projectUrl: "/projects/hospital-sim/story.html", 
       tags: ["Storyline", "Software Sim", "UX"],
       desc: isPt ? "Simulação de alta fidelidade de software EMR para prática sem riscos." : isEs ? "Simulación de alta fidelidad de software EMR para práctica sin riesgos." : "High-fidelity EMR software simulation for risk-free practice.",
       details: {
