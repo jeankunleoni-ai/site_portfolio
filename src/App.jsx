@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { 
   Menu, X, Linkedin, Mail, ArrowUpRight, ArrowLeft,
   Github, Phone, Globe, ChevronDown, Play, MousePointer2, ArrowDown,
-  CheckCircle, Layers, PenTool, Cpu, Award, Users, Maximize2, Minimize2, ExternalLink
+  CheckCircle, Layers, PenTool, Cpu, Award, Users, Maximize2, Minimize2, ExternalLink,
+  Target, Lightbulb, Zap, BarChart3, Layout
 } from 'lucide-react';
 
 // --- TRANSLATIONS / TRADUÇÕES ---
@@ -44,9 +45,11 @@ const translations = {
       privacy: "Privacy Policy"
     },
     modal: {
-      challenge: "The Challenge",
-      solution: "The Solution",
-      results: "Results",
+      context: "Context & Opportunity",
+      audience: "Audience & Needs",
+      approach: "Approach & Design Strategy",
+      solution: "Developed Solution",
+      impact: "Expected / Demonstrated Impact",
       tools: "Tools Used",
       launch: "Launch Project",
       closeProject: "Close Project",
@@ -90,9 +93,11 @@ const translations = {
       privacy: "Política de Privacidade"
     },
     modal: {
-      challenge: "O Desafio",
-      solution: "A Solução",
-      results: "Resultados",
+      context: "Contexto e Oportunidade",
+      audience: "Público e Necessidades",
+      approach: "Abordagem / Estratégia de Design",
+      solution: "Solução Desenvolvida",
+      impact: "Impacto Esperado / Demonstrado",
       tools: "Ferramentas Usadas",
       launch: "Ver Projeto",
       closeProject: "Fechar Projeto",
@@ -136,9 +141,11 @@ const translations = {
       privacy: "Política de Privacidad"
     },
     modal: {
-      challenge: "El Desafío",
-      solution: "La Solución",
-      results: "Resultados",
+      context: "Contexto y Oportunidad",
+      audience: "Público y Necesidades",
+      approach: "Enfoque / Estrategia de Diseño",
+      solution: "Solución Desarrollada",
+      impact: "Impacto Esperado / Demostrado",
       tools: "Herramientas",
       launch: "Ver Proyecto",
       closeProject: "Cerrar Proyecto",
@@ -148,403 +155,575 @@ const translations = {
 };
 
 // --- PROJECTS DATA ---
-// NOTE: 
-// 1. Create a folder 'public/banners' and place your images there.
-// 2. Create a folder 'public/projects' and place your project builds there.
-const getProjects = (lang) => {
+function getProjects(lang) {
   const isPt = lang === 'pt';
   const isEs = lang === 'es';
-
-  // Fallback image if local file is missing (for safety during development)
-  // You can replace this logic once all real images are uploaded.
-  const getBanner = (path, fallbackText) => {
-      // In a real scenario, you'd just return the path. 
-      // For this example, if you haven't created the files yet, it will point to the path.
-      // Ensure the file exists at public/banners/{filename}
-      return path; 
-  };
 
   return [
     {
       id: 3,
-      title: isPt ? "Simulação de Software Hospitalar" : isEs ? "Simulación de Software Hospitalario" : "Hospital Software Simulation",
+      title: isPt ? "Healthy Sys – Eletronic Medical Record Simulation" : isEs ? "Healthy Sys – Simulación de Registro Médico Electrónico" : "Healthy Sys – Electronic Medical Record Simulation",
       category: isPt ? "Treinamento de Sistemas" : isEs ? "Entrenamiento de Sistemas" : "System Training",
-      // ATENÇÃO: Crie o arquivo public/banners/hospital-sim.jpg
-      image: "/banners/hospital-sim.jpg", 
+      image: "/banners/hospital-sim.jpg",
       projectUrl: "/projects/hospital-sim/story.html", 
-      tags: ["Storyline", "Software Sim", "UX"],
+      tags: ["Storyline 360", "JavaScript", "HTML5/CSS", "UX Design"],
       desc: isPt ? "Simulação de alta fidelidade de software EMR para prática sem riscos." : isEs ? "Simulación de alta fidelidad de software EMR para práctica sin riesgos." : "High-fidelity EMR software simulation for risk-free practice.",
       details: {
-        challenge: isPt ? "Treinamento no sistema real apresentava riscos aos dados." : isEs ? "El entrenamiento en el sistema real presentaba riesgos de datos." : "Training on live system posed data risks.",
-        solution: isPt ? "Réplica pixel-perfect da interface com modos guiado e teste." : isEs ? "Réplica exacta de la interfaz con modos guiado y de prueba." : "Pixel-perfect interface replica.",
-        result: isPt ? "Zero erros de dados durante o treinamento." : isEs ? "Cero errores de datos durante el entrenamiento." : "Zero data errors during training."
+        context: isPt 
+          ? (
+            <>
+              O treinamento em sistemas de Prontuário Eletrônico (EMR) na área da saúde enfrenta frequentemente o dilema entre a passividade de vídeos demonstrativos e o risco inerente ao treinamento "on-the-job". No contexto de protocolos críticos como o da Sepse, onde a velocidade e a precisão no registro de dados são vitais, identificou-se a oportunidade de desenvolver um ambiente de "sandbox" seguro. O objetivo foi criar uma solução que permitisse aos profissionais de saúde praticar a navegação no sistema e a tomada de decisão clínica simultaneamente, eliminando riscos para pacientes reais e a necessidade complexa de instalação de softwares hospitalares pesados em máquinas de treinamento.
+            </>
+          ) 
+          : isEs 
+          ? "El entrenamiento en sistemas de Registro Médico Electrónico (EMR) enfrenta el dilema entre videos pasivos y el riesgo del entrenamiento en el trabajo. En protocolos críticos como Sepsis, la velocidad y precisión son vitales. Se identificó la oportunidad de desarrollar un entorno 'sandbox' seguro. El objetivo fue crear una solución que permitiera a los profesionales practicar la navegación y la toma de decisiones clínicas simultáneamente, eliminando riesgos para los pacientes y la necesidad de instalar software pesado."
+          : "EMR training often faces a dilemma between passive videos and risky on-the-job training. In critical protocols like Sepsis, speed and data accuracy are vital. We identified an opportunity to develop a safe 'sandbox' environment. The goal was to create a solution allowing healthcare professionals to practice system navigation and clinical decision-making simultaneously, eliminating risks to real patients and the complex need to install heavy hospital software.",
+        
+        audience: isPt
+          ? (
+            <>
+              <p className="mb-4">O projeto foi desenhado para enfermeiros, médicos residentes e estudantes de medicina que operam sob alta carga cognitiva durante emergências médicas.</p>
+              <ul className="list-disc pl-5 space-y-2">
+                <li>O principal desafio desse público é a necessidade de dominar a interface do software "Healthy Sys" para que a tecnologia atue como facilitadora, e não como barreira, durante o atendimento crítico.</li>
+                <li>A solução atende à necessidade urgente de prática repetitiva e interativa para automatizar o fluxo de registro de medicamentos, sinais vitais e notas de evolução, permitindo que o foco cognitivo do profissional permaneça prioritariamente na estabilização do paciente.</li>
+              </ul>
+            </>
+          )
+          : isEs
+          ? "Diseñado para enfermeros, residentes y estudiantes de medicina bajo alta carga cognitiva. El desafío es dominar la interfaz 'Healthy Sys' para que la tecnología facilite, no obstaculice, la atención crítica. La solución aborda la necesidad de práctica repetitiva para automatizar el registro de datos, permitiendo que el foco permanezca en la estabilización del paciente."
+          : "Designed for nurses, residents, and medical students operating under high cognitive load. The challenge is mastering the 'Healthy Sys' interface so technology acts as an enabler, not a barrier, during critical care. The solution meets the urgent need for repetitive practice to automate data entry, allowing the professional's cognitive focus to remain on patient stabilization.",
+        
+        approach: isPt
+          ? (
+            <>
+              <p className="mb-4">A estratégia adotada fundamenta-se na teoria da <strong>Aprendizagem Situada</strong> combinada com técnicas de <strong>Andaimagem (Scaffolding)</strong>.</p>
+              <ul className="list-disc pl-5 space-y-2">
+                <li>Tecnicamente, optou-se pela utilização do software Articulate Storyline para criar a simulação de sistema e também utilização de HTML5 e CSS.</li>
+                <li>O design instrucional foi estruturado em dois momentos distintos: um modo de "Prática Guiada", onde o sistema oferece suporte visual e feedback imediato para reduzir a frustração inicial na aprendizagem da interface, seguido por um modo de "Avaliação", onde os apoios são removidos (Fading).</li>
+                <li>A interface foi desenhada de forma minimalista para reduzir a carga cognitiva estranha, garantindo que a atenção do aluno se concentre exclusivamente nos dados clínicos relevantes para a tomada de decisão.</li>
+              </ul>
+            </>
+          )
+          : isEs
+          ? "Estrategia basada en Aprendizaje Situado y Andamiaje (Scaffolding). Se utilizó Articulate Storyline, HTML5 y CSS. Diseño instruccional estructurado en 'Práctica Guiada' con soporte visual y 'Evaluación' donde se retiran los apoyos (Fading). Interfaz minimalista para reducir la carga cognitiva extraña y enfocar la atención en datos clínicos relevantes."
+          : "Strategy based on Situated Learning and Scaffolding. Used Articulate Storyline, HTML5, and CSS. Instructional design structured into 'Guided Practice' with visual support and 'Assessment' where supports are removed (Fading). Minimalist interface design to reduce extraneous cognitive load, ensuring attention remains on relevant clinical data.",
+        
+        solution: isPt 
+          ? (
+            <>
+              <p className="mb-4">O produto final consiste em uma simulação de alta fidelidade do sistema hospitalar, operando através de um dashboard interativo que mimetiza a pressão de um turno real.</p>
+              <ul className="list-disc pl-5 space-y-2">
+                <li>A solução incorpora um motor de cenários lógico desenvolvido em JavaScript capaz de validar inputs complexos, como a verificação cruzada de alergias medicamentosas, a precisão na dosagem de vasopressores e a sintaxe correta de notas de enfermagem.</li>
+                <li>O usuário assume o papel de um profissional ativo, realizando desde o login e a triagem de alertas até o tratamento completo do paciente, culminando em um sistema de feedback que gera um relatório detalhado comparando as ações realizadas com o protocolo ideal.</li>
+              </ul>
+            </>
+          )
+          : isEs
+          ? "Simulación de alta fidelidad con dashboard interactivo que imita un turno real. Motor lógico en JavaScript para validar entradas complejas (alergias, dosificación). El usuario asume un rol activo desde el inicio de sesión hasta el tratamiento, finalizando con un informe detallado comparativo con el protocolo ideal."
+          : "High-fidelity simulation with an interactive dashboard mimicking a real shift. Logic engine built in JavaScript validates complex inputs (allergies, dosage). The user assumes an active role from login to treatment, culminating in a feedback system that generates a detailed report comparing actions against the ideal protocol.",
+        
+        impact: isPt 
+          ? (
+            <>
+              <ul className="list-disc pl-5 space-y-2">
+                <li>Diferente de vídeos interativos lineares, o código desenvolvido permite o rastreamento granular do comportamento do usuário, identificando não apenas o resultado final, mas o processo de decisão adotado.</li>
+                <li>Além disso, a arquitetura modular do código comprova a escalabilidade do projeto, permitindo a adição de novos casos clínicos e especialidades através da simples atualização dos objetos de dados, sem a necessidade de reescrever a lógica da aplicação.</li>
+              </ul>
+            </>
+          )
+          : isEs
+          ? "A diferencia de los videos lineales, permite un rastreo granular del comportamiento y proceso de decisión. La arquitectura modular prueba la escalabilidad, permitiendo añadir nuevos casos clínicos mediante la actualización de objetos de datos sin reescribir la lógica."
+          : "Unlike linear videos, the code allows granular tracking of user behavior and decision processes. Modular architecture proves scalability, allowing new clinical cases to be added by simply updating data objects without rewriting application logic."
       }
     },
     {
       id: 4,
-      title: isPt ? "Cenário de Branching de Cibersegurança" : isEs ? "Escenario de Ciberseguridad" : "Cybersecurity Branching Scenario",
-      category: isPt ? "Baseado em Cenário" : isEs ? "Basado en Escenarios" : "Scenario-Based",
-      // ATENÇÃO: Crie o arquivo public/banners/cybersecurity.jpg
+      title: isPt ? "Cortex Security OS: Treinamento de Cibersegurança" : isEs ? "Cortex Security OS: Entrenamiento de Ciberseguridad" : "Cortex Security OS: Cybersecurity Training",
+      category: isPt ? ["Baseado em Cenário", "Simulação"] : isEs ? ["Basado en Escenarios", "Simulación"] : ["Scenario-Based", "Simulation"],
       image: "/banners/cybersecurity.jpg",
       projectUrl: "/projects/cybersecurity/index.html",
-      tags: ["Branching", "Gamification", "Decision Making"],
-      desc: isPt ? "Treinamento narrativo de segurança contra phishing." : isEs ? "Entrenamiento narrativo de seguridad contra phishing." : "Narrative-driven security training against phishing.",
+      tags: ["React", "HTML5", "CSS", "Figma", "Adobe Suite", "Chat GPT", "Google Gemini"],
+      desc: isPt ? "Simulação de desktop corporativo para treinamento de segurança da informação com gamificação de consequências e dilemas reais." : isEs ? "Simulación de escritorio corporativo para capacitación en seguridad de la información con gamificación de consecuencias." : "Corporate desktop simulation for information security training with consequence gamification.",
       details: {
-        challenge: isPt ? "Treinamento seco era ignorado pela equipe." : isEs ? "El entrenamiento aburrido era ignorado por el personal." : "Dry training was ignored.",
-        solution: isPt ? "Jogo narrativo afetando o 'Medidor de Risco'." : isEs ? "Juego narrativo que afecta el 'Medidor de Riesgo'." : "Narrative game affecting 'Risk Meter'.",
-        result: isPt ? "Taxas de engajamento dobradas." : isEs ? "Tasas de participación duplicadas." : "Doubled engagement rates."
+        context: isPt 
+          ? "O treinamento tradicional de InfoSec geralmente sofre com baixo engajamento. A Solução: Desenvolvi o Cortex Security OS para preencher a lacuna entre teoria e prática, criando um ambiente de sandbox seguro onde o erro é instrutivo."
+          : isEs 
+          ? "La capacitación tradicional en Seguridad de la Información (InfoSec) a menudo sufre de bajas tasas de participación y retención. La Solución: Desarrollé Cortex Security OS para cerrar la brecha entre la teoría y la práctica, creando un entorno seguro ('sandbox') donde el error es permitido e instructivo."
+          : "Traditional InfoSec training often suffers from low engagement. The Solution: I developed Cortex Security OS to bridge the gap between theory and practice, creating a safe sandbox environment where error is instructive.",
+        
+        audience: isPt 
+          ? "Funcionários corporativos de vários níveis hierárquicos. O público tende a ver a segurança como um obstáculo à produtividade, com uma tendência natural a ignorar protocolos."
+          : isEs
+          ? "Empleados corporativos de diversos niveles jerárquicos. El público tiende a ver la seguridad como un obstáculo para la productividad y existe una tendencia natural a eludir los protocolos."
+          : "Corporate employees of various hierarchical levels. The audience tends to view security as an obstacle to productivity, with a natural tendency to bypass protocols.",
+        
+        approach: isPt 
+          ? "Utilizou-se uma abordagem de Aprendizagem Situada combinada com Gamificação Mecânica. Design de cenário interativo com interface diegética e mecânica de dupla consequência."
+          : isEs
+          ? "Utilicé un enfoque de Aprendizaje Situado combinado con Gamificación Mecánica. Diseño de escenarios interactivos con interfaz diegética y mecánica de doble consecuencia."
+          : "Used a Situated Learning approach combined with Mechanical Gamification. Interactive scenario design with diegetic interface and double consequence mechanics.",
+        
+        solution: isPt 
+          ? "O produto final é uma simulação web responsiva que imita um ambiente de desktop corporativo com interface imersiva e módulos interativos."
+          : isEs
+          ? "El producto final es una simulación web receptiva que imita un entorno de escritorio corporativo con interfaz inmersiva y módulos interactivos."
+          : "The final product is a responsive web simulation that mimics a corporate desktop environment with immersive interface and interactive modules.",
+        
+        impact: isPt 
+          ? "Este projeto serve como uma demonstração técnica e pedagógica. Oferece avaliação holística e aumenta o engajamento por meio da aprendizagem ativa."
+          : isEs
+          ? "Este proyecto sirve como una demostración técnica y pedagógica. Ofrece evaluación holística y aumenta el compromiso a través del aprendizaje activo."
+          : "This project serves as a technical and pedagogical demonstration. Offers holistic assessment and increases engagement through active learning."
       }
     },
     {
       id: 6,
       title: isPt ? "Cenário de Boas Práticas de IA" : isEs ? "Mejores Prácticas de IA" : "AI Best Practices Scenario",
       category: isPt ? "Tecnologia Emergente" : isEs ? "Tecnología Emergente" : "Emerging Tech",
-      // ATENÇÃO: Crie o arquivo public/banners/ai-ethics.jpg
       image: "/banners/ai-ethics.jpg",
       projectUrl: "/projects/ai-ethics/index.html",
       tags: ["AI", "Ethics", "Light Gamification"],
       desc: isPt ? "Guia sobre uso responsável de IA no trabalho." : isEs ? "Guía sobre el uso responsable de la IA en el trabajo." : "Guide on responsible AI usage in the workplace.",
       details: {
-        challenge: isPt ? "Diretrizes pouco claras sobre uso de IA." : isEs ? "Pautas poco claras sobre el uso de la IA." : "Unclear guidelines on AI usage.",
-        solution: isPt ? "Cenários destacando armadilhas comuns." : isEs ? "Escenarios que destacan errores comunes." : "Scenarios highlighting pitfalls.",
-        result: isPt ? "Estabeleceu linha de base para adoção de IA." : isEs ? "Estableció una línea base para la adopción de IA." : "Established baseline for AI adoption."
+        context: isPt 
+          ? "Com a rápida adoção de ferramentas de IA, muitas empresas carecem de diretrizes claras sobre o uso ético e seguro." 
+          : isEs ? "Con la rápida adopción de herramientas de IA, muchas empresas carecen de directrices claras sobre el uso ético y seguro." : "With rapid AI adoption, companies lacked clear guidelines on ethical and safe usage.",
+        audience: isPt
+          ? "Colaboradores que utilizam ferramentas de IA Generativa no dia a dia."
+          : isEs ? "Empleados que utilizan herramientas de IA generativa a diario." : "Employees using Generative AI tools daily.",
+        approach: isPt
+          ? "Cenários interativos que apresentam dilemas éticos comuns no uso de IA."
+          : isEs ? "Escenarios interactivos que presentan dilemas éticos comunes en el uso de la IA." : "Interactive scenarios presenting common ethical dilemmas in AI usage.",
+        solution: isPt 
+          ? "Módulo de microlearning com cenários ramificados focados em privacidade de dados e viés algorítmico." 
+          : isEs ? "Módulo de microaprendizaje con escenarios ramificados centrados en la privacidad de los datos y el sesgo algorítmico." : "Microlearning module with branching scenarios focused on data privacy and algorithmic bias.",
+        impact: isPt 
+          ? "Estabelecimento de uma linha de base de conhecimento para adoção segura de IA." 
+          : isEs ? "Establecimiento de una línea base de conocimiento para la adopción segura de la IA." : "Established a knowledge baseline for safe AI adoption."
       }
     },
+    // --- UPDATED ID 5: Time Management with FULL DETAILS ---
     {
       id: 5,
-      title: isPt ? "Gestão de Tempo Gamificada" : isEs ? "Gestión del Tiempo Gamificada" : "Time Management Gamified",
+      title: isPt ? "Time Management: The Professional Journey" : isEs ? "Time Management: The Professional Journey" : "Time Management: The Professional Journey",
       category: isPt ? "Soft Skills" : isEs ? "Habilidades Blandas" : "Soft Skills",
-      // ATENÇÃO: Crie o arquivo public/banners/time-management.jpg
       image: "/banners/time-management.jpg",
       projectUrl: "/projects/time-management/index.html",
-      tags: ["Storytelling", "Gamification", "Scenario"],
-      desc: isPt ? "Cenário de ramificação para priorizar tarefas urgentes vs importantes." : isEs ? "Escenario ramificado para priorizar tareas urgentes vs importantes." : "Branching scenario for prioritizing urgent vs important tasks.",
+      tags: ["Adobe Captivate", "React", "HTML5", "Gamification", "Branching Scenarios"],
+      desc: isPt ? "Simulação imersiva de um dia de trabalho caótico com foco em gestão de tempo e priorização." : isEs ? "Simulación inmersiva de un día de trabajo caótico centrada en la gestión del tiempo y la priorización." : "Immersive simulation of a chaotic workday focused on time management and prioritization.",
       details: {
-        challenge: isPt ? "Gestores lutavam para priorizar." : isEs ? "Los gerentes luchaban para priorizar." : "Managers struggled to prioritize.",
-        solution: isPt ? "Dia de trabalho caótico simulado com consequências." : isEs ? "Día de trabajo caótico simulado con consecuencias." : "Simulated chaotic workday with consequences.",
-        result: isPt ? "Habilidades de priorização melhoradas." : isEs ? "Habilidades de priorización mejoradas." : "Improved prioritization skills."
+        context: isPt 
+          ? (
+            <>
+              Treinamentos corporativos tradicionais sobre gestão do tempo frequentemente falham ao focar excessivamente na teoria sem oferecer um ambiente seguro para a prática. No mundo real, a pressão por resultados, as interrupções constantes e a ansiedade social dificultam a aplicação fria de conceitos acadêmicos. Identifiquei a oportunidade de criar uma ferramenta que preenchesse essa lacuna entre o conhecimento teórico e a execução prática, simulando a pressão psicológica de um dia de trabalho intenso onde as consequências das más escolhas são sentidas imediatamente, mas sem riscos reais para o negócio.
+            </>
+          ) 
+          : isEs 
+          ? "La capacitación corporativa tradicional en gestión del tiempo a menudo falla al centrarse demasiado en la teoría sin ofrecer un entorno seguro para la práctica. En el mundo real, la presión por los resultados dificulta la aplicación de conceptos académicos. Identifiqué la oportunidad de crear una herramienta que cerrara la brecha entre la teoría y la práctica, simulando la presión psicológica de un día de trabajo intenso donde las consecuencias de las malas decisiones se sienten de inmediato, pero sin riesgos reales para el negocio."
+          : "Traditional corporate time management training often fails by focusing too heavily on theory without offering a safe environment for practice. In the real world, pressure for results makes applying academic concepts difficult. I identified an opportunity to create a tool bridging the gap between theory and practice, simulating the psychological pressure of an intense workday where the consequences of poor choices are felt immediately, but without real business risks.",
+        
+        audience: isPt
+          ? (
+            <>
+              <p className="mb-4">O público-alvo é composto por profissionais corporativos, de nível júnior a pleno, que operam em ambientes digitais de ritmo acelerado e alta demanda.</p>
+              <ul className="list-disc pl-5 space-y-2">
+                <li>Estes aprendizes frequentemente enfrentam sobrecarga cognitiva, dificuldade em estabelecer limites com colegas e gestores, e possuem uma tendência prejudicial à multitarefa, o que reduz a produtividade e aumenta o risco de burnout.</li>
+                <li>A necessidade central não era apenas receber dicas de produtividade, mas desenvolver a assertividade comportamental e a capacidade analítica para filtrar urgências em tempo real, distinguindo ruído de prioridade.</li>
+              </ul>
+            </>
+          )
+          : isEs
+          ? "El público objetivo son profesionales corporativos de nivel junior a medio en entornos de ritmo rápido. A menudo enfrentan sobrecarga cognitiva y dificultad para establecer límites. La necesidad central no era solo consejos de productividad, sino desarrollar asertividad conductual y capacidad analítica para filtrar urgencias en tiempo real, distinguiendo el ruido de la prioridad."
+          : "The target audience consists of junior to mid-level corporate professionals operating in fast-paced environments. These learners often face cognitive overload and difficulty setting boundaries. The core need was not just productivity tips, but developing behavioral assertiveness and analytical capacity to filter urgencies in real-time, distinguishing noise from priority.",
+        
+        approach: isPt
+          ? (
+            <>
+              <p className="mb-4">A estratégia central adotada foi a <strong>Aprendizagem Baseada em Cenários Ramificados</strong> combinada com elementos de <strong>Gamificação</strong>, fugindo da linearidade para oferecer uma narrativa onde o aprendiz assume o protagonismo das decisões.</p>
+              <ul className="list-disc pl-5 space-y-2">
+                <li>Do ponto de vista técnico e de design, optei por utilizar a ferramenta de autorica Adobe Captivate com algumas inserções de React+HTML5.</li>
+                <li>Também foi adicionado um sistema de assets dinâmicos que adapta ilustrações com base no gênero escolhido pelo usuário e a implementação de um layout responsivo personalizado que simula um player de curso, garantindo acessibilidade e performance em diversos dispositivos.</li>
+              </ul>
+            </>
+          )
+          : isEs
+          ? "La estrategia central fue el Aprendizaje Basado en Escenarios Ramificados combinado con Gamificación. Técnicamente, utilicé Adobe Captivate con inserciones de React+HTML5. Se añadió un sistema de activos dinámicos que adapta las ilustraciones según el género elegido y un diseño receptivo personalizado."
+          : "The central strategy was Branching Scenario-Based Learning combined with Gamification. Technically, I used Adobe Captivate with React+HTML5 insertions. A dynamic asset system was added to adapt illustrations based on the chosen gender, along with a custom responsive layout.",
+        
+        solution: isPt 
+          ? (
+            <>
+              <p className="mb-4">O produto final é uma simulação imersiva de um dia de trabalho, exportada inteiramente em um único arquivo HTML para maximizar a facilidade de distribuição e portabilidade.</p>
+              <ul className="list-disc pl-5 space-y-2">
+                <li>A interface utiliza um design limpo e moderno com uma paleta de cores sóbria, oferecendo feedback visual imediato através de barras de progresso que reagem em tempo real às decisões do usuário nas métricas de Organização, Priorização e Comunicação.</li>
+                <li>A experiência começa com a personalização do avatar para criar conexão emocional e segue com dilemas realistas, como e-mails urgentes e interrupções de colegas.</li>
+                <li>Ao final, o sistema gera dinamicamente um certificado personalizado com um plano de ação baseado nas métricas específicas atingidas pelo aluno.</li>
+              </ul>
+            </>
+          )
+          : isEs
+          ? "El producto final es una simulación inmersiva de un día de trabajo en un solo archivo HTML. La interfaz utiliza un diseño limpio con retroalimentación visual inmediata a través de barras de progreso. La experiencia incluye personalización de avatar y dilemas realistas. Al final, genera un certificado personalizado con un plan de acción basado en métricas."
+          : "The final product is an immersive workday simulation exported as a single HTML file. The interface uses a clean design with immediate visual feedback via progress bars. The experience includes avatar customization and realistic dilemmas. Finally, it dynamically generates a personalized certificate with an action plan based on metrics.",
+        
+        impact: isPt 
+          ? (
+            <>
+              <p className="mb-4">A implementação desta solução visa transformar a cultura operacional da companhia, deslocando o foco da "ocupação constante" para a "efetividade estratégica".</p>
+              <ul className="list-disc pl-5 space-y-2">
+                <li>Ao capacitar os colaboradores a distinguirem urgência de importância em um ambiente simulado e seguro, a organização pode esperar uma redução tangível no retrabalho e nos gargalos causados por falhas de comunicação ou alinhamento de prazos irreais.</li>
+                <li>O treinamento atua diretamente na preservação do capital intelectual, mitigando riscos de burnout e turnover ao instrumentalizar as equipes para gerenciarem sua carga cognitiva de forma sustentável.</li>
+              </ul>
+            </>
+          )
+          : isEs
+          ? "Esta solución busca transformar la cultura operativa hacia la 'efectividad estratégica'. Al capacitar a los empleados para distinguir la urgencia de la importancia, se espera una reducción en el retrabajo y los cuellos de botella. El entrenamiento ayuda a preservar el capital intelectual, mitigando el agotamiento y la rotación al equipar a los equipos para gestionar su carga cognitiva."
+          : "This solution aims to transform operational culture towards 'strategic effectiveness'. By empowering employees to distinguish urgency from importance, the organization can expect reduced rework and bottlenecks. The training helps preserve intellectual capital, mitigating burnout and turnover risks by equipping teams to manage cognitive load sustainably."
       }
     },
     {
       id: 1,
       title: isPt ? "Tour Interativo 3D em Restaurante" : isEs ? "Recorrido Interactivo 3D en Restaurante" : "Interactive 3D Restaurant Tour",
       category: isPt ? "Aprendizagem Imersiva" : isEs ? "Aprendizaje Inmersivo" : "Immersive Learning",
-      // ATENÇÃO: Crie o arquivo public/banners/restaurant-tour.jpg
       image: "/banners/restaurant-tour.jpg",
       projectUrl: "/projects/restaurant-tour/index.html",
       tags: ["Three.js", "Blender", "Interactive"],
       desc: isPt ? "Um tour 3D baseado em navegador para integração de funcionários." : isEs ? "Un recorrido 3D basado en navegador para la incorporación de personal." : "A browser-based 3D walkthrough for staff onboarding.",
       details: {
-        challenge: isPt ? "Alta rotatividade e tempo limitado para orientação no local dificultavam o treinamento de segurança." : isEs ? "La alta rotación y el tiempo limitado dificultaban la capacitación en seguridad." : "High turnover and limited time for on-site orientation made safety training difficult.",
-        solution: isPt ? "Criação de um gêmeo digital 3D da cozinha do restaurante onde os usuários podem clicar em hotspots para aprender protocolos." : isEs ? "Creación de un gemelo digital 3D de la cocina donde los usuarios aprenden protocolos." : "Created a web-based 3D twin of the restaurant kitchen where users can click hotspots to learn safety protocols.",
-        result: isPt ? "Redução de 40% no tempo de orientação e melhoria nas pontuações de conformidade de segurança." : isEs ? "Reducción del 40% en el tiempo de orientación y mejora en el cumplimiento." : "Reduced on-site orientation time by 40% and improved safety compliance scores."
+        context: isPt 
+          ? "Alta rotatividade e tempo limitado para orientação presencial dificultavam o treinamento de segurança na cozinha." 
+          : isEs ? "La alta rotación y el tiempo limitado para la orientación presencial dificultaban la capacitación en seguridad." : "High turnover and limited time for on-site orientation made kitchen safety training difficult.",
+        audience: isPt
+          ? "Novos funcionários de rede de restaurantes fast-food."
+          : isEs ? "Nuevos empleados de una cadena de restaurantes de comida rápida." : "New hires for a fast-food restaurant chain.",
+        approach: isPt
+          ? "Criação de um gêmeo digital para exploração espacial antes do primeiro dia de trabalho."
+          : isEs ? "Creación de un gemelo digital para la exploración espacial antes del primer día de trabajo." : "Creation of a digital twin for spatial exploration before the first day of work.",
+        solution: isPt 
+          ? "Tour 3D interativo rodando no navegador, com hotspots clicáveis revelando protocolos de segurança." 
+          : isEs ? "Recorrido 3D interactivo en el navegador, con puntos de acceso en los que se puede hacer clic que revelan protocolos de seguridad." : "Interactive 3D browser-based tour with clickable hotspots revealing safety protocols.",
+        impact: isPt 
+          ? "Redução de 40% no tempo de orientação presencial e aumento na conformidade de segurança." 
+          : isEs ? "Reducción del 40% en el tiempo de orientación presencial y aumento en el cumplimiento de la seguridad." : "Reduced on-site orientation time by 40% and increased safety compliance."
       }
     },
     {
       id: 2,
       title: isPt ? "Simulação 3D de Higiene das Mãos" : isEs ? "Simulación 3D de Higiene de Manos" : "3D Hand Hygiene Simulation",
       category: isPt ? "Treinamento em Saúde" : isEs ? "Formación Sanitaria" : "Healthcare Training",
-      // ATENÇÃO: Crie o arquivo public/banners/hand-hygiene.jpg
       image: "/banners/hand-hygiene.jpg",
       projectUrl: "/projects/hand-hygiene/index.html",
       tags: ["Simulation", "3D Animation", "Gamification"],
       desc: isPt ? "Simulação 3D interativa para técnicas de higiene das mãos da OMS." : isEs ? "Simulación interactiva 3D para técnicas de higiene de manos de la OMS." : "Interactive 3D simulation for WHO hand hygiene techniques.",
       details: {
-        challenge: isPt ? "Conformidade inconsistente da equipe hospitalar com protocolos de higiene." : isEs ? "Cumplimiento inconsistente de los protocolos por parte del personal." : "Inconsistent compliance with protocols.",
-        solution: isPt ? "Simulação de módulo duplo para prática de movimentos e tempo corretos." : isEs ? "Simulación de doble módulo para practicar movimientos y tiempos." : "Dual-module simulation for practice.",
-        result: isPt ? "Técnica padronizada entre departamentos." : isEs ? "Técnica estandarizada entre departamentos." : "Standardized technique across departments."
+        context: isPt 
+          ? "A conformidade com os protocolos de higiene da OMS era inconsistente entre os departamentos hospitalares." 
+          : isEs ? "El cumplimiento de los protocolos de higiene de la OMS era inconsistente entre los departamentos hospitalarios." : "Compliance with WHO hygiene protocols was inconsistent across hospital departments.",
+        audience: isPt
+          ? "Todos os profissionais de saúde em contato com pacientes."
+          : isEs ? "Todos los profesionales de la salud en contacto con pacientes." : "All healthcare professionals in contact with patients.",
+        approach: isPt
+          ? "Prática deliberada em ambiente virtual para memorização motora dos passos."
+          : isEs ? "Práctica deliberada en un entorno virtual para la memorización motora de los pasos." : "Deliberate practice in a virtual environment for motor memorization of steps.",
+        solution: isPt 
+          ? "Simulação de módulo duplo (Tutorial + Desafio) focada nos movimentos e tempo corretos da lavagem." 
+          : isEs ? "Simulación de doble módulo (Tutorial + Desafío) centrada en los movimientos y tiempos correctos de lavado." : "Dual-module simulation (Tutorial + Challenge) focused on correct washing movements and timing.",
+        impact: isPt 
+          ? "Padronização da técnica entre departamentos e aumento da conscientização." 
+          : isEs ? "Estandarización de la técnica entre departamentos y aumento de la concienciación." : "Standardization of technique across departments and increased awareness."
       }
     }
   ];
-};
+}
 
 // --- STYLES & FONTS ---
-const GlobalStyles = () => (
-  <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
-    
-    :root {
-      /* Palette */
-      --primary-teal: #10b981;   
-      --primary-cyan: #06b6d4;   
-      --primary-blue: #3b82f6;   
+function GlobalStyles() {
+  return (
+    <style>{`
+      @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
       
-      /* Backgrounds */
-      --bg-light: #F8FAFC; 
-      --bg-darker: #ededed;       
-      --text-dark: #0f172a;
-      --header-island-bg: #1e293b;
-    }
+      :root {
+        /* Palette */
+        --primary-teal: #10b981;   
+        --primary-cyan: #06b6d4;   
+        --primary-blue: #3b82f6;   
+        
+        /* Backgrounds */
+        --bg-light: #F8FAFC; 
+        --bg-darker: #ededed;       
+        --text-dark: #0f172a;
+        --header-island-bg: #1e293b;
+      }
 
-    html {
-      scroll-behavior: smooth;
-    }
+      html {
+        scroll-behavior: smooth;
+      }
 
-    body {
-      background-color: var(--bg-light);
-      color: var(--text-dark);
-      font-family: 'Inter', sans-serif;
-      overflow-x: hidden;
-      cursor: none; /* Default cursor hidden for custom one on desktop */
-    }
+      body {
+        background-color: var(--bg-light);
+        color: var(--text-dark);
+        font-family: 'Inter', sans-serif;
+        overflow-x: hidden;
+        cursor: none; /* Default cursor hidden for custom one on desktop */
+      }
 
-    /* Add scroll margin to sections so header doesn't cover content */
-    section {
-      scroll-margin-top: 100px;
-    }
+      /* Add scroll margin to sections so header doesn't cover content */
+      section {
+        scroll-margin-top: 100px;
+      }
 
-    /* Mobile Optimization */
-    @media (max-width: 768px) {
-      body { cursor: auto !important; }
-      .custom-cursor, .custom-cursor-dot { display: none !important; }
-    }
+      /* Mobile Optimization */
+      @media (max-width: 768px) {
+        body { cursor: auto !important; }
+        .custom-cursor, .custom-cursor-dot { display: none !important; }
+      }
 
-    h1, h2, h3, h4, button, .font-display {
-      font-family: 'Outfit', sans-serif;
-    }
+      h1, h2, h3, h4, button, .font-display {
+        font-family: 'Outfit', sans-serif;
+      }
 
-    /* --- CUSTOM CURSOR --- */
-    .custom-cursor {
-      position: fixed; width: 20px; height: 20px;
-      border: 1px solid var(--primary-cyan); border-radius: 50%;
-      pointer-events: none; z-index: 9999;
-      transform: translate(-50%, -50%);
-      transition: width 0.2s, height 0.2s, background-color 0.2s;
-      mix-blend-mode: difference;
-    }
-    .custom-cursor.hovered {
-      width: 50px; height: 50px;
-      background-color: rgba(6, 182, 212, 0.2); border-color: transparent;
-    }
-    .custom-cursor-dot {
-      position: fixed; width: 4px; height: 4px;
-      background-color: var(--primary-teal); border-radius: 50%;
-      pointer-events: none; z-index: 10000;
-      transform: translate(-50%, -50%);
-    }
+      /* --- CUSTOM CURSOR --- */
+      .custom-cursor {
+        position: fixed; width: 20px; height: 20px;
+        border: 1px solid var(--primary-cyan); border-radius: 50%;
+        pointer-events: none; z-index: 9999;
+        transform: translate(-50%, -50%);
+        transition: width 0.2s, height 0.2s, background-color 0.2s;
+        mix-blend-mode: difference;
+      }
+      .custom-cursor.hovered {
+        width: 50px; height: 50px;
+        background-color: rgba(6, 182, 212, 0.2); border-color: transparent;
+      }
+      .custom-cursor-dot {
+        position: fixed; width: 4px; height: 4px;
+        background-color: var(--primary-teal); border-radius: 50%;
+        pointer-events: none; z-index: 10000;
+        transform: translate(-50%, -50%);
+      }
 
-    /* --- ANIMATIONS --- */
-    @keyframes gradient-flow {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
+      /* --- ANIMATIONS --- */
+      @keyframes gradient-flow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
 
-    @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
+      @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+      }
 
-    .text-gradient-animated {
-      background: linear-gradient(270deg, var(--primary-teal), var(--primary-cyan), var(--primary-blue), var(--primary-teal));
-      background-size: 300% auto;
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text; animation: gradient-flow 8s ease infinite; padding-bottom: 0.1em;
-    }
-
-    .fade-in-up {
-      animation: fadeInUp 0.8s ease-out forwards;
-      opacity: 0; transform: translateY(20px);
-    }
-    @keyframes fadeInUp {
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .iframe-loader {
-        border: 4px solid rgba(255,255,255,0.1);
-        border-left-color: var(--primary-teal);
-        border-radius: 50%;
-        width: 40px; height: 40px;
-        animation: spin 1s linear infinite;
-    }
-
-    /* --- COMPONENTS --- */
-    .btn-portfolio {
-      position: relative; background: transparent;
-      border: 2px solid var(--primary-cyan); border-radius: 9999px;
-      color: #0f172a; font-weight: 600;
-      transition: all 0.3s ease; overflow: hidden; z-index: 1; cursor: none;
-    }
-    .btn-portfolio::before {
-      content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(270deg, var(--primary-teal), var(--primary-cyan));
-      background-size: 200% auto; z-index: -1;
-      transition: opacity 0.3s ease; opacity: 0; animation: gradient-flow 4s ease infinite;
-    }
-    .btn-portfolio:hover {
-      color: white; border-color: transparent;
-      transform: translateY(-2px); box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
-    }
-    .btn-portfolio:hover::before { opacity: 1; }
-
-    .wave-line {
-      fill: none; stroke-width: 1.5; stroke-linecap: round;
-      opacity: 0.7; stroke-dasharray: 2000; stroke-dashoffset: 2000;
-      animation: drawLine 4s forwards ease-out;
-      filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.05));
-    }
-    @keyframes drawLine { to { stroke-dashoffset: 0; } }
-
-    .glass-card {
-      background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 16px;
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    .glass-card:hover {
-      transform: translateY(-8px) scale(1.01);
-      box-shadow: 0 20px 40px rgba(6, 182, 212, 0.15);
-      border-color: var(--primary-cyan); background: rgba(255, 255, 255, 0.95);
-    }
-
-    /* --- HEADER --- */
-    .header-container {
-      position: fixed; top: 0; left: 0; width: 100%; z-index: 50;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding-top: 1.5rem;
-    }
-    .header-container.scrolled { padding-top: 1rem; }
-    .header-wrapper {
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      max-width: 1440px; width: 100%; margin: 0 auto; padding: 0 1.5rem;
-    }
-    .header-container.scrolled .header-wrapper { max-width: 900px; }
-
-    .header-content {
-      background-color: var(--header-island-bg); border-radius: 9999px;
-      position: relative; display: flex; align-items: center; justify-content: space-between;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255,255,255,0.05); overflow: visible; /* Allow dropdown */
-      transition: all 0.4s ease; padding: 0.75rem 2rem; height: 84px;
-    }
-    
-    .header-gradient-border {
-      position: absolute; bottom: 0; left: 2rem; right: 2rem; height: 2px;
-      border-radius: 9999px; pointer-events: none;
-      background: linear-gradient(90deg, var(--primary-teal), var(--primary-cyan), var(--primary-blue));
-      opacity: 0.8;
-    }
-
-    .nav-item {
-      color: #cbd5e1; font-weight: 500; font-size: 1rem;
-      transition: all 0.3s; padding: 0.25rem 0; position: relative; cursor: none;
-    }
-    .nav-item:hover { color: white; }
-    .nav-item.active { color: white; font-weight: 600; }
-    .nav-item.active::after {
-      content: ''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%);
-      width: 4px; height: 4px; background: var(--primary-teal); border-radius: 50%;
-    }
-
-    .cursor-blink {
-      display: inline-block; width: 2px; height: 1.2em;
-      background-color: var(--primary-teal); margin-left: 2px;
-      animation: blink 1s step-end infinite; vertical-align: middle;
-    }
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-
-    /* Scroll Pill Button */
-    .scroll-pill-btn {
-      border: 2px solid #10b981; border-radius: 9999px; width: 36px; height: 58px;
-      display: flex; justify-content: center; align-items: center; cursor: none;
-      transition: all 0.3s ease; background: rgba(255,255,255,0.9);
-      backdrop-filter: blur(4px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
-      animation: bounce-pill 2s infinite;
-    }
-    .scroll-pill-btn:hover {
-      background: #10b981; border-color: #10b981; animation-play-state: paused;
-    }
-    .scroll-pill-btn:hover .scroll-arrow-icon { color: white; }
-    .scroll-arrow-icon { color: #10b981; transition: color 0.3s; }
-    
-    @keyframes bounce-pill {
-        0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-        40% {transform: translateY(10px);} 60% {transform: translateY(5px);}
-    }
-
-    /* Project Card */
-    .project-card-green {
-        border: 1px solid rgba(16, 185, 129, 0.3); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    .project-card-green:hover {
-        border-color: var(--primary-teal); transform: translateY(-8px) scale(1.01);
-        box-shadow: 0 20px 40px rgba(6, 182, 212, 0.15); background: rgba(255, 255, 255, 0.95);
-    }
-    
-    .contact-box-green {
-      border: 1px solid var(--primary-teal); background: rgba(255,255,255,0.6); transition: all 0.3s ease;
-    }
-    .contact-box-green:hover {
-      background: rgba(255,255,255,0.95); transform: translateY(-5px);
-      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2); border-color: var(--primary-cyan);
-    }
-
-    .skill-pill {
-      background-color: rgba(16, 185, 129, 0.1); color: #0f766e;
-      padding: 4px 12px; border-radius: 9999px; font-size: 0.85rem; font-weight: 600;
-      border: 1px solid rgba(16, 185, 129, 0.2); display: inline-block;
-      margin-right: 8px; margin-bottom: 8px;
-    }
-    
-    /* UPDATED: Animated Gradient Badge for JL ID */
-    .jl-badge {
+      .text-gradient-animated {
         background: linear-gradient(270deg, var(--primary-teal), var(--primary-cyan), var(--primary-blue), var(--primary-teal));
         background-size: 300% auto;
-        animation: gradient-flow 8s ease infinite;
-        color: white; 
-        padding: 0.35rem 0.85rem;
-        border-radius: 0.5rem; 
-        font-size: 0.875rem; 
-        font-weight: 700;
-        cursor: pointer; 
-        transition: transform 0.2s, box-shadow 0.2s;
-        display: inline-block;
-        border: 1px solid rgba(255,255,255,0.1);
-        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    }
-    .jl-badge:hover { 
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(6, 182, 212, 0.4);
-    }
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        background-clip: text; animation: gradient-flow 8s ease infinite; padding-bottom: 0.1em;
+      }
 
-    .lang-dropdown {
-      position: absolute; top: 100%; right: 0;
-      background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 0.5rem; padding: 0.5rem; margin-top: 0.5rem;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); z-index: 60;
-      min-width: 140px;
-    }
-    .lang-option {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 0.5rem; padding: 0.5rem; color: #cbd5e1; font-size: 0.9rem;
-      cursor: pointer; border-radius: 0.25rem; transition: all 0.2s;
-    }
-    .lang-option:hover { background: rgba(255,255,255,0.1); color: white; }
-    .lang-option.active { color: var(--primary-teal); font-weight: 600; }
+      .fade-in-up {
+        animation: fadeInUp 0.8s ease-out forwards;
+        opacity: 0; transform: translateY(20px);
+      }
+      @keyframes fadeInUp {
+        to { opacity: 1; transform: translateY(0); }
+      }
 
-    /* Mobile Menu */
-    .mobile-menu-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
-      background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);
-      z-index: 49; display: flex; flex-direction: column; justify-content: center; items-center;
-      transition: opacity 0.3s ease, transform 0.3s ease;
-      opacity: 0; pointer-events: none; transform: translateY(-20px);
-    }
-    .mobile-menu-overlay.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
-    .mobile-nav-item {
-      font-size: 1.5rem; color: #e2e8f0; margin: 1.5rem 0; font-weight: 600;
-      cursor: pointer; transition: color 0.3s;
-    }
-    .mobile-nav-item:hover { color: var(--primary-teal); }
+      .iframe-loader {
+          border: 4px solid rgba(255,255,255,0.1);
+          border-left-color: var(--primary-teal);
+          border-radius: 50%;
+          width: 40px; height: 40px;
+          animation: spin 1s linear infinite;
+      }
 
-    /* Project Page Specific */
-    .project-page-header {
-      height: 60vh; min-height: 400px; position: relative;
-      background-attachment: fixed; background-size: cover; background-position: center;
-    }
-  `}</style>
-);
+      /* --- COMPONENTS --- */
+      .btn-portfolio {
+        position: relative; background: transparent;
+        border: 2px solid var(--primary-cyan); border-radius: 9999px;
+        color: #0f172a; font-weight: 600;
+        transition: all 0.3s ease; overflow: hidden; z-index: 1; cursor: none;
+      }
+      .btn-portfolio::before {
+        content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(270deg, var(--primary-teal), var(--primary-cyan));
+        background-size: 200% auto; z-index: -1;
+        transition: opacity 0.3s ease; opacity: 0; animation: gradient-flow 4s ease infinite;
+      }
+      .btn-portfolio:hover {
+        color: white; border-color: transparent;
+        transform: translateY(-2px); box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
+      }
+      .btn-portfolio:hover::before { opacity: 1; }
+
+      .wave-line {
+        fill: none; stroke-width: 1.5; stroke-linecap: round;
+        opacity: 0.7; stroke-dasharray: 2000; stroke-dashoffset: 2000;
+        animation: drawLine 4s forwards ease-out;
+        filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.05));
+      }
+      @keyframes drawLine { to { stroke-dashoffset: 0; } }
+
+      .glass-card {
+        background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 16px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      .glass-card:hover {
+        transform: translateY(-8px) scale(1.01);
+        box-shadow: 0 20px 40px rgba(6, 182, 212, 0.15);
+        border-color: var(--primary-cyan); background: rgba(255, 255, 255, 0.95);
+      }
+
+      /* --- HEADER --- */
+      .header-container {
+        position: fixed; top: 0; left: 0; width: 100%; z-index: 50;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding-top: 1.5rem;
+      }
+      .header-container.scrolled { padding-top: 1rem; }
+      .header-wrapper {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        max-width: 1440px; width: 100%; margin: 0 auto; padding: 0 1.5rem;
+      }
+      .header-container.scrolled .header-wrapper { max-width: 900px; }
+
+      .header-content {
+        background-color: var(--header-island-bg); border-radius: 9999px;
+        position: relative; display: flex; align-items: center; justify-content: space-between;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255,255,255,0.05); overflow: visible; /* Allow dropdown */
+        transition: all 0.4s ease; padding: 0.75rem 2rem; height: 84px;
+      }
+      
+      .header-gradient-border {
+        position: absolute; bottom: 0; left: 2rem; right: 2rem; height: 2px;
+        border-radius: 9999px; pointer-events: none;
+        background: linear-gradient(90deg, var(--primary-teal), var(--primary-cyan), var(--primary-blue), var(--primary-teal));
+        opacity: 0.8;
+      }
+
+      .nav-item {
+        color: #cbd5e1; font-weight: 500; font-size: 1rem;
+        transition: all 0.3s; padding: 0.25rem 0; position: relative; cursor: none;
+      }
+      .nav-item:hover { color: white; }
+      .nav-item.active { color: white; font-weight: 600; }
+      .nav-item.active::after {
+        content: ''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%);
+        width: 4px; height: 4px; background: var(--primary-teal); border-radius: 50%;
+      }
+
+      .cursor-blink {
+        display: inline-block; width: 2px; height: 1.2em;
+        background-color: var(--primary-teal); margin-left: 2px;
+        animation: blink 1s step-end infinite; vertical-align: middle;
+      }
+      @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+      /* Scroll Pill Button */
+      .scroll-pill-btn {
+        border: 2px solid #10b981; border-radius: 9999px; width: 36px; height: 58px;
+        display: flex; justify-content: center; align-items: center; cursor: none;
+        transition: all 0.3s ease; background: rgba(255,255,255,0.9);
+        backdrop-filter: blur(4px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        animation: bounce-pill 2s infinite;
+      }
+      .scroll-pill-btn:hover {
+        background: #10b981; border-color: #10b981; animation-play-state: paused;
+      }
+      .scroll-pill-btn:hover .scroll-arrow-icon { color: white; }
+      .scroll-arrow-icon { color: #10b981; transition: color 0.3s; }
+      
+      @keyframes bounce-pill {
+          0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+          40% {transform: translateY(10px);} 60% {transform: translateY(5px);}
+      }
+
+      /* Project Card */
+      .project-card-green {
+          border: 1px solid rgba(16, 185, 129, 0.3); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      .project-card-green:hover {
+          border-color: var(--primary-teal); transform: translateY(-8px) scale(1.01);
+          box-shadow: 0 20px 40px rgba(6, 182, 212, 0.15); background: rgba(255, 255, 255, 0.95);
+      }
+      
+      .contact-box-green {
+        border: 1px solid var(--primary-teal); background: rgba(255,255,255,0.6); transition: all 0.3s ease;
+      }
+      .contact-box-green:hover {
+        background: rgba(255,255,255,0.95); transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2); border-color: var(--primary-cyan);
+      }
+
+      .skill-pill {
+        background-color: rgba(16, 185, 129, 0.1); color: #0f766e;
+        padding: 4px 12px; border-radius: 9999px; font-size: 0.85rem; font-weight: 600;
+        border: 1px solid rgba(16, 185, 129, 0.2); display: inline-block;
+        margin-right: 8px; margin-bottom: 8px;
+      }
+      
+      /* UPDATED: Animated Gradient Badge for JL ID */
+      .jl-badge {
+          background: linear-gradient(270deg, var(--primary-teal), var(--primary-cyan), var(--primary-blue), var(--primary-teal));
+          background-size: 300% auto;
+          animation: gradient-flow 8s ease infinite;
+          color: white; 
+          padding: 0.35rem 0.85rem;
+          border-radius: 0.5rem; 
+          font-size: 0.875rem; 
+          font-weight: 700;
+          cursor: pointer; 
+          transition: transform 0.2s, box-shadow 0.2s;
+          display: inline-block;
+          border: 1px solid rgba(255,255,255,0.1);
+          text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      }
+      .jl-badge:hover { 
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(6, 182, 212, 0.4);
+      }
+
+      .lang-dropdown {
+        position: absolute; top: 100%; right: 0;
+        background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 0.5rem; padding: 0.5rem; margin-top: 0.5rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); z-index: 60;
+        min-width: 140px;
+      }
+      .lang-option {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 0.5rem; padding: 0.5rem; color: #cbd5e1; font-size: 0.9rem;
+        cursor: pointer; border-radius: 0.25rem; transition: all 0.2s;
+      }
+      .lang-option:hover { background: rgba(255,255,255,0.1); color: white; }
+      .lang-option.active { color: var(--primary-teal); font-weight: 600; }
+
+      /* Mobile Menu */
+      .mobile-menu-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+        background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);
+        z-index: 49; display: flex; flex-direction: column; justify-content: center; items-center;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        opacity: 0; pointer-events: none; transform: translateY(-20px);
+      }
+      .mobile-menu-overlay.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+      .mobile-nav-item {
+        font-size: 1.5rem; color: #e2e8f0; margin: 1.5rem 0; font-weight: 600;
+        cursor: pointer; transition: color 0.3s;
+      }
+      .mobile-nav-item:hover { color: var(--primary-teal); }
+
+      /* Project Page Specific */
+      .project-page-header {
+        height: 60vh; min-height: 400px; position: relative;
+        background-attachment: fixed; background-size: cover; background-position: center;
+      }
+    `}</style>
+  );
+}
 
 // --- CUSTOM CURSOR ---
-const CustomCursor = () => {
+function CustomCursor() {
   const cursorRef = useRef(null);
   const dotRef = useRef(null);
 
@@ -577,10 +756,10 @@ const CustomCursor = () => {
       <div ref={dotRef} className="custom-cursor-dot" />
     </>
   );
-};
+}
 
 // --- UTILS ---
-const Reveal = ({ children, className = "", delay = 0 }) => {
+function Reveal({ children, className = "", delay = 0 }) {
   const ref = useRef(null);
   const [isVisible, setVisible] = useState(false);
   useEffect(() => {
@@ -596,9 +775,9 @@ const Reveal = ({ children, className = "", delay = 0 }) => {
       {children}
     </div>
   );
-};
+}
 
-const TypingEffect = ({ texts }) => {
+function TypingEffect({ texts }) {
   const [index, setIndex] = useState(0);
   const [text, setText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
@@ -639,19 +818,21 @@ const TypingEffect = ({ texts }) => {
       <p className="tracking-wide">{text}<span className="cursor-blink"></span></p>
     </div>
   );
-};
+}
 
 // --- REUSABLE SCROLL PILL ---
-const ScrollPill = ({ targetId, onClick }) => (
-    <div className="flex justify-center w-full mt-12 pb-8">
-        <div onClick={() => onClick(targetId)} className="scroll-pill-btn group" role="button">
-            <ArrowDown size={24} className="scroll-arrow-icon" />
-        </div>
-    </div>
-);
+function ScrollPill({ targetId, onClick }) {
+    return (
+      <div className="flex justify-center w-full mt-12 pb-8">
+          <div onClick={() => onClick(targetId)} className="scroll-pill-btn group" role="button">
+              <ArrowDown size={24} className="scroll-arrow-icon" />
+          </div>
+      </div>
+    );
+}
 
 // --- NAVIGATION ---
-const Navigation = ({ activeSection, scrollToSection, lang, setLang, t }) => {
+function Navigation({ activeSection, scrollToSection, lang, setLang, t }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
@@ -768,10 +949,10 @@ const Navigation = ({ activeSection, scrollToSection, lang, setLang, t }) => {
       </div>
     </>
   );
-};
+}
 
 // --- NEW PROJECT PAGE COMPONENT (Replaces Modal) ---
-const ProjectPage = ({ project, onBack, t, onLaunchChange }) => { 
+function ProjectPage({ project, onBack, t, onLaunchChange }) { 
   const [isLaunched, setIsLaunched] = useState(false);
   const [iframeLoading, setIframeLoading] = useState(true);
 
@@ -828,6 +1009,15 @@ const ProjectPage = ({ project, onBack, t, onLaunchChange }) => {
       );
   }
 
+  // Define section order for display - Icons Restored as per request
+  const sections = [
+    { key: 'context', icon: <Target size={24} className="text-teal-500" />, label: t.modal.context },
+    { key: 'audience', icon: <Users size={24} className="text-cyan-500" />, label: t.modal.audience },
+    { key: 'approach', icon: <Layout size={24} className="text-blue-500" />, label: t.modal.approach },
+    { key: 'solution', icon: <Lightbulb size={24} className="text-amber-500" />, label: t.modal.solution },
+    { key: 'impact', icon: <BarChart3 size={24} className="text-emerald-500" />, label: t.modal.impact },
+  ];
+
   return (
     <div className="min-h-screen bg-slate-50 fade-in-up">
       {/* Hero Banner for Project */}
@@ -835,19 +1025,19 @@ const ProjectPage = ({ project, onBack, t, onLaunchChange }) => {
         <div className="absolute inset-0 bg-slate-900/40 z-10"></div>
         <img src={project.image} alt={project.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 z-20 flex flex-col justify-end pb-16 px-6 max-w-[1440px] mx-auto">
-           <div className="bg-white/10 backdrop-blur-md inline-block px-4 py-2 rounded-lg text-white/90 font-semibold mb-4 w-max border border-white/20">
-             {project.category}
+           {/* UPDATED: Category rendering logic to support arrays (multiple badges) */}
+           <div className="flex flex-wrap gap-3 mb-4">
+             {(Array.isArray(project.category) ? project.category : [project.category]).map((cat, i) => (
+                <div key={i} className="bg-white/10 backdrop-blur-md inline-block px-4 py-2 rounded-lg text-white/90 font-semibold border border-white/20">
+                  {cat}
+                </div>
+             ))}
            </div>
+           
            <h1 className="font-display font-bold text-4xl md:text-6xl text-white mb-6 max-w-4xl leading-tight">
              {project.title}
            </h1>
-           <div className="flex flex-wrap gap-2">
-              {project.tags.map((tag,i) => (
-                <span key={i} className="px-3 py-1 bg-teal-500/80 backdrop-blur-sm text-white rounded-full text-sm font-medium border border-teal-400/50">
-                  {tag}
-                </span>
-              ))}
-           </div>
+           {/* REMOVED: Tags block completely */}
         </div>
       </div>
 
@@ -858,33 +1048,26 @@ const ProjectPage = ({ project, onBack, t, onLaunchChange }) => {
          </button>
 
          <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
-            <div className="md:col-span-2 space-y-16">
-               <Reveal>
-                 <div className="relative pl-6 border-l-4 border-teal-500">
-                    <h3 className="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-                       {t.modal.challenge}
-                    </h3>
-                    <p className="text-lg text-slate-700 leading-relaxed">{project.details?.challenge}</p>
-                 </div>
-               </Reveal>
-               
-               <Reveal delay={100}>
-                 <div className="relative pl-6 border-l-4 border-cyan-500">
-                    <h3 className="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-                       {t.modal.solution}
-                    </h3>
-                    <p className="text-lg text-slate-700 leading-relaxed">{project.details?.solution}</p>
-                 </div>
-               </Reveal>
-
-               <Reveal delay={200}>
-                 <div className="relative pl-6 border-l-4 border-blue-500">
-                    <h3 className="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-                       {t.modal.results}
-                    </h3>
-                    <p className="text-lg text-slate-700 leading-relaxed">{project.details?.result}</p>
-                 </div>
-               </Reveal>
+            <div className="md:col-span-2 space-y-12">
+               {sections.map((section, idx) => (
+                 project.details && project.details[section.key] ? (
+                   <Reveal key={section.key} delay={idx * 100}>
+                     <div className="relative pl-6 border-l-4 border-slate-200 hover:border-teal-500 transition-colors duration-300">
+                        <h3 className="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-3">
+                           {section.icon} {section.label}
+                        </h3>
+                        {/* Content render: handles string or React Node/JSX */}
+                        <div className="text-lg text-slate-700 leading-relaxed">
+                          {typeof project.details[section.key] === 'string' ? (
+                             <p className="whitespace-pre-line">{project.details[section.key]}</p>
+                          ) : (
+                             project.details[section.key]
+                          )}
+                        </div>
+                     </div>
+                   </Reveal>
+                 ) : null
+               ))}
             </div>
 
             <div className="space-y-8">
@@ -902,40 +1085,42 @@ const ProjectPage = ({ project, onBack, t, onLaunchChange }) => {
       </div>
     </div>
   );
-};
+}
 
-const ProjectCard = ({ project, onClick, t }) => (
-  <div className="project-card-green glass-card overflow-hidden group cursor-none flex flex-col h-full" onClick={() => onClick(project)}>
-    <div className="relative h-56 overflow-hidden border-b border-slate-200 flex-shrink-0">
-      <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/5 transition-colors z-10"></div>
-      <img src={project.image} alt={project.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
-    </div>
-    <div className="p-6 flex-grow flex flex-col">
-      <div className="flex flex-wrap gap-2 mb-3">
-        {project.tags.slice(0,3).map((tag, i) => (
-          <span key={i} className="px-2.5 py-1 bg-slate-50 border border-slate-200 rounded text-[10px] font-bold text-slate-600 uppercase tracking-wide">
-            {tag}
-          </span>
-        ))}
+function ProjectCard({ project, onClick, t }) {
+  return (
+    <div className="project-card-green glass-card overflow-hidden group cursor-none flex flex-col h-full" onClick={() => onClick(project)}>
+      <div className="relative h-56 overflow-hidden border-b border-slate-200 flex-shrink-0">
+        <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/5 transition-colors z-10"></div>
+        <img src={project.image} alt={project.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
       </div>
-      <h3 className="font-display font-bold text-xl text-slate-900 mb-2 group-hover:text-teal-600 transition-colors">
-        {project.title}
-      </h3>
-      <p className="font-sans text-sm text-slate-600 leading-relaxed mb-4 flex-grow line-clamp-3">
-        {project.desc}
-      </p>
-      <button className="inline-flex items-center text-sm font-bold text-teal-700 hover:text-teal-800 group/link mt-auto">
-        {t.work.viewDetails} <ArrowUpRight size={16} className="ml-1 transition-transform group-hover/link:translate-x-1 group-hover/link:-translate-y-1"/>
-      </button>
+      <div className="p-6 flex-grow flex flex-col">
+        <div className="flex flex-wrap gap-2 mb-3">
+          {project.tags.slice(0,3).map((tag, i) => (
+            <span key={i} className="px-2.5 py-1 bg-slate-50 border border-slate-200 rounded text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+              {tag}
+            </span>
+          ))}
+        </div>
+        <h3 className="font-display font-bold text-xl text-slate-900 mb-2 group-hover:text-teal-600 transition-colors">
+          {project.title}
+        </h3>
+        <p className="font-sans text-sm text-slate-600 leading-relaxed mb-4 flex-grow line-clamp-3">
+          {project.desc}
+        </p>
+        <button className="inline-flex items-center text-sm font-bold text-teal-700 hover:text-teal-800 group/link mt-auto">
+          {t.work.viewDetails} <ArrowUpRight size={16} className="ml-1 transition-transform group-hover/link:translate-x-1 group-hover/link:-translate-y-1"/>
+        </button>
+      </div>
     </div>
-  </div>
-);
+  );
+}
 
 // --- MAIN APP ---
 export default function Portfolio() {
   const [activeSection, setActiveSection] = useState('hero');
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [view, setView] = useState('home'); // 'home' | 'project'
+  const [selectedProjectId, setSelectedProjectId] = useState(null); // CHANGED: Store only ID
+  const [view, setView] = useState('home'); 
   const [targetSection, setTargetSection] = useState(null);
   const [isIframeOpen, setIsIframeOpen] = useState(false); // UPDATED: State for iframe visibility
   
@@ -951,7 +1136,10 @@ export default function Portfolio() {
   
   const t = translations[lang];
 
-  // Updated Scroll Logic to handle View Switching
+  // Derive the current project from the ID and the current list of translated projects
+  const projects = getProjects(lang);
+  const selectedProject = projects.find(p => p.id === selectedProjectId);
+
   const scrollToSection = (id) => {
     if (view !== 'home') {
       setView('home');
@@ -998,7 +1186,7 @@ export default function Portfolio() {
   }, [view]);
   
   const handleProjectClick = (project) => {
-    setSelectedProject(project);
+    setSelectedProjectId(project.id); // CHANGED: Save only ID
     setView('project');
   };
 
@@ -1008,7 +1196,6 @@ export default function Portfolio() {
   };
 
   // Data dependent on language state
-  const projects = getProjects(lang);
   const skillsList = ["Instructional Design", "E-Learning", "3D Animation", "Gamification", "Articulate 360", "Adobe Creative Suite", "Blender", "Unreal Engine", "LMS Management", "SCORM/xAPI", "AI Tools", "Agile"];
   const aboutParagraphs = [t.about.p1, t.about.p2, t.about.p3];
 
@@ -1101,7 +1288,7 @@ export default function Portfolio() {
                  </div>
               </Reveal>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {getProjects(lang).map((project, i) => (<Reveal key={i} delay={i * 100}><ProjectCard project={project} onClick={handleProjectClick} t={t}/></Reveal>))}
+                {projects.map((project, i) => (<Reveal key={i} delay={i * 100}><ProjectCard project={project} onClick={handleProjectClick} t={t}/></Reveal>))}
               </div>
             </div>
             {/* Scroll Pill for Work */}

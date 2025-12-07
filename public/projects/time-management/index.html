@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Time Management: The Journey</title>
     
     <!-- Tailwind CSS -->
@@ -38,13 +38,21 @@
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Rotate Device Animation */
+        @keyframes rotate-phone {
+            0%, 10% { transform: rotate(0deg); }
+            40%, 60% { transform: rotate(90deg); }
+            90%, 100% { transform: rotate(0deg); }
+        }
+        .animate-rotate { animation: rotate-phone 2s infinite ease-in-out; }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 flex items-center justify-center min-h-screen">
-    <div id="root" class="w-full flex justify-center"></div>
+<body class="bg-slate-900 text-slate-800 m-0 overflow-hidden">
+    <div id="root" class="w-full h-full"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useRef } = React;
 
         // --- ICONS ---
         const Icon = ({ children, ...props }) => (
@@ -65,8 +73,8 @@
         const Sun = (props) => <Icon {...props}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></Icon>;
         const Zap = (props) => <Icon {...props}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></Icon>;
         const FileText = (props) => <Icon {...props}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></Icon>;
-        
         const InfinityIcon = (props) => <Icon {...props}><path d="M18.8 8.8c-1.3-1.6-3.7-1.6-5 0l-3.8 4.4-3.8-4.4c-1.3-1.6-3.7-1.6-5 0s-1.3 4.4 0 6c1.3 1.6 3.7 1.6 5 0l3.8-4.4 3.8 4.4c1.3 1.6 3.7 1.6 5 0s1.3-4.4 0-6z"/></Icon>;
+        const Smartphone = (props) => <Icon {...props}><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></Icon>;
 
         // --- SCREEN CONSTANTS ---
         const SCREENS = {
@@ -120,10 +128,31 @@
             return `./images/${folder}/${sceneKey}.png`;
         };
 
-        // --- FUNCTION TO GENERATE DYNAMIC RECOMMENDATIONS ---
+        // --- IMAGE PRELOADER SYSTEM ---
+        const preloadImages = (gender) => {
+            const scenarios = ['office', 'stressed', 'meeting', 'colleague', 'sunset'];
+            const common = ['objectives', 'success', 'fail']; // Intro já carregou
+            
+            let folder = 'neutral';
+            if (gender === 'M') folder = 'male';
+            if (gender === 'F') folder = 'female';
+
+            scenarios.forEach(scene => {
+                const img = new Image();
+                img.src = `./images/${folder}/${scene}.png`;
+            });
+
+            common.forEach(scene => {
+                const img = new Image();
+                img.src = `./images/common/${scene}.png`;
+            });
+            
+            console.log(`Preloading assets for: ${folder} and common files.`);
+        };
+
+        // --- RECOMMENDATIONS LOGIC ---
         const getRecommendations = (scores) => {
             let recommendations = [];
-            
             if (scores.org <= scores.priority && scores.org <= scores.comm) {
                 recommendations.push("<strong>Focus on Organization:</strong> Your workspace reflects your mind. Dedicate the first 10 minutes of the day solely to organizing tasks.");
                 recommendations.push("<strong>Use Checklists:</strong> Externalize your memory. Don't rely on remembering steps for routine processes.");
@@ -134,7 +163,6 @@
                 recommendations.push("<strong>Enhance Communication:</strong> Learn to say 'No' firmly but politely. It protects your time and earns respect.");
                 recommendations.push("<strong>Async First:</strong> Default to asynchronous communication (email/chat) over meetings whenever possible.");
             }
-
             const average = (scores.org + scores.priority + scores.comm) / 3;
             if (average > 80) {
                 recommendations.push("<strong>Mentor Others:</strong> You have mastered the basics. Help a colleague optimize their workflow.");
@@ -143,11 +171,10 @@
             } else {
                 recommendations.push("<strong>One Thing at a Time:</strong> Stop multitasking immediately. It lowers IQ and productivity. Focus on single-tasking.");
             }
-
             return recommendations;
         };
 
-        // --- NEW LANDSCAPE CERTIFICATE GENERATOR ---
+        // --- CERTIFICATE GENERATOR ---
         const generateReport = (characterName, scores) => {
             const finalScore = Math.round((scores.org + scores.priority + scores.comm) / 3);
             const date = new Date().toLocaleDateString('en-US');
@@ -170,17 +197,11 @@
                             display: flex; justify-content: center; align-items: center;
                         }
                         .certificate-container {
-                            width: 280mm; 
-                            height: 190mm;
-                            padding: 10mm;
-                            box-sizing: border-box;
-                            position: relative;
-                            border: 5px double #d97706; 
-                            outline: 2px solid #fcd34d; 
-                            outline-offset: 5px;
-                            background: #fffdf5; 
-                            display: flex;
-                            flex-direction: column;
+                            width: 280mm; height: 190mm; padding: 10mm;
+                            box-sizing: border-box; position: relative;
+                            border: 5px double #d97706; outline: 2px solid #fcd34d; 
+                            outline-offset: 5px; background: #fffdf5; 
+                            display: flex; flex-direction: column;
                         }
                         .header { text-align: center; margin-bottom: 10px; }
                         .header h1 { 
@@ -189,7 +210,6 @@
                             font-family: 'Helvetica', sans-serif;
                         }
                         .sub-header { font-size: 14px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px;}
-                        
                         .body-content { flex-grow: 1; text-align: center; display: flex; flex-direction: column; justify-content: center; }
                         .presented-to { font-size: 14px; font-style: italic; color: #555; margin-bottom: 5px; }
                         .participant-name { 
@@ -197,7 +217,6 @@
                             margin: 5px 0 15px 0; border-bottom: 1px solid #ddd; display: inline-block; padding: 0 30px;
                         }
                         .course-name { font-size: 18px; color: #4b5563; font-weight: bold; margin-bottom: 15px; }
-
                         .details-grid {
                             display: flex; gap: 30px; margin-top: 10px;
                             text-align: left; border-top: 2px solid #fde68a; padding-top: 15px;
@@ -296,41 +315,110 @@
             printWindow.document.close();
         };
 
-        // --- UI COMPONENTS ---
+        // --- HOOK: USE WINDOW SIZE FOR SCALING ---
+        const useWindowSize = () => {
+            const [size, setSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+            
+            useEffect(() => {
+                const handleResize = () => setSize({ width: window.innerWidth, height: window.innerHeight });
+                window.addEventListener('resize', handleResize);
+                return () => window.removeEventListener('resize', handleResize);
+            }, []);
+            
+            return size;
+        };
 
-        const CoursePlayer = ({ children, title, progress, currentScreenLabel }) => (
-            <div className="w-full max-w-[1280px] aspect-[16/9] bg-white shadow-2xl rounded-xl overflow-hidden flex flex-col border border-slate-200 relative m-4 md:m-0">
-                <header className="bg-slate-900 text-white h-16 flex items-center justify-between px-6 shrink-0 z-30 shadow-md">
-                    <div className="flex items-center gap-3">
-                    <div className="bg-amber-500 p-2 rounded-lg shadow-lg">
-                        <Briefcase size={20} className="text-slate-900" />
-                    </div>
-                    <div>
-                        <h1 className="text-xs font-bold tracking-widest uppercase text-amber-400 mb-0.5">Corporate Academy</h1>
-                        <p className="text-sm font-medium text-white">{title}</p>
-                    </div>
-                    </div>
-                    <div className="flex items-center gap-6">
-                    <span className="hidden md:inline text-xs font-medium opacity-60 uppercase tracking-wider">{currentScreenLabel}</span>
-                    <div className="flex flex-col items-end gap-1">
-                        <div className="w-32 h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
-                            <div className="h-full bg-amber-500 transition-all duration-700 ease-out" style={{ width: `${progress}%` }}></div>
+        // --- COMPONENT: COURSE PLAYER (SCALABLE FIXED FRAME) ---
+        const CoursePlayer = ({ children, title, progress, currentScreenLabel }) => {
+            const { width, height } = useWindowSize();
+            const [scale, setScale] = useState(1);
+            const [isPortraitMobile, setIsPortraitMobile] = useState(false);
+
+            useEffect(() => {
+                // Dimensões base do Storyline/Design (HD 720p)
+                const BASE_WIDTH = 1280;
+                const BASE_HEIGHT = 720;
+                
+                // Calcula escala
+                const scaleX = width / BASE_WIDTH;
+                const scaleY = height / BASE_HEIGHT;
+                
+                // Escolhe a menor escala para garantir que TUDO caiba na tela (Contain)
+                // Limitamos a 1 para não "explodir" em monitores 4K, ou deixamos crescer se quiser
+                const fitScale = Math.min(scaleX, scaleY); 
+                
+                setScale(fitScale);
+
+                // Detectar se está em modo retrato em dispositivo móvel
+                if (width < 768 && height > width) {
+                    setIsPortraitMobile(true);
+                } else {
+                    setIsPortraitMobile(false);
+                }
+
+            }, [width, height]);
+
+            return (
+                <div className="fixed inset-0 bg-slate-900 flex items-center justify-center overflow-hidden">
+                    {/* O Container do Jogo que será Escalado */}
+                    <div 
+                        style={{ 
+                            width: '1280px', 
+                            height: '720px', 
+                            transform: `scale(${scale})`,
+                            // Importante: garante que a escala ocorra a partir do centro
+                        }} 
+                        className="bg-white shadow-2xl rounded-xl overflow-hidden flex flex-col relative shrink-0"
+                    >
+                        <header className="bg-slate-900 text-white h-16 flex items-center justify-between px-6 shrink-0 z-30 shadow-md">
+                            <div className="flex items-center gap-3">
+                            <div className="bg-amber-500 p-2 rounded-lg shadow-lg">
+                                <Briefcase size={20} className="text-slate-900" />
+                            </div>
+                            <div>
+                                <h1 className="text-xs font-bold tracking-widest uppercase text-amber-400 mb-0.5">Corporate Academy</h1>
+                                <p className="text-sm font-medium text-white">{title}</p>
+                            </div>
+                            </div>
+                            <div className="flex items-center gap-6">
+                            <span className="hidden md:inline text-xs font-medium opacity-60 uppercase tracking-wider">{currentScreenLabel}</span>
+                            <div className="flex flex-col items-end gap-1">
+                                <div className="w-32 h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+                                    <div className="h-full bg-amber-500 transition-all duration-700 ease-out" style={{ width: `${progress}%` }}></div>
+                                </div>
+                                <span className="text-[10px] text-slate-500">{Math.round(progress)}% Complete</span>
+                            </div>
+                            </div>
+                        </header>
+                        
+                        {/* Conteúdo principal do frame */}
+                        <div className="flex-1 relative overflow-y-auto overflow-x-hidden bg-white">
+                            {children}
                         </div>
-                        <span className="text-[10px] text-slate-500">{Math.round(progress)}% Complete</span>
+                        
+                        <footer className="bg-white border-t border-slate-100 h-10 flex items-center justify-between px-6 text-[10px] text-slate-400 shrink-0 z-20 uppercase tracking-wider">
+                            <span>© 2024 L&D Experience</span>
+                            <div className="flex gap-4">
+                            <span>v10.0 Storyline Mode</span>
+                            </div>
+                        </footer>
                     </div>
-                    </div>
-                </header>
-                <div className="flex-1 relative overflow-y-auto overflow-x-hidden bg-white">
-                    {children}
+
+                    {/* OVERLAY DE ROTAÇÃO (Aparece apenas em Mobile Portrait) */}
+                    {isPortraitMobile && (
+                        <div className="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm text-white flex flex-col items-center justify-center p-8 text-center animate-fade-in">
+                            <div className="mb-6 animate-rotate">
+                                <Smartphone size={64} />
+                            </div>
+                            <h2 className="text-2xl font-bold mb-4 text-amber-400">Please rotate your device</h2>
+                            <p className="text-slate-300 max-w-xs mx-auto">
+                                This experience is optimized for landscape mode (horizontal) to ensure the best viewing of the scenarios.
+                            </p>
+                        </div>
+                    )}
                 </div>
-                <footer className="bg-white border-t border-slate-100 h-10 flex items-center justify-between px-6 text-[10px] text-slate-400 shrink-0 z-20 uppercase tracking-wider">
-                    <span>© 2024 L&D Experience</span>
-                    <div className="flex gap-4">
-                    <span>v9.1 Input Fix</span>
-                    </div>
-                </footer>
-            </div>
-        );
+            );
+        };
 
         const ChoiceButton = ({ onClick, children, active }) => (
             <button 
@@ -472,9 +560,14 @@
 
         function App() {
             const [currentScreen, setCurrentScreen] = useState(SCREENS.INTRO);
-            // New state for custom name and gender
             const [characterName, setCharacterName] = useState("");
-            const [gender, setGender] = useState(""); // 'M', 'F', or 'NB'
+            const [gender, setGender] = useState(""); 
+
+            useEffect(() => {
+                if (gender) {
+                    preloadImages(gender);
+                }
+            }, [gender]);
 
             const [scores, setScores] = useState({ org: 50, priority: 50, comm: 50 });
             const [unlockedBonus, setUnlockedBonus] = useState(false);

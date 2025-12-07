@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cortex Security OS - Cyber Security Simulation</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config for Animations -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'fade-in-up': 'fadeInUp 0.8s ease-out',
+                        'slide-in-right': 'slideInRight 0.5s ease-out',
+                        'slide-in-up': 'slideInUp 0.5s ease-out',
+                        'scale-in': 'scaleIn 0.3s ease-out',
+                        'bounce': 'bounce 1s infinite',
+                        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        slideInRight: {
+                            '0%': { opacity: '0', transform: 'translateX(100%)' },
+                            '100%': { opacity: '1', transform: 'translateX(0)' },
+                        },
+                        slideInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(100%)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        scaleIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.9)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Import Map -->
+    <script type="importmap">
+        {
+            "imports": {
+                "react": "https://esm.sh/react@18.2.0",
+                "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+                "lucide-react": "https://esm.sh/lucide-react@0.292.0"
+            }
+        }
+    </script>
+
+    <!-- Babel Standalone -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        /* Global Styles */
+        body { margin: 0; overflow: hidden; background-color: #0f172a; }
+        .glitch-text { text-shadow: 2px 0 #ff00c1, -2px 0 #00fff9; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <!-- Game Logic -->
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useRef, useCallback } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { 
+            Shield, Mail, MessageSquare, Globe, AlertTriangle, 
+            Phone, User, Lock, Wifi, 
+            X, Minus, Square, RefreshCw,
+            Printer, Smartphone, Power, Fingerprint, 
+            CheckCircle, AlertCircle, ChevronRight, Briefcase, Coffee, Terminal,
+            PhoneCall, PhoneOff, Info, Skull, FileCode, FileImage, Trash2, Share2, RefreshCcw,
+            DollarSign, UploadCloud, Users, Key, FileText, XCircle, ArrowRight
+        } from 'lucide-react';
+
+        // --- 1. CONFIG & STATIC DATA ---
+
+        const CONFIG = {
+            MAX_Z_INDEX: 50,
+            NOTIFICATION_DURATION: 10000, 
+        };
+
+        const WALLPAPER_URL = "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=2074&auto=format&fit=crop";
+
+        const ENDINGS = {
+            PERFECT: {
+                title: "CISO: SECURITY LEADER",
+                desc: "You achieved a rare balance. You kept the company secure without alienating people. Security culture flourished under your management.",
+                color: "text-emerald-400",
+                border: "border-emerald-500/50",
+                bg: "bg-emerald-950/90"
+            },
+            BUREAUCRAT: {
+                title: "THE ABSOLUTE 'NO' (PARANOID)",
+                desc: "Total security, zero productivity. No one got hacked, but no one could work either. You are hated in the office, and Shadow IT has exploded.",
+                color: "text-blue-400",
+                border: "border-blue-500/50",
+                bg: "bg-blue-950/90"
+            },
+            COMPROMISED: {
+                title: "WELL-LIKED BUT DANGEROUS",
+                desc: "Everyone loves your helpfulness, including hackers. To avoid 'getting in the way', you left doors open. Data breach confirmed.",
+                color: "text-amber-400",
+                border: "border-amber-500/50",
+                bg: "bg-amber-950/90"
+            },
+            CHAOS: {
+                title: "TERMINATED FOR CAUSE",
+                desc: "You failed in both technical security and people management. Ransomware encrypted everything, and employees are revolting. Total disaster.",
+                color: "text-rose-500",
+                border: "border-rose-500/50",
+                bg: "bg-rose-950/90"
+            }
+        };
+
+        const INITIAL_EMAILS = [
+            { 
+                id: 'e1', 
+                from: "HR - Benefits", 
+                fromEmail: "no-reply@gov-validation-secure.com",
+                subject: "Mandatory 401(k) Update", 
+                body: "We detected inconsistencies in your 401(k)/Tax filings. Access the portal immediately to correct this, or your account will be locked.", 
+                attachment: null, 
+                link: "http://gov-validation.com", 
+                type: "phishing", 
+                read: false, 
+                time: "08:30" 
+            },
+            { 
+                id: 'e2', 
+                from: "Board of Directors", 
+                fromEmail: "board@cortex-corp.internal",
+                subject: "Q3 Report", 
+                body: "Good morning. Attached is the preview of the Q3 results. This document is strictly confidential, do not share externally.", 
+                attachment: "Q3_Results_Confidential.pdf", 
+                type: "legit", 
+                read: false, 
+                time: "08:45" 
+            },
+        ];
+
+        const CHAT_LOGS = [
+            { id: 'c1', user: "Luke (Dev)", text: "Morning! Is the staging server down again?", time: "08:10" }
+        ];
+
+        const generateUniqueId = () => Date.now().toString(36) + Math.random().toString(36).substr(2);
+
+        // --- 2. CUSTOM HOOKS ---
+
+        const useWindowSystem = (initialState) => {
+            const [windows, setWindows] = useState(initialState);
+            const [maxZ, setMaxZ] = useState(20);
+
+            const openWindow = useCallback((id) => {
+                setWindows(prev => ({ 
+                ...prev, 
+                [id]: { ...prev[id], open: true, minimized: false, z: maxZ + 1 } 
+                }));
+                setMaxZ(p => p + 1);
+            }, [maxZ]);
+
+            const closeWindow = useCallback((id) => setWindows(prev => ({ ...prev, [id]: { ...prev[id], open: false } })), []);
+            const minimizeWindow = useCallback((id) => setWindows(prev => ({ ...prev, [id]: { ...prev[id], minimized: true } })), []);
+            const focusWindow = useCallback((id) => {
+                setWindows(prev => ({ ...prev, [id]: { ...prev[id], z: maxZ + 1 } }));
+                setMaxZ(p => p + 1);
+            }, [maxZ]);
+
+            const moveWindow = useCallback((id, newX, newY) => {
+                setWindows(prev => {
+                const win = prev[id];
+                const maxX = window.innerWidth - 50;
+                const maxY = window.innerHeight - 50;
+                const clampedX = Math.max(-win.w + 50, Math.min(maxX, newX));
+                const clampedY = Math.max(0, Math.min(maxY, newY));
+                return { ...prev, [id]: { ...win, x: clampedX, y: clampedY } };
+                });
+            }, []);
+
+            return { windows, openWindow, closeWindow, minimizeWindow, focusWindow, moveWindow, maxZ };
+        };
+
+        const useGameMetrics = () => {
+            const [riskLevel, setRiskLevel] = useState(0); 
+            const [socialCredit, setSocialCredit] = useState(50); 
+            const [score, setScore] = useState(100);
+            const [notifications, setNotifications] = useState([]);
+            const [reportLog, setReportLog] = useState([]);
+
+            const addNotification = useCallback((msg, type = "info") => {
+                const id = generateUniqueId();
+                setNotifications(prev => [...prev, { id, msg, type }]);
+                setTimeout(() => setNotifications(prev => prev.filter(n => n.id !== id)), CONFIG.NOTIFICATION_DURATION);
+            }, []);
+
+            const logDecision = (action, consequence, type) => {
+                if (type !== 'good') {
+                    setReportLog(prev => [...prev, { action, consequence, type }]);
+                }
+            };
+
+            const adjustMetric = (metric, amount) => {
+                if (metric === 'risk') setRiskLevel(p => Math.max(0, Math.min(100, p + amount)));
+                if (metric === 'social') setSocialCredit(p => Math.max(0, Math.min(100, p + amount)));
+                if (metric === 'score') setScore(p => p + amount);
+            };
+
+            return { riskLevel, socialCredit, score, notifications, addNotification, adjustMetric, setRiskLevel, logDecision, reportLog };
+        };
+
+        // --- 3. UI COMPONENTS ---
+
+        const ConsequenceAlert = ({ type }) => {
+            if (!type) return null;
+
+            return (
+                <div className="absolute inset-0 z-[100] pointer-events-none overflow-hidden">
+                {type === 'bankTransfer' && (
+                    <div className="absolute bottom-24 right-8 bg-white text-slate-900 p-4 rounded-xl shadow-2xl border-l-4 border-rose-500 w-80 flex items-start gap-3 pointer-events-auto animate-bounce">
+                    <div className="bg-rose-100 p-2 rounded-full text-rose-600"><DollarSign size={24}/></div>
+                    <div>
+                        <h4 className="font-bold text-sm">Wire Transfer Scheduled</h4>
+                        <p className="text-xs text-slate-600 mt-1">Your account ***.456 scheduled a transfer of <span className="font-bold text-rose-600">$ 50,000.00</span>.</p>
+                        <p className="text-[10px] text-slate-400 mt-2">Corp Bank: If unauthorized, call now.</p>
+                    </div>
+                    </div>
+                )}
+
+                {type === 'publicLeak' && (
+                    <div className="absolute top-24 left-1/2 -translate-x-1/2 bg-slate-800 text-white p-4 rounded-lg shadow-2xl border border-slate-600 w-96 pointer-events-auto animate-pulse">
+                    <div className="flex justify-between items-center mb-2 border-b border-slate-700 pb-2">
+                        <span className="text-xs font-mono text-cyan-400 flex items-center gap-2"><UploadCloud size={14}/> NETWORK MONITOR</span>
+                        <span className="text-[10px] bg-rose-500 px-2 rounded">ALERT</span>
+                    </div>
+                    <div className="space-y-2 font-mono text-xs">
+                        <p>Anomalous outbound traffic detected.</p>
+                        <p className="text-slate-400">File: <span className="text-white">client_backups.zip</span></p>
+                        <p>Destination: <span className="text-rose-400">185.xxx.xxx.xx (Moscow, RU)</span></p>
+                        <div className="h-1 w-full bg-slate-700 rounded overflow-hidden mt-2">
+                            <div className="h-full bg-rose-500 w-[80%] animate-pulse"></div>
+                        </div>
+                    </div>
+                    </div>
+                )}
+
+                {type === 'terminal' && (
+                    <div className="absolute top-1/4 left-1/4 bg-black text-green-500 p-2 rounded shadow-2xl border border-slate-700 w-[500px] h-[300px] font-mono text-xs overflow-hidden pointer-events-auto">
+                    <div className="bg-slate-800 text-slate-300 px-2 py-1 text-[10px] mb-2 flex justify-between">
+                        <span>Administrator: CMD</span>
+                        <span>X</span>
+                    </div>
+                    <div className="p-2 space-y-1">
+                        <p>C:\Users\Admin&gt; autorun.inf executed</p>
+                        <p>Injecting payload... [OK]</p>
+                        <p>Bypassing Defender... [OK]</p>
+                        <p>Encrypting C:\Users\Documents\*.* ...</p>
+                        <p className="animate-pulse">_</p>
+                    </div>
+                    </div>
+                )}
+
+                {type === 'gossip' && (
+                    <div className="absolute bottom-24 right-8 flex flex-col gap-2 w-72 pointer-events-auto">
+                    <div className="bg-white p-3 rounded-lg shadow-xl border border-slate-200 animate-bounce">
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-1"><Users size={12}/> Group "Water Cooler"</div>
+                        <p className="text-xs">😂😂😂 No way the boss earns that much??</p>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg shadow-xl border border-slate-200 animate-bounce delay-100">
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-1"><Users size={12}/> Group "Water Cooler"</div>
+                        <p className="text-xs">Did the payroll leak?? Send it!!! 👀</p>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg shadow-xl border border-slate-200 animate-bounce delay-200">
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 mb-1"><Users size={12}/> Group "Water Cooler"</div>
+                        <p className="text-xs">📸 Image</p>
+                    </div>
+                    </div>
+                )}
+
+                {type === 'identityTheft' && (
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-rose-600 text-white px-8 py-4 rounded-b-xl shadow-2xl z-[110] flex items-center gap-4 pointer-events-auto">
+                        <Key size={32} className="animate-ping"/>
+                        <div>
+                        <h2 className="font-bold text-lg">SECURITY ALERT</h2>
+                        <p className="text-sm">Your network password was reset externally. 2FA Disabled.</p>
+                        </div>
+                    </div>
+                )}
+                </div>
+            );
+        };
+
+        const Modal = ({ title, children, onClose, danger, type = "default" }) => (
+            <div className="fixed inset-0 bg-slate-950/80 flex items-center justify-center z-[100] backdrop-blur-md px-4 animate-scale-in" role="dialog" aria-modal="true">
+                <div className={`
+                relative w-full max-w-lg overflow-hidden rounded-xl border backdrop-blur-xl shadow-2xl transition-all
+                ${danger 
+                    ? 'border-rose-500/50 shadow-[0_0_50px_rgba(244,63,94,0.3)] bg-slate-900/95' 
+                    : 'border-cyan-500/30 shadow-[0_0_50px_rgba(6,182,212,0.1)] bg-slate-900/95'
+                }
+                `}>
+                <div className={`p-4 border-b flex justify-between items-center ${danger ? 'border-rose-500/30 bg-rose-500/10' : 'border-cyan-500/20 bg-cyan-500/5'}`}>
+                    <h3 className={`font-bold font-mono uppercase tracking-widest text-sm flex items-center gap-2 ${danger ? 'text-rose-400' : 'text-cyan-400'}`}>
+                    {danger ? <AlertTriangle size={18} /> : type === 'wifi' ? <Wifi size={18}/> : <Shield size={18} />}
+                    {title}
+                    </h3>
+                    {onClose && <button onClick={onClose} aria-label="Close"><X size={18} className="hover:text-white text-slate-400 transition-colors" /></button>}
+                </div>
+                <div className="p-6 text-slate-300 relative">
+                    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none"></div>
+                    <div className="relative z-10">{children}</div>
+                </div>
+                </div>
+            </div>
+        );
+
+        const NotificationToast = ({ notifications }) => (
+            <div className="absolute top-8 right-8 flex flex-col gap-3 z-[90] pointer-events-none">
+                {notifications.map(n => (
+                    <div key={n.id} className="bg-slate-900/90 border-l-4 border-cyan-500 p-4 rounded shadow-2xl backdrop-blur-xl text-white min-w-[320px] animate-slide-in-right flex items-center gap-4">
+                    <div className={`p-2 rounded-full ${n.type === 'alert' ? 'bg-rose-500/20 text-rose-500' : n.type === 'success' ? 'bg-emerald-500/20 text-emerald-500' : 'bg-slate-700/50 text-slate-300'}`}>
+                        {n.type === 'alert' ? <AlertCircle size={20}/> : n.type === 'success' ? <CheckCircle size={20}/> : <Info size={20}/>}
+                    </div>
+                    <span className="text-sm font-medium leading-tight">{n.msg}</span>
+                    </div>
+                ))}
+            </div>
+        );
+
+        const Desktop = ({ activeHighlight, openWindow, wallpaperHacked, onRestoreWallpaper }) => (
+            <div className="absolute inset-0 z-0">
+                {/* Wallpaper Logic */}
+                {wallpaperHacked ? (
+                <div className="w-full h-full bg-slate-950 flex items-center justify-center flex-col relative overflow-hidden">
+                    <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,rgba(0,0,0,0.1)_0,rgba(0,0,0,0.1)_10px,transparent_10px,transparent_20px)]"></div>
+                    {/* TROLL FACE SIMPLIFIED WITH SVG/CSS */}
+                    <div className="relative z-10 bg-white p-8 rounded-xl shadow-2xl rotate-3 animate-pulse border-4 border-black text-center">
+                        <div className="text-6xl mb-2">🤡</div>
+                        <h1 className="text-4xl font-black text-black tracking-tighter uppercase mb-2">GOTCHA!</h1>
+                        <p className="text-black font-mono font-bold text-lg">Left unlocked = Lost respect.</p>
+                        <p className="text-xs text-slate-600 mt-4">Signed: The IT Intern</p>
+                    </div>
+                    
+                    {/* RESTORE BUTTON */}
+                    <button 
+                        onClick={onRestoreWallpaper}
+                        className="absolute top-1/2 left-8 -translate-y-1/2 flex flex-col items-center gap-2 group z-50 bg-slate-800/80 p-4 rounded-xl border border-white/20 hover:bg-slate-700 transition-all hover:scale-105 cursor-pointer"
+                    >
+                        <RefreshCcw size={32} className="text-emerald-400 group-hover:rotate-180 transition-transform duration-700" />
+                        <span className="text-xs font-bold text-white bg-black/50 px-2 py-1 rounded">Restore_Wallpaper.exe</span>
+                    </button>
+                </div>
+                ) : (
+                <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url('${WALLPAPER_URL}')` }}>
+                    {/* Overlay to ensure icons are readable and make it subtle */}
+                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]"></div>
+                </div> 
+                )}
+
+                {/* Icons */}
+                <div className="absolute top-8 left-8 flex flex-col gap-8 z-10">
+                    <DesktopIcon label="Outlook" highlight={activeHighlight === 'mail'} icon={<Mail className="text-blue-400"/>} onClick={() => openWindow('mail')} />
+                    <DesktopIcon label="Teams" highlight={activeHighlight === 'chat'} icon={<MessageSquare className="text-indigo-400"/>} onClick={() => openWindow('chat')} />
+                    <DesktopIcon label="SOC" highlight={activeHighlight === 'soc'} icon={<AlertTriangle className="text-rose-400"/>} onClick={() => openWindow('soc')} />
+                    <DesktopIcon label="Intranet" highlight={activeHighlight === 'browser'} icon={<Globe className="text-cyan-400"/>} onClick={() => openWindow('browser')} />
+                </div>
+            </div>
+        );
+
+        const Taskbar = ({ windows, activeHighlight, openWindow, ransomwareActive }) => (
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 h-16 bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl flex items-center px-8 gap-4 shadow-2xl z-50 transition-all hover:scale-105">
+                <div className="p-2.5 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl text-white shadow-lg shadow-cyan-500/20"><Shield size={24}/></div>
+                <div className="h-8 w-px bg-slate-700/50 mx-2"></div>
+                <TaskbarIcon icon={<Mail size={22}/>} active={windows.mail.open} highlight={activeHighlight === 'mail'} onClick={() => openWindow('mail')} label="Email"/>
+                <TaskbarIcon icon={<MessageSquare size={22}/>} active={windows.chat.open} highlight={activeHighlight === 'chat'} onClick={() => openWindow('chat')} label="Chat"/>
+                <TaskbarIcon icon={<Globe size={22}/>} active={windows.browser.open} highlight={activeHighlight === 'browser'} onClick={() => openWindow('browser')} label="Browser"/>
+                <TaskbarIcon icon={<AlertTriangle size={22}/>} active={windows.soc.open} highlight={activeHighlight === 'soc'} alert={ransomwareActive} onClick={() => openWindow('soc')} label="SOC"/>
+            </div>
+        );
+
+        const DesktopIcon = ({ label, icon, onClick, highlight }) => (
+            <button onClick={onClick} className="group flex flex-col items-center gap-3 w-24 relative focus:outline-none focus:ring-2 focus:ring-cyan-400 rounded-xl p-2" aria-label={`Open ${label}`}>
+                <div className={`
+                w-16 h-16 bg-slate-800/40 border border-slate-700/50 rounded-2xl flex items-center justify-center transition-all backdrop-blur-md shadow-lg
+                ${highlight ? 'animate-bounce ring-2 ring-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.4)] border-cyan-400 bg-cyan-900/20' : 'group-hover:scale-110 group-hover:border-cyan-500/50 group-hover:bg-slate-800/60'}
+                `}>
+                {React.cloneElement(icon, { size: 30 })}
+                </div>
+                <span className="text-[10px] text-slate-300 font-bold bg-slate-950/60 px-3 py-1 rounded-full backdrop-blur-md border border-white/5 group-hover:text-cyan-400 transition-colors shadow-sm">{label}</span>
+                {highlight && <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-ping"></div>}
+            </button>
+        );
+
+        const TaskbarIcon = ({ icon, active, highlight, alert, onClick, label }) => (
+            <button onClick={onClick} aria-label={label} className={`relative p-3 rounded-xl transition-all duration-300 focus:outline-none focus:bg-white/10 ${active ? 'bg-white/10 text-cyan-400 shadow-inner' : 'text-slate-500 hover:text-slate-200 hover:bg-white/5'} ${highlight ? 'animate-pulse bg-cyan-500/20 text-cyan-300' : ''}`}>
+                {icon}
+                {active && <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-cyan-400 rounded-full shadow-[0_0_8px_cyan]"></div>}
+                {alert && <div className="absolute inset-0 bg-rose-500/20 animate-pulse rounded-xl"></div>}
+            </button>
+        );
+
+        // --- 4. SYSTEM SCREENS ---
+
+        const BootScreen = () => (
+            <div className="h-screen w-full bg-black flex flex-col items-center justify-center text-slate-400 font-mono text-xs relative z-50">
+                <div className="mb-4 text-cyan-500 animate-pulse">
+                    <Terminal size={48} />
+                </div>
+                <div className="space-y-1">
+                    <p>CORTEX BIOS v5.0.1</p>
+                    <p>Verifying Memory... OK</p>
+                    <p>Loading Kernel... OK</p>
+                    <p>Mounting Filesystem... OK</p>
+                    <p className="animate-pulse">Booting System...</p>
+                </div>
+            </div>
+        );
+
+        // IntroScreen is transparent to show the wallpaper
+        const IntroScreen = ({ onStart }) => (
+            <div className="h-screen w-full flex items-center justify-center p-8 overflow-hidden relative font-sans z-10 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+                
+                <div className="z-10 w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div className="space-y-8 animate-fade-in-up">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-950/30 text-cyan-400 text-xs font-mono tracking-[0.2em] uppercase backdrop-blur-md">
+                        <Terminal size={12} /> Cortex Security OS v5.0
+                    </div>
+                    <div>
+                        <h1 className="text-6xl lg:text-7xl font-bold tracking-tight text-white mb-4">
+                        CYBER <br/>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600">DEFENSE</span>
+                        </h1>
+                        <p className="text-slate-400 text-lg leading-relaxed max-w-md border-l-2 border-slate-700 pl-6 bg-slate-900/50 p-4 rounded-r-lg backdrop-blur-sm">
+                        Immersive incident simulation. Your decisions will be evaluated on:
+                        </p>
+                        {/* Metrics Explained */}
+                        <div className="grid grid-cols-3 gap-4 mt-6">
+                        <div className="bg-slate-900/80 backdrop-blur p-3 rounded border border-cyan-500/30 text-center">
+                            <div className="text-cyan-400 font-bold text-xl mb-1">100</div>
+                            <div className="text-[10px] text-slate-400 uppercase tracking-widest">Tech Score</div>
+                        </div>
+                        <div className="bg-slate-900/80 backdrop-blur p-3 rounded border border-blue-500/30 text-center">
+                            <div className="text-blue-400 font-bold text-xl mb-1">50</div>
+                            <div className="text-[10px] text-slate-400 uppercase tracking-widest">Social Credit</div>
+                        </div>
+                        <div className="bg-slate-900/80 backdrop-blur p-3 rounded border border-rose-500/30 text-center">
+                            <div className="text-rose-400 font-bold text-xl mb-1">0%</div>
+                            <div className="text-[10px] text-slate-400 uppercase tracking-widest">System Risk</div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="relative">
+                    {/* LOGIN SCREEN */}
+                    <div className="relative bg-slate-900/90 border border-slate-700/50 backdrop-blur-xl p-10 rounded-2xl shadow-2xl w-full max-w-md animate-slide-in-right">
+                        <div className="flex flex-col items-center mb-8">
+                            <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-4 border-2 border-cyan-500/50 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
+                                <User size={40} className="text-cyan-400" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-white tracking-wide">CORTEX LOGIN</h2>
+                            <p className="text-slate-400 text-xs uppercase tracking-widest mt-1">Restricted Access</p>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-xs text-slate-400 uppercase font-bold ml-1 mb-1 block">Username</label>
+                                <input 
+                                    type="text" 
+                                    value="admin.security" 
+                                    disabled 
+                                    className="w-full bg-slate-800/50 border border-slate-600 rounded p-3 text-white text-sm focus:outline-none focus:border-cyan-500 transition-colors"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs text-slate-400 uppercase font-bold ml-1 mb-1 block">Password</label>
+                                <input 
+                                    type="password" 
+                                    value="********" 
+                                    disabled 
+                                    className="w-full bg-slate-800/50 border border-slate-600 rounded p-3 text-white text-sm focus:outline-none focus:border-cyan-500 transition-colors"
+                                />
+                            </div>
+                            
+                            <button 
+                                onClick={onStart}
+                                className="w-full mt-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-3 rounded shadow-lg shadow-cyan-500/20 transition-all transform hover:scale-[1.02] flex justify-center items-center gap-2"
+                            >
+                                LOGIN <ArrowRight size={16} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        );
+
+        const ReportModal = ({ log, onClose }) => (
+            <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[200] backdrop-blur-md p-8 animate-fade-in">
+                <div className="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-3xl h-[80vh] flex flex-col shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-yellow-500"></div>
+                    <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+                        <div className="flex items-center gap-3">
+                            <FileText className="text-slate-400" />
+                            <div>
+                                <h2 className="text-xl font-bold text-white">Incident Report</h2>
+                                <p className="text-xs text-slate-500">User Action Audit Log</p>
+                            </div>
+                        </div>
+                        <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full transition-colors"><X size={20} className="text-slate-400"/></button>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-black/20">
+                        {log.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center h-full text-slate-500 opacity-50">
+                                <CheckCircle size={64} className="mb-4 text-emerald-500"/>
+                                <p>No negative incidents recorded.</p>
+                            </div>
+                        ) : (
+                            log.map((entry, idx) => (
+                                <div key={idx} className={`p-4 rounded-lg border flex items-start gap-4 ${entry.type === 'risk' ? 'bg-rose-950/20 border-rose-900/50' : 'bg-blue-950/20 border-blue-900/50'}`}>
+                                    <div className={`p-2 rounded-full mt-1 ${entry.type === 'risk' ? 'bg-rose-500/20 text-rose-500' : 'bg-blue-500/20 text-blue-500'}`}>
+                                        {entry.type === 'risk' ? <AlertTriangle size={18}/> : <Users size={18}/>}
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-slate-200 text-sm">{entry.action}</h4>
+                                        <p className="text-xs text-slate-400 mt-1">{entry.consequence}</p>
+                                        <div className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wide bg-black/30 border border-white/5">
+                                            {entry.type === 'risk' ? 'Impact: Security' : 'Impact: Culture'}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+
+        const EndScreen = ({ score, riskLevel, socialCredit, reportLog }) => {
+            const [showReport, setShowReport] = useState(false);
+            
+            let endingKey = 'PERFECT';
+            const isHighRisk = riskLevel > 40;
+            const isLowSocial = socialCredit < 50;
+
+            if (!isHighRisk && !isLowSocial) endingKey = 'PERFECT';
+            else if (!isHighRisk && isLowSocial) endingKey = 'BUREAUCRAT';
+            else if (isHighRisk && !isLowSocial) endingKey = 'COMPROMISED';
+            else endingKey = 'CHAOS'; 
+
+            const ending = ENDINGS[endingKey];
+
+            return (
+                <div className="h-screen w-full bg-slate-950 flex items-center justify-center p-8 relative overflow-hidden font-mono z-50">
+                {showReport && <ReportModal log={reportLog} onClose={() => setShowReport(false)} />}
+                
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"></div>
+                <div className={`relative z-10 max-w-4xl w-full ${ending.bg} border-2 ${ending.border} p-12 rounded-2xl shadow-2xl backdrop-blur-xl animate-scale-in`}>
+                    <div className="text-center mb-12">
+                        <div className="inline-block px-4 py-1 rounded-full bg-black/30 text-white text-xs mb-4 border border-white/10">FINAL REPORT</div>
+                        <h1 className={`text-5xl font-bold mb-4 ${ending.color}`}>{ending.title}</h1>
+                        <p className="text-xl text-slate-200 leading-relaxed">{ending.desc}</p>
+                    </div>
+                    <div className="grid grid-cols-3 gap-8 mb-12">
+                        <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-700 text-center">
+                            <div className="text-xs text-slate-500 uppercase tracking-widest mb-2">System Risk</div>
+                            <div className={`text-4xl font-bold ${riskLevel > 40 ? 'text-rose-500' : 'text-emerald-500'}`}>{riskLevel}%</div>
+                        </div>
+                        <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-700 text-center">
+                            <div className="text-xs text-slate-500 uppercase tracking-widest mb-2">Social Credit</div>
+                            <div className={`text-4xl font-bold ${socialCredit < 50 ? 'text-rose-500' : 'text-blue-400'}`}>{socialCredit}/100</div>
+                        </div>
+                        <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-700 text-center">
+                            <div className="text-xs text-slate-500 uppercase tracking-widest mb-2">Tech Score</div>
+                            <div className="text-4xl font-bold text-white">{score}</div>
+                        </div>
+                    </div>
+                    <div className="flex gap-4">
+                        <button onClick={() => window.location.reload()} className="flex-1 py-4 bg-white text-black font-bold rounded hover:bg-slate-200 transition-colors flex justify-center items-center gap-2 uppercase tracking-wider">
+                            <RefreshCw size={20} /> Restart Simulation
+                        </button>
+                        <button onClick={() => setShowReport(true)} className="flex-1 py-4 bg-slate-800 text-white font-bold rounded border border-slate-600 hover:bg-slate-700 transition-colors flex justify-center items-center gap-2 uppercase tracking-wider">
+                            <FileText size={20} /> View Incident Report
+                        </button>
+                    </div>
+                </div>
+                </div>
+            );
+        };
+
+        const DraggableWindow = ({ config, children, onClose, onMinimize, onFocus, onMove }) => {
+            const [isDragging, setIsDragging] = useState(false);
+            const [offset, setOffset] = useState({ x: 0, y: 0 });
+
+            const handleMouseDown = (e) => {
+                e.stopPropagation();
+                onFocus();
+                setIsDragging(true);
+                setOffset({
+                x: e.clientX - config.x,
+                y: e.clientY - config.y
+                });
+            };
+
+            const handleMouseMove = useCallback((e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+                onMove(config.id, e.clientX - offset.x, e.clientY - offset.y);
+            }, [isDragging, config.id, onMove, offset]);
+
+            const handleMouseUp = useCallback(() => setIsDragging(false), []);
+
+            useEffect(() => {
+                if (isDragging) {
+                window.addEventListener('mousemove', handleMouseMove);
+                window.addEventListener('mouseup', handleMouseUp);
+                } else {
+                window.removeEventListener('mousemove', handleMouseMove);
+                window.removeEventListener('mouseup', handleMouseUp);
+                }
+                return () => {
+                window.removeEventListener('mousemove', handleMouseMove);
+                window.removeEventListener('mouseup', handleMouseUp);
+                };
+            }, [isDragging, handleMouseMove, handleMouseUp]);
+
+            return (
+                <div 
+                className="absolute flex flex-col bg-slate-900/95 rounded-lg shadow-2xl overflow-hidden border border-slate-700/50 backdrop-blur-xl"
+                style={{ 
+                    top: config.y, 
+                    left: config.x, 
+                    zIndex: config.z, 
+                    width: config.w, 
+                    height: config.h,
+                    transition: isDragging ? 'none' : 'box-shadow 0.2s',
+                    boxShadow: isDragging ? '0 20px 50px rgba(0,0,0,0.5)' : '0 10px 30px rgba(0,0,0,0.3)'
+                }}
+                onMouseDown={onFocus}
+                role="dialog"
+                aria-labelledby={`window-title-${config.id}`}
+                >
+                <div 
+                    className={`h-10 border-b border-white/5 flex items-center justify-between px-4 cursor-move select-none ${isDragging ? 'bg-slate-800' : 'bg-slate-800/50'}`}
+                    onMouseDown={handleMouseDown}
+                >
+                    <div id={`window-title-${config.id}`} className="flex items-center gap-3 text-slate-300 text-xs font-bold uppercase tracking-wider font-mono">
+                    {config.icon} {config.title}
+                    </div>
+                    {/* Windows Style Buttons */}
+                    <div className="flex">
+                    <button onClick={(e) => {e.stopPropagation(); onMinimize()}} aria-label="Minimize" className="w-10 h-10 flex items-center justify-center hover:bg-white/10 transition-colors text-slate-400 hover:text-white">
+                        <Minus size={14} />
+                    </button>
+                    {/* Fake Maximize Button */}
+                    <button onClick={(e) => {e.stopPropagation()}} aria-label="Maximize" className="w-10 h-10 flex items-center justify-center hover:bg-white/10 transition-colors text-slate-400 hover:text-white cursor-default">
+                        <Square size={12} />
+                    </button>
+                    <button onClick={(e) => {e.stopPropagation(); onClose()}} aria-label="Close" className="w-10 h-10 flex items-center justify-center hover:bg-red-600 transition-colors text-slate-400 hover:text-white">
+                        <X size={16} />
+                    </button>
+                    </div>
+                </div>
+                <div className="flex-1 overflow-hidden relative">
+                    {children}
+                </div>
+                </div>
+            );
+        };
+
+        // --- 5. MAIN COMPONENT (CONTROLLER) ---
+
+        function SecurityImmersive() {
+            const [module, setModule] = useState(0); 
+            const [step, setStep] = useState(0); 
+            // Real Clock
+            const [time, setTime] = useState(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
+            const [isRebooting, setIsRebooting] = useState(false);
+            const [wallpaperHacked, setWallpaperHacked] = useState(false);
+            
+            // Custom Hooks
+            const { riskLevel, socialCredit, score, notifications, addNotification, adjustMetric, setRiskLevel, logDecision, reportLog } = useGameMetrics();
+            
+            const { windows, openWindow, closeWindow, minimizeWindow, focusWindow, moveWindow, maxZ } = useWindowSystem({
+                mail: { id: 'mail', open: false, minimized: false, x: 100, y: 50, w: 700, h: 500, z: 10, title: "Outlook Corp", icon: <Mail size={16}/> },
+                chat: { id: 'chat', open: false, minimized: false, x: 150, y: 100, w: 400, h: 600, z: 11, title: "Teams", icon: <MessageSquare size={16}/> },
+                browser: { id: 'browser', open: false, minimized: false, x: 200, y: 80, w: 800, h: 600, z: 12, title: "Intranet Gateway", icon: <Globe size={16}/> },
+                soc: { id: 'soc', open: false, minimized: false, x: 80, y: 40, w: 900, h: 650, z: 13, title: "CORTEX SOC v5.0", icon: <AlertTriangle size={16}/> },
+            });
+            
+            const [emails, setEmails] = useState(INITIAL_EMAILS);
+            const [chatHistory, setChatHistory] = useState(CHAT_LOGS);
+            const [activeHighlight, setActiveHighlight] = useState(null);
+            
+            const [waitingForChat, setWaitingForChat] = useState(false); 
+            const [shadowITStage, setShadowITStage] = useState(0); 
+            const [callActive, setCallActive] = useState(false); 
+            
+            const [usbStage, setUsbStage] = useState(0); 
+            const [printerStage, setPrinterStage] = useState(0); 
+            const [expandedEmailId, setExpandedEmailId] = useState(null); 
+            
+            // Visual Consequence State
+            const [consequenceState, setConsequenceState] = useState({
+                bankTransfer: false,
+                publicLeak: false,
+                terminal: false,
+                gossip: false,
+                identityTheft: false
+            });
+
+            const [modalState, setModalState] = useState({
+                wifi: false, lock: false, phone: false, usb: false, credential: false, printer: false
+            });
+
+            const [phoneData, setPhoneData] = useState({ status: 'idle', active: false });
+            const [ransomwareActive, setRansomwareActive] = useState(false);
+            const logsEndRef = useRef(null);
+
+            const triggerConsequence = (type, duration = 5000) => {
+                setConsequenceState(prev => ({ ...prev, [type]: true }));
+                if (duration) {
+                setTimeout(() => setConsequenceState(prev => ({ ...prev, [type]: false })), duration);
+                }
+            };
+
+            // --- REAL CLOCK ---
+            useEffect(() => {
+                const clock = setInterval(() => {
+                    setTime(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
+                }, 1000); 
+                return () => clearInterval(clock);
+            }, []);
+
+            // --- EVENT ENGINE ---
+            useEffect(() => {
+                if (module !== 1) return;
+
+                const triggerEvent = (nextStep, delay, action) => {
+                    setTimeout(() => {
+                    setStep(nextStep);
+                    if (action) action();
+                    }, delay);
+                };
+
+                switch (step) {
+                    case 0: // Start Phishing
+                        triggerEvent(1, 2000, () => {
+                            addNotification("You have new unread emails.", "mail");
+                            setActiveHighlight('mail');
+                        });
+                        break;
+                }
+            }, [step, module, addNotification]);
+
+            const addChat = (user, text) => {
+                const id = generateUniqueId();
+                setChatHistory(prev => [...prev, { id, user, text, time }]);
+            };
+
+            // 1. EMAIL LOGIC
+            const handleEmailAction = (email, action) => {
+                if (action === 'expand') {
+                    setExpandedEmailId(expandedEmailId === email.id ? null : email.id);
+                    if (!email.read) {
+                        setEmails(prev => prev.map(e => e.id === email.id ? { ...e, read: true } : e));
+                    }
+                    return;
+                }
+
+                if (step === 1 && email.type === 'phishing') {
+                    setActiveHighlight(null); 
+                    if (action === 'click') {
+                        adjustMetric('risk', 20);
+                        logDecision('Clicked Phishing link', 'Malware installed via drive-by download.', 'risk');
+                        addNotification("⚠️ Malware installed via drive-by download.", "alert");
+                        setEmails(prev => prev.filter(e => e.id !== email.id));
+                        triggerBrowserStep();
+                    } else if (action === 'report') {
+                        adjustMetric('risk', -5);
+                        logDecision('Reported suspicious email', 'Correct security action.', 'good');
+                        if (waitingForChat) adjustMetric('score', 10); 
+                        addNotification("✅ Email reported to SOC.", "success");
+                        setEmails(prev => prev.filter(e => e.id !== email.id));
+                        triggerBrowserStep();
+                    } else if (action === 'ask') {
+                        addNotification("Opening channel with IT...", "info");
+                        setTimeout(() => {
+                        openWindow('chat');
+                        setActiveHighlight('chat');
+                        addChat("You", "Received a weird email from HR. Can you validate?");
+                        setWaitingForChat(true);
+                        setTimeout(() => {
+                            addChat("IT Support", "Analyzing... It's a scam. DO NOT click. The URL is fake (gov-validation).");
+                            addChat("IT Support", "Please report as spam in Outlook.");
+                            addNotification("ℹ️ IT response received. Return to email.", "info");
+                            setActiveHighlight('mail');
+                        }, 3000);
+                        }, 1000);
+                    }
+                } else if (email.type === 'legit') {
+                    if (action === 'click') {
+                        addNotification("✅ Attachment verified. Safe file.", "success");
+                    } else if (action === 'ask') {
+                        addNotification("Opening channel with IT...", "info");
+                        setTimeout(() => {
+                            openWindow('chat');
+                            addChat("You", "Is the Board email regarding Q3 real?");
+                            setTimeout(() => {
+                                addChat("IT Support", "Yes, confirmed. Safe to open.");
+                                addNotification("ℹ️ IT confirmed veracity.", "info");
+                            }, 2000);
+                        }, 1000);
+                    } else if (action === 'report') {
+                        adjustMetric('social', -10);
+                        logDecision('Blocked legitimate email', 'Friction with management and business interruption.', 'social');
+                        addNotification("⚠️ Management complained about improper blocking.", "alert");
+                    }
+                }
+            };
+
+            const triggerBrowserStep = () => {
+                setTimeout(() => {
+                    setStep(2);
+                    addNotification("External connection attempt detected.", "alert");
+                    setActiveHighlight('browser'); 
+                }, 4000); 
+            };
+
+            // 2. BROWSER LOGIC
+            const handleBrowserAction = (action) => {
+                setActiveHighlight(null);
+                closeWindow('browser');
+                if (action === 'login') {
+                adjustMetric('risk', 25);
+                triggerConsequence('bankTransfer');
+                logDecision('Login on fake site', 'Credential theft and financial loss.', 'risk');
+                addNotification("⚠️ Credentials stolen on clone site.", "alert");
+                } else if (action === 'close') {
+                adjustMetric('risk', -5);
+                logDecision('Closed suspicious site', 'Avoided credential theft.', 'good');
+                addNotification("✅ Safe browsing. Fake site closed.", "success");
+                } else if (action === 'check') {
+                addNotification("ℹ️ Digital Certificate: Invalid.", "info");
+                setTimeout(() => addNotification("✅ Correct decision: Site closed.", "success"), 2000);
+                }
+                setTimeout(() => {
+                    setStep(3);
+                    addNotification("New message on Teams.", "chat");
+                    setActiveHighlight('chat');
+                    addChat("Luke (Dev)", "Server is slow. Can I use WeTransfer to send the client build?");
+                    setShadowITStage(0); 
+                }, 5000);
+            };
+
+            // 3. CHAT/SHADOW IT LOGIC
+            const handleShadowITAction = (action) => {
+                setActiveHighlight(null);
+                if (shadowITStage === 0) {
+                    if (action === 'allow') {
+                        adjustMetric('risk', 15);
+                        adjustMetric('social', 15);
+                        addChat("You", "Ok, go ahead.");
+                        addChat("Luke (Dev)", "Thanks! Saved my day.");
+                        triggerConsequence('publicLeak');
+                        logDecision('Allowed Shadow IT (WeTransfer)', 'Corporate data leak to public cloud.', 'risk');
+                        addNotification("⚠️ DLP Risk: File in public cloud.", "alert");
+                        finishChatStep();
+                    } else if (action === 'deny') {
+                        adjustMetric('social', -10);
+                        addChat("You", "Negative. Blocked.");
+                        setTimeout(() => {
+                            addChat("Luke (Dev)", "Man, the client is pushing! Deadline is now. If I don't send, it's on me.");
+                            setShadowITStage(1); 
+                        }, 1500);
+                    } else if (action === 'alternative') {
+                        adjustMetric('social', 5);
+                        addChat("You", "Use the Internal FileDrop. It's secure and approved.");
+                        addChat("Luke (Dev)", "Nice, didn't know it was working. Will try.");
+                        logDecision('Suggested secure alternative', 'Maintained security and productivity.', 'good');
+                        addNotification("✅ Secure solution implemented.", "success");
+                        finishChatStep();
+                    }
+                } else if (shadowITStage === 1) {
+                    if (action === 'rude') {
+                        adjustMetric('social', -30); 
+                        addChat("You", "Your problem. Rules are rules. Deal with it.");
+                        addChat("Luke (Dev)", "...");
+                        logDecision('Was rude to colleague', 'Severe damage to security culture and trust.', 'social');
+                        addNotification("ℹ️ Tense atmosphere in the office.", "info");
+                        finishChatStep();
+                    } else if (action === 'educate') {
+                        adjustMetric('social', 10); 
+                        addChat("You", "I understand the rush, but WeTransfer leaks data. Let's open an emergency ticket to unblock the client FTP?");
+                        addChat("Luke (Dev)", "Ah, if we can do it fast, cool. Help me out.");
+                        logDecision('Educated colleague', 'Resolved conflict while maintaining security.', 'good');
+                        addNotification("✅ Situation handled with empathy.", "success");
+                        finishChatStep();
+                    }
+                }
+            };
+
+            const finishChatStep = () => {
+                setTimeout(() => {
+                    setStep(4);
+                    setModalState(prev => ({ ...prev, phone: true }));
+                    setPhoneData({ active: true, status: 'ringing' });
+                }, 6000);
+            };
+
+            // 4. PHONE LOGIC
+            const handlePhoneResponse = (action) => {
+                if (action === 'reject') {
+                adjustMetric('social', -5);
+                logDecision('Rejected call without verifying', 'Potential loss of important contact.', 'social');
+                addNotification("Call rejected.", "info");
+                setModalState(prev => ({ ...prev, phone: false }));
+                triggerLockStep();
+                } else if (action === 'accept') {
+                    setPhoneData({ active: true, status: 'talking' });
+                    setCallActive(true);
+                } else if (action === 'hangup_active') {
+                    addNotification("Call ended.", "info");
+                    setCallActive(false);
+                    setModalState(prev => ({ ...prev, phone: false }));
+                    triggerLockStep();
+                } else if (action === 'give_info_active') {
+                    adjustMetric('risk', 30);
+                    triggerConsequence('identityTheft', 6000);
+                    logDecision('Provided data over phone', 'Successful social engineering, account compromised.', 'risk');
+                    addNotification("⚠️ Critical data leak (Social Engineering).", "alert");
+                    setCallActive(false);
+                    setModalState(prev => ({ ...prev, phone: false }));
+                    triggerLockStep();
+                }
+            };
+
+            const triggerLockStep = () => {
+                setTimeout(() => {
+                    setStep(5);
+                    setModalState(prev => ({ ...prev, lock: true }));
+                }, 5000);
+            };
+
+            // 5. LOCK SCREEN LOGIC
+            const handleLockAction = (action) => {
+                setModalState(prev => ({ ...prev, lock: false }));
+                if (action === 'leave') {
+                adjustMetric('risk', 15);
+                setWallpaperHacked(true);
+                logDecision('Left without locking screen', 'Unauthorized physical access (prank or malware).', 'risk');
+                addNotification("⚠️ PC unlocked in common area.", "alert");
+                setTimeout(() => {
+                    addNotification("ℹ️ Colleague changed your wallpaper as a lesson.", "info");
+                }, 2000);
+                } else if (action === 'lock') {
+                addNotification("✅ Station locked.", "success");
+                } else if (action === 'shutdown') {
+                adjustMetric('social', -5); 
+                setIsRebooting(true);
+                logDecision('Shutdown computer', 'Unnecessary productivity loss.', 'social');
+                setTimeout(() => {
+                    setIsRebooting(false);
+                    addNotification("ℹ️ System rebooted.", "info");
+                }, 3000);
+                }
+                setTimeout(() => {
+                    setStep(6);
+                    setUsbStage(0);
+                    setModalState(prev => ({ ...prev, usb: true }));
+                }, 6000);
+            };
+
+            const restoreWallpaper = () => {
+                setWallpaperHacked(false);
+                addNotification("✅ Wallpaper restored.", "success");
+            }
+
+            // 6. USB LOGIC
+            const handleUsbAction = (action) => {
+                if (usbStage === 0) {
+                    if (action === 'open') {
+                        setUsbStage(1); 
+                    } else if (action === 'ignore') {
+                        setModalState(prev => ({ ...prev, usb: false }));
+                        addNotification("ℹ️ Device ignored.", "info");
+                        finishUsbStep();
+                    } else if (action === 'deliver') {
+                        setModalState(prev => ({ ...prev, usb: false }));
+                        addNotification("ℹ️ Handing over to IT...", "info");
+                        setTimeout(() => {
+                            addNotification("🗣️ IT: 'Did you plug in the drive?'", "info");
+                            setTimeout(() => {
+                                adjustMetric('risk', -10);
+                                adjustMetric('score', 10);
+                                logDecision('Handed USB to IT', 'Followed removable media protocol.', 'good');
+                                addNotification("✅ Protocol followed correctly.", "success");
+                                finishUsbStep();
+                            }, 2000);
+                        }, 1000);
+                    }
+                } else if (usbStage === 1) {
+                    setModalState(prev => ({ ...prev, usb: false }));
+                    if (action === 'malware') {
+                        adjustMetric('risk', 40);
+                        triggerConsequence('terminal', 6000);
+                        logDecision('Executed suspicious file (USB)', 'Ransomware infection via autorun.', 'risk');
+                        addNotification("⚠️ RANSOMWARE EXECUTED VIA AUTORUN.", "alert");
+                    } else if (action === 'photos') {
+                        adjustMetric('risk', 10); 
+                        logDecision('Opened personal files (USB)', 'Security policy violation.', 'risk');
+                        addNotification("⚠️ Policy violation: Opening unknown files.", "alert");
+                    }
+                    finishUsbStep();
+                }
+            };
+
+            const finishUsbStep = () => {
+                setTimeout(() => {
+                    setStep(7);
+                    setPrinterStage(0);
+                    setModalState(prev => ({ ...prev, printer: true }));
+                }, 5000);
+            };
+
+            // 7. PRINTER LOGIC
+            const handlePrinterAction = (action) => {
+                if (printerStage === 0) {
+                    if (action === 'ignore') {
+                        setModalState(prev => ({ ...prev, printer: false }));
+                        adjustMetric('risk', 10); 
+                        logDecision('Ignored documents on printer', 'Sensitive info exposed to third parties.', 'risk');
+                        addNotification("⚠️ Sensitive documents left on printer.", "alert");
+                        finishPrinterStep();
+                    } else if (action === 'secure') {
+                        setModalState(prev => ({ ...prev, printer: false }));
+                        logDecision('Collected documents', 'Protected forgotten sensitive data.', 'good');
+                        addNotification("✅ Documents collected and returned to owner.", "success");
+                        finishPrinterStep();
+                    } else if (action === 'read') {
+                        setPrinterStage(1); 
+                    }
+                } else if (printerStage === 1) {
+                    setModalState(prev => ({ ...prev, printer: false }));
+                    if (action === 'gossip') {
+                        adjustMetric('social', -20);
+                        adjustMetric('risk', 20); 
+                        triggerConsequence('gossip', 6000);
+                        logDecision('Shared payroll photo', 'Severe ethics and confidentiality breach.', 'social');
+                        addNotification("⚠️ Severe ethics and confidentiality breach.", "alert");
+                    } else if (action === 'shred') {
+                        adjustMetric('social', -5); 
+                        adjustMetric('score', 5); 
+                        logDecision('Shredded someone else\'s document', 'Protected data but destroyed property.', 'social');
+                        addNotification("✅ Data protected (though drastic).", "success");
+                    } else if (action === 'leave') {
+                        adjustMetric('risk', 10);
+                        logDecision('Read and abandoned document', 'Curiosity satisfied, but risk maintained.', 'risk');
+                        addNotification("⚠️ Sensitive info abandoned.", "alert");
+                    }
+                    finishPrinterStep();
+                }
+            };
+
+            const finishPrinterStep = () => {
+                setTimeout(() => {
+                setStep(8);
+                addNotification("CRITICAL ALERT: ANOMALOUS ACTIVITY", "alert");
+                setActiveHighlight('soc');
+                setRansomwareActive(true);
+                }, 6000);
+            };
+
+            // 8. SOC (FINAL) LOGIC
+            const handleSocAction = (action) => {
+                setActiveHighlight(null);
+                if (action === 'isolate') {
+                setRansomwareActive(false);
+                logDecision('Isolated infected hosts', 'Effective damage containment.', 'good');
+                addNotification("✅ Hosts isolated.", "success");
+                finalizeGame();
+                } else if (action === 'shutdown') {
+                addNotification("⚠️ Global Shutdown initiated.", "alert");
+                logDecision('Global Shutdown', 'Total business interruption (extreme measure).', 'social');
+                setTimeout(() => finalizeGame(), 4000);
+                } else if (action === 'trace') {
+                if (riskLevel > 50) {
+                    addNotification("⚠️ Failed to trace.", "alert");
+                    setRiskLevel(100);
+                    logDecision('Tried to trace attack (High Risk)', 'Lost crucial time during incident.', 'risk');
+                } else {
+                    addNotification("✅ Origin blocked.", "success");
+                    setRiskLevel(0);
+                    logDecision('Successfully traced origin', 'Attack mitigated at source.', 'good');
+                }
+                setTimeout(() => finalizeGame(), 4000);
+                }
+            };
+
+            const finalizeGame = () => {
+                setTimeout(() => setModule(2), 3000);
+            };
+            
+            const handleWifiAction = (action) => {
+                setModalState(prev => ({ ...prev, wifi: false }));
+                if (action === 'connect') {
+                    logDecision('Connected to Public Wi-Fi', 'Traffic intercepted on unsecured network.', 'risk');
+                }
+            }
+
+            // --- RENDER ---
+
+            if (isRebooting) return <BootScreen />;
+            if (module === 0) return <IntroScreen onStart={() => setModule(1)} />;
+            if (module === 2) return <EndScreen score={score} riskLevel={riskLevel} socialCredit={socialCredit} reportLog={reportLog} />;
+
+            return (
+                // DEFAULT WALLPAPER IS HERE TO PERSIST BETWEEN MODULES
+                <div 
+                    className={`h-screen w-full overflow-hidden relative select-none font-sans bg-cover bg-center transition-all duration-1000`} 
+                    style={{ 
+                        filter: `grayscale(${riskLevel}%) contrast(${100 + (riskLevel/2)}%)`,
+                        backgroundImage: `url('${WALLPAPER_URL}')`
+                    }}
+                >
+                    {/* Default overlay for readability */}
+                    <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-[1px] pointer-events-none"></div>
+                    
+                    {riskLevel > 50 && <div className="absolute inset-0 bg-rose-900/10 z-0 animate-pulse pointer-events-none mix-blend-overlay"></div>}
+
+                    {/* CLOCK */}
+                    <div className="absolute bottom-8 right-8 text-right z-0 pointer-events-none select-none text-white drop-shadow-md">
+                        <div className="text-6xl font-thin font-mono tracking-tighter opacity-90">{time}</div>
+                        <div className="text-xs text-cyan-200 font-bold tracking-[0.3em] uppercase mt-1">SecurOS v5.2</div>
+                    </div>
+
+                    <NotificationToast notifications={notifications} />
+
+                    {/* RENDER VISUAL CONSEQUENCES - ITERATING OVER STATE */}
+                    {Object.keys(consequenceState).map(key => (
+                        consequenceState[key] && <ConsequenceAlert key={key} type={key} />
+                    ))}
+
+                    <Desktop activeHighlight={activeHighlight} openWindow={openWindow} wallpaperHacked={wallpaperHacked} onRestoreWallpaper={restoreWallpaper} />
+                    <Taskbar windows={windows} activeHighlight={activeHighlight} openWindow={openWindow} ransomwareActive={ransomwareActive} />
+
+                    {/* SYSTEM MODALS */}
+                    
+                    {modalState.wifi && (
+                        <Modal title="Public Network Detected" type="wifi">
+                        <div className="text-center space-y-6">
+                            <div className="w-20 h-20 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto animate-pulse border border-amber-500/50">
+                            <Wifi size={40} className="text-amber-500" />
+                            </div>
+                            <div>
+                            <h2 className="text-xl font-bold text-white mb-2">Cortex_Free_WiFi</h2>
+                            <p className="text-sm text-slate-400">Open network detected. Strong signal, no encryption.</p>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                            <button onClick={() => handleWifiAction('connect')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700 transition-colors">Connect</button>
+                            <button onClick={() => handleWifiAction('tethering')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700 transition-colors">Use Personal Hotspot</button>
+                            <button onClick={() => handleWifiAction('ignore')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700 transition-colors">Ignore</button>
+                            </div>
+                        </div>
+                        </Modal>
+                    )}
+
+                    {modalState.lock && (
+                        <Modal title="Coffee Break" danger={false}>
+                        <div className="text-center space-y-6">
+                            <Coffee size={48} className="mx-auto text-slate-400" />
+                            <div>
+                            <h2 className="text-lg font-bold text-white">Break Required</h2>
+                            <p className="text-sm text-slate-400">You need to leave your desk for 15 minutes.</p>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                            <button onClick={() => handleLockAction('leave')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Just Leave</button>
+                            <button onClick={() => handleLockAction('lock')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Lock Screen (Win+L)</button>
+                            <button onClick={() => handleLockAction('shutdown')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Shutdown Machine</button>
+                            </div>
+                        </div>
+                        </Modal>
+                    )}
+
+                    {modalState.usb && (
+                        <div className="absolute top-24 right-8 z-[100] bg-slate-900/90 border-l-4 border-amber-500 p-6 rounded-r-xl shadow-2xl w-96 animate-slide-in-right backdrop-blur-md">
+                        <div className="flex gap-4">
+                            <div className="text-amber-500 bg-amber-500/10 p-2 rounded h-fit"><AlertTriangle size={24} /></div>
+                            <div className="flex-1">
+                            <h4 className="font-bold text-white text-sm tracking-wide">REMOVABLE MEDIA DETECTED</h4>
+                            {usbStage === 0 ? (
+                                <>
+                                    <p className="text-xs text-slate-400 mb-4 mt-1">Drive 'E: BOARD_SALARIES.xlsx'. What to do?</p>
+                                    <div className="flex gap-2 flex-col">
+                                        <button onClick={() => handleUsbAction('open')} className="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded text-white text-left transition-colors">Open</button>
+                                        <button onClick={() => handleUsbAction('ignore')} className="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded text-white text-left transition-colors">Ignore</button>
+                                        <button onClick={() => handleUsbAction('deliver')} className="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded text-white font-bold text-left transition-colors">Hand over to IT</button>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <p className="text-xs text-slate-400 mb-4 mt-1 animate-fade-in">Drive E: Content:</p>
+                                    <div className="flex flex-col gap-2 animate-fade-in">
+                                        <button onClick={() => handleUsbAction('malware')} className="flex items-center gap-2 text-xs bg-slate-800 hover:bg-slate-700 p-2 rounded text-white border border-slate-700">
+                                        <FileCode size={16} className="text-slate-400"/> Salaries_2024.exe
+                                        </button>
+                                        <button onClick={() => handleUsbAction('photos')} className="flex items-center gap-2 text-xs bg-slate-800 hover:bg-slate-700 p-2 rounded text-white border border-slate-700">
+                                        <FileImage size={16} className="text-slate-400"/> Party_Photos.jpg
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                            </div>
+                        </div>
+                        </div>
+                    )}
+
+                    {modalState.printer && (
+                        <Modal title="Hallway Printer">
+                        <div className="text-center space-y-6">
+                            <Printer size={48} className="mx-auto text-cyan-200" />
+                            {printerStage === 0 ? (
+                                <>
+                                    <div>
+                                        <h2 className="text-lg font-bold text-white">Forgotten Documents</h2>
+                                        <p className="text-sm text-slate-400">Someone left a payroll sheet on the output tray.</p>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <button onClick={() => handlePrinterAction('read')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Read</button>
+                                        <button onClick={() => handlePrinterAction('ignore')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Ignore</button>
+                                        <button onClick={() => handlePrinterAction('secure')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-white font-bold text-xs">Collect & Shred</button>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="animate-fade-in">
+                                    <div className="bg-white text-black p-4 rounded text-left text-xs font-mono mb-4 shadow-inner">
+                                        <p className="font-bold border-b border-black mb-2">CONFIDENTIAL: SALARIES</p>
+                                        <p>CEO: $ 85,000.00</p>
+                                        <p>DIRECTOR: $ 45,000.00</p>
+                                        <p>YOU: $ 3,500.00</p>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <button onClick={() => handlePrinterAction('gossip')} className="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded text-white font-bold text-xs"><Share2 size={14}/> Take pic & share</button>
+                                        <button onClick={() => handlePrinterAction('shred')} className="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs"><Trash2 size={14}/> Shred immediately</button>
+                                        <button onClick={() => handlePrinterAction('leave')} className="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs">Leave it (pretend didn't see)</button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        </Modal>
+                    )}
+
+                    {modalState.phone && (
+                        <Modal title={callActive ? "In Call" : "External Call"}>
+                        <div className="text-center py-6">
+                            {!callActive ? (
+                            <>
+                                <div className="relative w-24 h-24 mx-auto mb-6">
+                                    <div className="absolute inset-0 bg-cyan-500 rounded-full animate-ping opacity-20"></div>
+                                    <div className="relative w-full h-full bg-slate-800 rounded-full flex items-center justify-center border-2 border-cyan-500 shadow-xl shadow-cyan-500/20">
+                                    <Phone size={32} className="text-cyan-400" />
+                                    </div>
+                                </div>
+                                <h2 className="text-2xl font-bold text-white mb-1">Unknown Number</h2>
+                                <p className="text-xs text-slate-500 mb-8 font-mono">00:00</p>
+                                <div className="flex justify-center gap-8">
+                                <button onClick={() => handlePhoneResponse('reject')} className="bg-rose-500 hover:bg-rose-600 p-4 rounded-full text-white shadow-lg transition-transform hover:scale-110"><PhoneOff size={24}/></button>
+                                <button onClick={() => handlePhoneResponse('accept')} className="bg-emerald-500 hover:bg-emerald-600 p-4 rounded-full text-white shadow-lg transition-transform hover:scale-110"><PhoneCall size={24}/></button>
+                                </div>
+                            </>
+                            ) : (
+                                <div className="text-left space-y-6 animate-fade-in">
+                                <div className="p-4 bg-slate-800/50 rounded-lg border-l-4 border-amber-500 text-amber-100 text-sm italic relative">
+                                    <span className="absolute -top-3 -left-2 bg-amber-500 text-black text-[10px] font-bold px-2 py-0.5 rounded">Voice</span>
+                                    "Hello? This is Microsoft Technical Support. We detected anomalous behavior on your IP. I need you to confirm your SSN/Employee ID so we don't lock your machine right now."
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <button onClick={() => handlePhoneResponse('give_info_active')} className="w-full text-left p-3 text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-colors">A. "Oh no! My SSN is 002-33-..."</button>
+                                    <button onClick={() => handlePhoneResponse('hangup_active')} className="w-full text-left p-3 text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-colors">B. Hang up immediately</button>
+                                    <button onClick={() => handlePhoneResponse('hangup_active')} className="w-full text-left p-3 text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-colors">C. "I'll check your ticket internally."</button>
+                                </div>
+                                </div>
+                            )}
+                        </div>
+                        </Modal>
+                    )}
+
+                    {/* APP WINDOWS (Reusing DraggableWindow component) */}
+
+                    {windows.mail.open && !windows.mail.minimized && (
+                        <DraggableWindow config={windows.mail} onClose={() => closeWindow('mail')} onMinimize={() => minimizeWindow('mail')} onFocus={() => focusWindow('mail')} onMove={moveWindow}>
+                        <div className="flex h-full flex-col bg-slate-50 text-slate-900">
+                            <div className="bg-[#0078D4] text-white p-3 text-xs font-bold flex justify-between items-center shadow-md z-10">
+                                <span className="flex items-center gap-2"><Mail size={14}/> Inbox</span>
+                                <span className="bg-white/20 px-2 py-0.5 rounded text-[10px]">{emails.filter(e => !e.read).length} unread</span>
+                            </div>
+                            <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-slate-100/50">
+                            {emails.map(e => (
+                                <div key={e.id} 
+                                    className={`p-4 bg-white border-b border-l-4 ${e.read ? 'border-l-transparent' : 'border-l-[#0078D4]'} hover:bg-slate-50 transition-all cursor-pointer relative overflow-hidden group ${expandedEmailId === e.id ? 'bg-blue-50/50' : ''}`}
+                                    onClick={() => handleEmailAction(e, 'expand')}
+                                >
+                                    <div className="flex justify-between items-center mb-1 pointer-events-none">
+                                    <span className={`${e.read ? 'font-normal text-slate-600' : 'font-bold text-slate-800'} text-xs flex items-center gap-2`}>
+                                        <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] text-slate-500">{e.from[0]}</div>
+                                        {e.from}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 font-mono">{e.time}</span>
+                                    </div>
+                                    <div className={`${e.read ? 'font-normal text-slate-600' : 'font-bold text-[#0078D4]'} text-sm mb-2 pl-8 pointer-events-none`}>{e.subject}</div>
+                                    
+                                    {expandedEmailId !== e.id && <p className="text-xs text-slate-500 mb-1 pl-8 leading-relaxed line-clamp-2 pointer-events-none">{e.body}</p>}
+
+                                    {expandedEmailId === e.id && (
+                                        <div className="pl-8 mt-2 animate-fade-in cursor-default" onClick={ev => ev.stopPropagation()}>
+                                            <div className="bg-slate-50 p-2 rounded mb-3 text-[10px] text-slate-500 border border-slate-100">
+                                                <p><span className="font-bold">From:</span> {e.from} &lt;{e.fromEmail}&gt;</p>
+                                                <p><span className="font-bold">To:</span> You &lt;admin.security@cortex-corp.internal&gt;</p>
+                                                <p><span className="font-bold">Date:</span> Today, {e.time}</p>
+                                            </div>
+                                            <p className="text-xs text-slate-700 mb-4 leading-relaxed">{e.body}</p>
+                                            
+                                            <div className="flex gap-2">
+                                                <button 
+                                                    onClick={() => handleEmailAction(e, 'click')} 
+                                                    className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-[10px] text-slate-600 hover:bg-slate-100 transition-colors"
+                                                >
+                                                    {e.attachment ? "Download Attachment" : "Access Link"}
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleEmailAction(e, 'ask')} 
+                                                    className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-[10px] text-slate-600 hover:bg-slate-100 transition-colors"
+                                                >
+                                                    Ask in Chat
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleEmailAction(e, 'report')} 
+                                                    className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-[10px] text-slate-600 hover:bg-slate-100 transition-colors"
+                                                >
+                                                    Report
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                            {emails.length === 0 && (
+                                <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-2 opacity-50">
+                                    <CheckCircle size={48} className="text-emerald-500"/>
+                                    <span className="text-xs uppercase tracking-widest font-bold">All clear</span>
+                                </div>
+                            )}
+                            </div>
+                        </div>
+                        </DraggableWindow>
+                    )}
+
+                    {windows.chat.open && !windows.chat.minimized && (
+                        <DraggableWindow config={windows.chat} onClose={() => closeWindow('chat')} onMinimize={() => minimizeWindow('chat')} onFocus={() => focusWindow('chat')} onMove={moveWindow}>
+                        <div className="flex flex-col h-full bg-[#f3f2f1] text-slate-900">
+                            <div className="bg-white border-b p-3 shadow-sm flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                                <span className="text-xs font-bold text-slate-700">Corporate Chat</span>
+                                </div>
+                                <div className="text-[10px] text-slate-400">Online</div>
+                            </div>
+                            <div className="flex-1 p-4 space-y-4 overflow-y-auto bg-slate-50/50">
+                                {chatHistory.map(c => (
+                                <div key={c.id} className={`flex flex-col ${c.user === 'You' ? 'items-end' : 'items-start'} animate-fade-in`}>
+                                    <div className={`p-3 rounded-2xl max-w-[85%] text-xs shadow-sm relative ${c.user === 'You' ? 'bg-[#6264A7] text-white rounded-tr-sm' : 'bg-white border border-slate-200 text-slate-700 rounded-tl-sm'}`}>
+                                    <div className={`font-bold text-[9px] uppercase mb-1 opacity-70 ${c.user === 'You' ? 'text-indigo-200 text-right' : 'text-slate-400'}`}>{c.user}</div>
+                                    {c.text}
+                                    </div>
+                                </div>
+                                ))}
+                                <div ref={logsEndRef}/>
+                                
+                                {/* CHAT BRANCHING LOGIC */}
+                                {step === 3 && shadowITStage === 0 && chatHistory[chatHistory.length-1].user === "Luke (Dev)" && (
+                                <div className="flex flex-col gap-2 mt-4 p-2 bg-white/50 rounded border border-slate-200 animate-slide-in-up">
+                                    <div className="text-[10px] text-center text-slate-400 uppercase tracking-widest mb-1">How to reply?</div>
+                                    <button onClick={() => handleShadowITAction('allow')} className="w-full text-left text-xs bg-white border border-slate-200 p-2 rounded hover:bg-slate-100 hover:border-slate-300 hover:shadow-sm text-slate-600 transition-all">"Go ahead."</button>
+                                    <button onClick={() => handleShadowITAction('deny')} className="w-full text-left text-xs bg-white border border-slate-200 p-2 rounded hover:bg-slate-100 hover:border-slate-300 hover:shadow-sm text-slate-600 transition-all">"Negative. Blocked."</button>
+                                    <button onClick={() => handleShadowITAction('alternative')} className="w-full text-left text-xs bg-white border border-slate-200 p-2 rounded hover:bg-slate-100 hover:border-slate-300 hover:shadow-sm text-slate-600 transition-all">"Use Internal FileDrop."</button>
+                                </div>
+                                )}
+                                {step === 3 && shadowITStage === 1 && chatHistory[chatHistory.length-1].user === "Luke (Dev)" && (
+                                <div className="flex flex-col gap-2 mt-4 p-2 bg-rose-50 rounded border border-rose-200 animate-slide-in-up">
+                                    <div className="text-[10px] text-center text-rose-400 uppercase tracking-widest mb-1">He insisted. Now what?</div>
+                                    <button onClick={() => handleShadowITAction('rude')} className="w-full text-left text-xs bg-white border border-rose-200 p-2 rounded hover:bg-rose-50 hover:border-rose-300 hover:shadow-sm text-rose-700 transition-all">"Your problem. Rules are rules."</button>
+                                    <button onClick={() => handleShadowITAction('educate')} className="w-full text-left text-xs bg-white border border-emerald-200 p-2 rounded hover:bg-emerald-50 hover:border-emerald-300 hover:shadow-sm text-emerald-700 transition-all">"Let's open an emergency ticket."</button>
+                                </div>
+                                )}
+                            </div>
+                        </div>
+                        </DraggableWindow>
+                    )}
+
+                    {windows.browser.open && !windows.browser.minimized && (
+                        <DraggableWindow config={windows.browser} onClose={() => closeWindow('browser')} onMinimize={() => minimizeWindow('browser')} onFocus={() => focusWindow('browser')} onMove={moveWindow}>
+                        <div className="flex flex-col h-full bg-white text-slate-900">
+                            <div className="bg-slate-100 p-2 border-b flex items-center justify-center relative">
+                                <div className="bg-white border px-3 py-1 rounded-full text-xs text-slate-500 font-mono flex items-center gap-2 shadow-sm w-3/4">
+                                    <Lock size={10} className="text-slate-400"/> 
+                                    https://gov-validation.com/login 
+                                </div>
+                            </div>
+                            <div className="flex-1 flex items-center justify-center bg-slate-50 relative overflow-hidden">
+                                <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+                                <div className="bg-white p-8 rounded-xl shadow-2xl border w-72 text-center relative z-10">
+                                    <div className="w-16 h-16 bg-blue-600 rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg shadow-blue-600/30"><Globe size={32} className="text-white"/></div>
+                                    <h3 className="font-bold text-slate-800 mb-6 text-lg">Employee Portal</h3>
+                                    <input className="w-full border p-3 text-xs rounded mb-3 bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500 transition-all" disabled placeholder="Corporate User"/>
+                                    <input className="w-full border p-3 text-xs rounded mb-6 bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500 transition-all" disabled placeholder="Network Password"/>
+                                    
+                                    <div className="space-y-2">
+                                    <button onClick={() => handleBrowserAction('login')} className="w-full bg-blue-600 text-white py-3 rounded text-xs font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">Login</button>
+                                    <button onClick={() => handleBrowserAction('check')} className="w-full bg-slate-100 text-slate-600 py-3 rounded text-xs hover:bg-slate-200 transition-colors">Check Certificate</button>
+                                    <button onClick={() => handleBrowserAction('close')} className="w-full text-rose-500 text-[10px] hover:underline mt-2">Close Page</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </DraggableWindow>
+                    )}
+
+                    {windows.soc.open && !windows.soc.minimized && (
+                        <DraggableWindow config={windows.soc} onClose={() => closeWindow('soc')} onMinimize={() => minimizeWindow('soc')} onFocus={() => focusWindow('soc')} onMove={moveWindow}>
+                        <div className="h-full bg-slate-950 text-cyan-500 font-mono flex flex-col p-1 border-2 border-slate-800">
+                            <div className="border-b border-cyan-900/50 p-2 flex justify-between items-center bg-cyan-900/10">
+                                <div className="font-bold flex items-center gap-2 text-sm tracking-widest"><AlertTriangle size={14}/> CORTEX SENTINEL</div>
+                                <div className="text-[10px] animate-pulse text-emerald-500 bg-emerald-950/50 px-2 py-0.5 rounded border border-emerald-500/30">LIVE FEED</div>
+                            </div>
+                            <div className="flex-1 bg-black/50 p-4 flex flex-col items-center justify-center relative overflow-hidden">
+                                {ransomwareActive ? (
+                                <div className="text-center z-10 animate-scale-in">
+                                    <Lock size={80} className="text-rose-600 mx-auto mb-6 animate-pulse" />
+                                    <h1 className="text-5xl font-bold text-rose-600 tracking-tighter mb-2 glitch-text">LOCKDOWN</h1>
+                                    <p className="text-rose-400 mt-2 font-mono border border-rose-500/30 bg-rose-950/50 px-4 py-1 rounded inline-block">RANSOMWARE DETECTED: CRYPT_X</p>
+                                    
+                                    <div className="grid grid-cols-3 gap-4 mt-8 w-full max-w-2xl">
+                                        <button onClick={() => handleSocAction('shutdown')} className="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded transition-colors flex flex-col items-center gap-2 text-xs">
+                                            <Power size={20}/> SHUTDOWN ALL
+                                        </button>
+                                        <button onClick={() => handleSocAction('isolate')} className="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded transition-colors flex flex-col items-center gap-2 text-xs">
+                                            <Shield size={20}/> ISOLATE HOSTS
+                                        </button>
+                                        <button onClick={() => handleSocAction('trace')} className="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded transition-colors flex flex-col items-center gap-2 text-xs">
+                                            <Fingerprint size={20}/> TRACE ORIGIN
+                                        </button>
+                                    </div>
+                                </div>
+                                ) : (
+                                    <div className="text-center opacity-30">
+                                    <Globe size={100} className="mx-auto mb-6 text-cyan-600" />
+                                    <p className="tracking-[0.5em] text-sm">SYSTEM MONITORING ACTIVE</p>
+                                    </div>
+                                )}
+                                <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.1)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none"></div>
+                            </div>
+                        </div>
+                        </DraggableWindow>
+                    )}
+
+                </div>
+            );
+        }
+
+        // Initialize the app
+        const root = createRoot(document.getElementById('root'));
+        root.render(<SecurityImmersive />);
+    </script>
+</body>
+</html>

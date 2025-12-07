@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthy Sys - Advanced Simulation</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .animate-in { animation: fadeIn 0.5s ease-out forwards; }
+        .slide-in { animation: slideIn 0.5s ease-out forwards; }
+        .interactive-element { transition: all 0.3s; }
+        .interactive-element:hover { transform: scale(1.01); }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Prevent text selection globally */
+        * {
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10 and IE 11 */
+            user-select: none; /* Standard syntax */
+        }
+
+        /* Allow text selection only in inputs and textareas */
+        input, textarea {
+            -webkit-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 overflow-hidden">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        // --- ICONS ---
+        const Icon = ({ children, size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={String(className)}>{children}</svg>
+        );
+        const Volume2 = (p) => <Icon {...p}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></Icon>;
+        const VolumeX = (p) => <Icon {...p}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></Icon>;
+        const User = (p) => <Icon {...p}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></Icon>;
+        const LogOut = (p) => <Icon {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></Icon>;
+        const SearchIcon = (p) => <Icon {...p}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></Icon>;
+        const Plus = (p) => <Icon {...p}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></Icon>;
+        const CheckCircle = (p) => <Icon {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></Icon>;
+        const FileText = (p) => <Icon {...p}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></Icon>;
+        const CloseIcon = (p) => <Icon {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></Icon>;
+        const Bell = (p) => <Icon {...p}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></Icon>;
+        const Clipboard = (p) => <Icon {...p}><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></Icon>;
+        const Stethoscope = (p) => <Icon {...p}><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3" /><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4" /><circle cx="20" cy="10" r="2" /></Icon>;
+        const Award = (p) => <Icon {...p}><circle cx="12" cy="8" r="7" /><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" /></Icon>;
+        const Pill = (p) => <Icon {...p}><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></Icon>;
+        const AlertTriangle = (p) => <Icon {...p}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></Icon>;
+        const Activity = (p) => <Icon {...p}><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></Icon>;
+        const ListChecks = (p) => <Icon {...p}><path d="M10 6h11"/><path d="M10 12h11"/><path d="M10 18h11"/><path d="M4 6h1"/><path d="M4 12h1"/><path d="M4 18h1"/></Icon>;
+        const XCircle = (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></Icon>;
+
+        // --- DATA ---
+        const PATIENTS_DATA = [
+            { id: 21, name: "Alexander Martin", age: 42, bed: "Bed 21", unit: "Surgery", id_number: "159357", status: "Observation", avatar: "AM", allergy: "None" },
+            { id: 16, name: "Amelia Anderson", age: 70, bed: "Bed 10", unit: "Geriatrics", id_number: "258369", status: "Admitted", avatar: "AA", allergy: "None" },
+            { id: 8, name: "Ava Miller", age: 22, bed: "Bed 09", unit: "Inpatient Ward", id_number: "778899", status: "Discharged", avatar: "AM", allergy: "None" },
+            { id: 11, name: "Benjamin Martinez", age: 50, bed: "Bed 02", unit: "Emergency", id_number: "789789", status: "Critical", avatar: "BM", allergy: "Aspirin" },
+            { id: 2, name: "Carlos Andrade", age: 45, bed: "Bed 05", unit: "Inpatient Ward", id_number: "442109", status: "Observation", avatar: "CA", allergy: "None" },
+            { id: 14, name: "Charlotte Gonzalez", age: 33, bed: "Bed 07", unit: "Inpatient Ward", id_number: "987987", status: "Discharged", avatar: "CG", allergy: "None" },
+            { id: 13, name: "Elijah Lopez", age: 60, bed: "Bed 22", unit: "Oncology", id_number: "654654", status: "Admitted", avatar: "EL", allergy: "None" },
+            { id: 4, name: "Emma Williams", age: 65, bed: "Bed 20", unit: "Cardiology", id_number: "564738", status: "Admitted", avatar: "EW", allergy: "Latex" },
+            { id: 19, name: "Ethan Moore", age: 55, bed: "Bed 19", unit: "Cardiology", id_number: "852963", status: "Critical", avatar: "EM", allergy: "None" },
+            { id: 20, name: "Evelyn Jackson", age: 39, bed: "Bed 16", unit: "Neurology", id_number: "963852", status: "Admitted", avatar: "EJ", allergy: "None" },
+            { id: 18, name: "Harper Taylor", age: 25, bed: "Bed 13", unit: "Inpatient Ward", id_number: "741852", status: "Admitted", avatar: "HT", allergy: "None" },
+            { id: 10, name: "Isabella Rodriguez", age: 29, bed: "Bed 14", unit: "Maternity", id_number: "456456", status: "Observation", avatar: "IR", allergy: "None" },
+            { id: 9, name: "James Davis", age: 36, bed: "Bed 11", unit: "Surgery", id_number: "123123", status: "Admitted", avatar: "JD", allergy: "Peanuts" },
+            { id: 3, name: "Liam Johnson", age: 28, bed: "Bed 01", unit: "Emergency", id_number: "102938", status: "Critical", avatar: "LJ", allergy: "Penicillin" },
+            { id: 15, name: "Lucas Wilson", age: 47, bed: "Bed 18", unit: "Orthopedics", id_number: "147258", status: "Observation", avatar: "LW", allergy: "None" },
+            { id: 1, name: "Haley Anderson", age: 32, bed: "Bed 12", unit: "Adult ICU", id_number: "884231", status: "Admitted", avatar: "HA", allergy: "Dipyrone" },
+            { id: 17, name: "Mason Thomas", age: 19, bed: "Bed 06", unit: "Emergency", id_number: "369147", status: "Observation", avatar: "MT", allergy: "Bee Stings" },
+            { id: 12, name: "Mia Hernandez", age: 8, bed: "Bed 04", unit: "Pediatrics", id_number: "321321", status: "Admitted", avatar: "MH", allergy: "None" },
+            { id: 5, name: "Noah Brown", age: 54, bed: "Bed 08", unit: "Inpatient Ward", id_number: "992837", status: "Observation", avatar: "NB", allergy: "Sulfa" },
+            { id: 6, name: "Olivia Jones", age: 41, bed: "Bed 15", unit: "Neurology", id_number: "112233", status: "Admitted", avatar: "OJ", allergy: "None" },
+            { id: 22, name: "Sofia Lee", age: 31, bed: "Bed 17", unit: "Inpatient Ward", id_number: "357159", status: "Discharged", avatar: "SL", allergy: "None" },
+            { id: 7, name: "William Garcia", age: 72, bed: "Bed 03", unit: "ICU", id_number: "445566", status: "Critical", avatar: "WG", allergy: "Iodine" }
+        ];
+
+        // --- CORRECT VALUES FOR EVALUATION MODE (KC) ---
+        const KC_ANSWERS = {
+            patientId: 3, 
+            allergyCheck: true,
+            medName: "Dipyrone",
+            medDose: "1g", 
+            noteKeywords: ["pain", "ache", "hurt", "acute"],
+            noteShift: "Afternoon", 
+            vitalsTemp: "37.5",
+            vitalsBP: "130/85"
+        };
+
+        const KC_PROTOCOL_LIST = [
+            { id: 1, text: "Patient: Liam Johnson (ID 3 - Emergency)" },
+            { id: 2, text: "Check Allergy: Penicillin" },
+            { id: 3, text: "Action: Add Medication" },
+            { id: 4, text: "Prescription: Dipyrone | Dose: 1g" }, 
+            { id: 5, text: "Vital Signs: Temp 37.5 | BP 130/85" },
+            { id: 6, text: "Clinical Note: 'Patient reports acute pain.' (Nursing/Afternoon)" }
+        ];
+
+        // --- SCENARIO ENGINE (TRAINING) ---
+        // !!! INSTRUCTIONS: Add your MP3 files to a folder (e.g. 'audio/') and update the paths below.
+        const SCENARIO_STEPS = {
+            0: { id: 'intro', type: 'video', text: "We will now simulate a session within the Healthy Sys system. Click to start the simulation.", button: "START SIMULATION", audio: "audio/intro.mp3" },
+            1: { id: 'login', type: 'interaction', text: "Login with your student credentials.", target: 'btn_login', audio: "audio/step1.mp3" },
+            2: { id: 'dashboard_analyze', type: 'interaction', text: "Analyze the alerts. Click on the 'Clinical Alerts' card.", target: 'card_alerts', audio: "audio/step2.mp3" },
+            3: { id: 'alerts_view', type: 'video', text: "Attention: Patient Haley Anderson (ICU) has a Sepsis alert. Prioritize.", button: "Understood", audio: "audio/step3.mp3" },
+            4: { id: 'nav_patients_manual', type: 'interaction', text: "Navigate to the Patient List using the sidebar.", target: 'nav_patients', audio: "audio/step4.mp3" },
+            5: { id: 'locate_select', type: 'interaction', text: "Locate 'Haley Anderson' in the list and click to open.", target: 'card_patient_1', audio: "audio/step5.mp3" },
+            6: { id: 'safety_check', type: 'interaction', text: "SAFETY: Check allergies at the top of the screen (hover over).", target: 'header_allergy', audio: "audio/step6.mp3" },
+            7: { id: 'nav_meds', type: 'interaction', text: "Patient with Septic Shock. Go to 'MEDICATIONS' tab.", target: 'tab_meds', audio: "audio/step7.mp3" },
+            8: { id: 'add_med_btn', type: 'interaction', text: "We need to start vasopressor. Click on [ ADD MEDICATION ].", target: 'btn_add_med', audio: "audio/step8.mp3" },
+            9: { id: 'select_drug_new', type: 'interaction', text: "Select 'Norepinephrine' to treat shock.", target: 'input_drug_select', valueNeeded: 'Norepinephrine', hint: "Correct drug is Norepinephrine.", audio: "audio/step9.mp3" },
+            10: { id: 'type_dose_new', type: 'interaction', text: "Enter initial dosage: '0.1'.", target: 'input_drug_dose', valueNeeded: '0.1', hint: "Dose must be exactly 0.1", audio: "audio/step10.mp3" },
+            11: { id: 'confirm_med_new', type: 'interaction', text: "Confirm the prescription.", target: 'btn_confirm_med', audio: "audio/step11.mp3" },
+            12: { id: 'nav_notes', type: 'interaction', text: "Medication prescribed. Record the action in 'NOTES'.", target: 'tab_notes', audio: "audio/step12.mp3" },
+            13: { id: 'add_note', type: 'interaction', text: "Click on [ ADD NEW NOTE ] to open the form.", target: 'btn_add_note', audio: "audio/step13.mp3" },
+            14: { id: 'write_note', type: 'interaction', text: "Write 'Patient stable after medication'.", target: 'input_note_text', valueNeeded: 'Patient stable after medication', hint: "Type: Patient stable after medication", audio: "audio/step14.mp3" },
+            15: { id: 'save_attempt', type: 'interaction', text: "Save the record.", target: 'btn_save_note_attempt', audio: "audio/step15.mp3" }, 
+            16: { id: 'error_fields', type: 'error', text: "PROCESS ERROR: All fields (Category and Shift) are required. Fix it.", button: "Fix", audio: "audio/step16.mp3" },
+            17: { id: 'fix_fields', type: 'interaction', text: "Fill in Category AND Shift, then save.", target: 'btn_save_note_success', audio: "audio/step17.mp3" },
+            18: { id: 'nav_vitals', type: 'interaction', text: "Update data in 'VITALS'.", target: 'tab_vitals', audio: "audio/step18.mp3" },
+            19: { id: 'input_temp', type: 'interaction', text: "Temp: Enter '37.8'.", target: 'input_temp', valueNeeded: '37.8', hint: "Type 37.8", audio: "audio/step19.mp3" },
+            20: { id: 'input_bp', type: 'interaction', text: "BP: Enter '120/80'.", target: 'input_bp', valueNeeded: '120/80', hint: "Type 120/80", audio: "audio/step20.mp3" },
+            21: { id: 'submit_vitals', type: 'interaction', text: "Click on [ SUBMIT ].", target: 'btn_submit_vitals', audio: "audio/step21.mp3" },
+            22: { id: 'nav_docs', type: 'interaction', text: "Attach Consent Form in 'DOCUMENTS'.", target: 'tab_docs', audio: "audio/step22.mp3" },
+            23: { id: 'add_doc', type: 'interaction', text: "Click on [ ADD DOCUMENT ].", target: 'btn_add_doc', audio: "audio/step23.mp3" },
+            24: { id: 'select_file', type: 'interaction', text: "Select 'consent_form_signed.pdf'.", target: 'file_select', audio: "audio/step24.mp3" },
+            25: { id: 'upload_confirm', type: 'interaction', text: "Confirm the upload.", target: 'btn_upload_confirm', audio: "audio/step25.mp3" },
+            99: { id: 'completion', type: 'video', text: "Training Completed! Now we start the Practical Evaluation. Check the PROTOCOL and use the COMPLETE button at the end.", button: "START EVALUATION", audio: "audio/completion.mp3" }
+        };
+
+        // --- UI COMPONENTS ---
+        
+        const Button = ({ children, onClick, variant = "primary", className = "", disabled = false, pulse = false, size = "md" }) => {
+            const variants = {
+                primary: "bg-teal-600 hover:bg-teal-700 text-white shadow-teal-200",
+                danger: "bg-red-600 hover:bg-red-700 text-white",
+                ghost: "bg-transparent text-slate-500 hover:bg-slate-100",
+                success: "bg-green-600 hover:bg-green-700 text-white"
+            };
+            const sizes = {
+                md: "px-6 py-3 text-sm",
+                lg: "px-12 py-4 text-lg"
+            };
+            return (
+                <button 
+                    onClick={onClick} 
+                    disabled={disabled} 
+                    className={`rounded-lg font-bold uppercase tracking-wide relative shadow-sm transition-all ${variants[variant] || variants.primary} ${sizes[size]} ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${pulse ? 'ring-4 ring-teal-200 animate-pulse' : ''}`}
+                >
+                    {children}
+                </button>
+            );
+        };
+
+        const Card = ({ children, className = "", onClick, pulse = false, role="button" }) => (
+            <div 
+                onClick={onClick} 
+                role={onClick ? role : undefined}
+                tabIndex={onClick ? 0 : undefined}
+                onKeyDown={(e) => { if(onClick && (e.key === 'Enter' || e.key === ' ')) onClick() }}
+                className={`bg-white rounded-xl shadow-sm border border-slate-200 p-6 transition-all ${className} ${pulse ? 'ring-4 ring-teal-200 scale-[1.02]' : ''} ${onClick ? 'cursor-pointer hover:shadow-md' : ''}`}
+            >
+                {children}
+            </div>
+        );
+
+        const AvatarGuide = ({ text, onNext, showButton = true, buttonLabel = "Continue", type = "normal" }) => {
+            const isError = type === "error";
+            
+            return (
+                <div className="fixed bottom-8 right-8 z-50 slide-in max-w-md w-full font-sans scale-[1.25] origin-bottom-right p-4">
+                    <div className={`bg-white rounded-xl shadow-2xl overflow-hidden border-t-8 ${isError ? 'border-red-500' : 'border-teal-600'}`}>
+                        <div className="bg-slate-800 p-4 flex items-center gap-4">
+                             <div className={`w-12 h-12 rounded-full border-2 border-white flex items-center justify-center font-bold ${isError ? 'bg-red-100 text-red-600' : 'bg-teal-100 text-teal-600'}`}>
+                                <User size={24} />
+                             </div>
+                             <div>
+                                <h4 className="text-white font-bold text-sm uppercase tracking-wider">Virtual Instructor</h4>
+                                <span className="text-xs text-slate-400">{isError ? "Correction Needed" : "Guidance"}</span>
+                             </div>
+                        </div>
+                        <div className="p-6">
+                            <p className="text-slate-700 leading-relaxed font-medium mb-6 text-base whitespace-pre-line">{text}</p>
+                            {showButton && (
+                                <button onClick={onNext} className={`w-full py-3 rounded-lg font-bold text-white uppercase tracking-wider shadow-md hover:opacity-90 transition-all text-xs ${isError ? 'bg-red-600' : 'bg-teal-600'}`}>
+                                    {buttonLabel}
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ProtocolModal = ({ onClose }) => (
+            <div className="fixed top-32 right-8 z-40 animate-in w-80">
+                <div className="bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden">
+                    <div className="bg-slate-800 p-3 flex justify-between items-center text-white">
+                        <h4 className="font-bold text-xs uppercase flex items-center gap-2"><ListChecks size={16}/> Patient Protocol</h4>
+                        <button onClick={onClose} className="hover:text-red-300 transition-colors"><CloseIcon size={16}/></button>
+                    </div>
+                    <div className="p-4 space-y-3 bg-slate-50">
+                        {KC_PROTOCOL_LIST.map(item => (
+                            <div key={item.id} className="flex items-start gap-2 text-sm text-slate-700 border-b border-slate-100 pb-2 last:border-0">
+                                <div className="mt-0.5 min-w-[4px] h-4 bg-teal-500 rounded-full"></div>
+                                <span>{item.text}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+
+        const ReportScreen = ({ data, onRestartTraining, onRestartKC, onFinishKC }) => {
+            // Flexible Validation Logic
+            const normalize = (str) => (str || "").toLowerCase().replace(/,/g, '.').trim();
+            
+            const checkNote = () => {
+                const text = normalize(data.noteText);
+                const hasKeyword = KC_ANSWERS.noteKeywords.some(key => text.includes(key));
+                const shiftCorrect = data.noteShift === KC_ANSWERS.noteShift;
+                const categoryPresent = !!data.noteCategory;
+                return hasKeyword && shiftCorrect && categoryPresent;
+            };
+
+            const isNoteCorrect = checkNote();
+            const isMedCorrect = normalize(data.medName) === normalize(KC_ANSWERS.medName) && normalize(data.medDose) === normalize(KC_ANSWERS.medDose);
+            const isVitalsCorrect = normalize(data.vitalsTemp) === normalize(KC_ANSWERS.vitalsTemp) && normalize(data.vitalsBP) === normalize(KC_ANSWERS.vitalsBP);
+
+            const checks = [
+                { label: "ID Check", correct: data.patientId === 3, msg: data.patientId === 3 ? "Correct (Liam)" : "Error: Incorrect Patient" },
+                { label: "Allergy Check", correct: data.allergyChecked, msg: data.allergyChecked ? "Yes" : "No (Safety Risk)" },
+                { label: "Medication", correct: isMedCorrect, msg: isMedCorrect ? "Correct (Dipyrone 1g)" : `Error: You ordered ${data.medName || 'Nothing'} ${data.medDose || ''}. Correct: Dipyrone 1g.` },
+                { label: "Clinical Note", correct: isNoteCorrect, msg: isNoteCorrect ? "Correct" : `Error: Check for keyword 'pain', shift 'Afternoon' and category.` },
+                { label: "Vital Signs", correct: isVitalsCorrect, msg: isVitalsCorrect ? "Correct" : `Error: Typed ${data.vitalsTemp}/${data.vitalsBP}. Correct: 37.5 / 130/85.` }
+            ];
+
+            const score = checks.filter(c => c.correct).length;
+            const percentage = Math.round((score / checks.length) * 100);
+            
+            return (
+                <div className="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center animate-in p-4">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]">
+                        <div className={`p-8 text-center text-white shrink-0 ${percentage >= 100 ? 'bg-teal-600' : 'bg-red-500'}`}>
+                            <Award size={64} className="mx-auto mb-4 opacity-80" />
+                            <h1 className="text-3xl font-bold mb-2">Performance Report</h1>
+                            <p className="text-xl font-mono">{percentage}% Accuracy</p>
+                        </div>
+                        <div className="p-8 overflow-y-auto bg-slate-50 grow">
+                            <div className="space-y-4">
+                                {checks.map((check, i) => (
+                                    <div key={i} className="flex items-start gap-4 bg-white p-3 rounded border border-slate-100 shadow-sm">
+                                        <div className={`mt-1 p-1 rounded-full shrink-0 ${check.correct ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                                            {check.correct ? <CheckCircle size={20}/> : <XCircle size={20}/>}
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-slate-800 text-sm">{check.label}</p>
+                                            <p className={`text-xs ${check.correct ? 'text-slate-500' : 'text-red-600 font-bold'}`}>{check.msg}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="p-6 border-t border-slate-200 bg-slate-50 shrink-0 flex flex-col gap-4">
+                             {/* Instructional box, non-clickable */}
+                             <div className="bg-slate-100 border border-slate-300 p-4 rounded text-center text-slate-600 text-sm font-medium">
+                                Now you can click on the close Project button on the top right corner of the page.
+                            </div>
+                            
+                            <div className="flex justify-end gap-4">
+                                <Button variant="ghost" onClick={onRestartTraining} className="border-2 border-slate-300">Restart Training</Button>
+                                <Button onClick={onRestartKC}>Restart Simulation</Button>
+                                {/* Optional: Keep Finish button if needed for logic, though text instruction implies closing project */}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const LoginScreen = ({ onInteraction, isActiveStep }) => (
+            <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+                <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-12 border border-slate-200 text-center relative z-10">
+                    <h1 className="text-4xl font-bold text-teal-700 tracking-widest mb-2">Healthy Sys</h1>
+                    <div className="w-24 h-24 bg-slate-50 rounded-full border border-slate-200 mx-auto flex items-center justify-center text-teal-600 mb-8"><Stethoscope size={48} /></div>
+                    <div className="space-y-4 text-left">
+                        <input type="text" className="w-full p-3 border-b-2 border-slate-200 outline-none bg-transparent font-mono text-sm" value="User_01" readOnly />
+                        <input type="password" className="w-full p-3 border-b-2 border-slate-200 outline-none bg-transparent" value="********" readOnly />
+                        <Button onClick={() => onInteraction('btn_login')} className="w-full mt-6" pulse={isActiveStep}>[ Access System ]</Button>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const AlertsScreen = ({ onInteraction, step }) => (
+            <div className="p-8 h-full overflow-y-auto animate-in bg-slate-50">
+                <header className="border-b border-slate-200 pb-4 mb-8"><h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2"><Bell className="text-red-500"/> CRITICAL ALERTS</h2></header>
+                <div className="space-y-4">
+                    <div className="bg-white border-l-4 border-red-500 p-6 rounded shadow-sm flex justify-between items-center">
+                        <div><h3 className="font-bold text-red-700 text-lg">SEPSIS WARNING</h3><p className="text-slate-600">Patient: <strong>Haley Anderson</strong></p></div>
+                        <button disabled className="px-4 py-2 bg-slate-200 text-slate-400 font-bold rounded cursor-not-allowed opacity-50">VIEW CHART</button>
+                    </div>
+                    <div className="bg-white border-l-4 border-yellow-500 p-6 rounded shadow-sm"><h3 className="font-bold text-yellow-700">LAB RESULTS PENDING</h3><p className="text-slate-600">Unit: ICU - General</p></div>
+                    <div className="bg-white border-l-4 border-yellow-500 p-6 rounded shadow-sm"><h3 className="font-bold text-yellow-700">MEDICATION STOCK LOW</h3><p className="text-slate-600">Drug: Norepinephrine</p></div>
+                </div>
+            </div>
+        );
+
+        const Dashboard = ({ onInteraction, step, mode }) => (
+            <div className="space-y-8 p-8 h-full overflow-y-auto animate-in">
+                <header className="border-b border-slate-200 pb-4 flex justify-between items-end">
+                    <div><h2 className="text-2xl font-bold text-slate-800">DASHBOARD</h2></div>
+                    <div className="text-right"><p className="text-xs font-bold text-slate-400 uppercase">Shift</p><p className="font-mono text-teal-600 font-bold">07:00 - 19:00</p></div>
+                </header>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Card className="border-l-4 border-l-teal-600 opacity-70"><div className="flex justify-between"><div><p className="text-xs font-bold text-slate-500 uppercase">Inpatients</p><h3 className="text-4xl font-bold text-slate-800 mt-2">22</h3></div><User className="text-teal-200" size={32} /></div></Card>
+                    <Card className="border-l-4 border-l-red-500" pulse={step === 2 && mode === 'training'} onClick={() => onInteraction('card_alerts')}>
+                        <div className="flex justify-between"><div><p className="text-xs font-bold text-slate-500 uppercase">Critical Alerts</p><h3 className="text-4xl font-bold text-red-600 mt-2">03</h3></div><div className="p-2 bg-red-50 rounded-full text-red-500 animate-bounce"><Bell size={24} /></div></div>
+                    </Card>
+                </div>
+            </div>
+        );
+
+        const PatientList = ({ onSelectPatient, onInteraction, step, mode }) => {
+            const [search, setSearch] = useState("");
+            const filtered = PATIENTS_DATA.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+            
+            const handlePatientClick = (patient) => {
+                if (mode === 'training' && step === 5) {
+                    if (patient.id === 1) {
+                        onSelectPatient(patient);
+                    } else {
+                        alert("Please select the requested patient: Haley Anderson.");
+                    }
+                } else {
+                    onSelectPatient(patient);
+                }
+            };
+
+            return (
+                <div className="p-8 h-full overflow-y-auto animate-in">
+                    <header className="border-b border-slate-200 pb-4 mb-6"><h2 className="text-2xl font-bold text-slate-800">PATIENT LIST</h2></header>
+                    <div className={`relative max-w-md mb-8 transition-all ${step === 5 && mode === 'training' ? 'ring-4 ring-teal-200 rounded-lg' : ''}`}>
+                        <input type="text" className="w-full p-4 pl-12 border border-slate-300 rounded-lg shadow-sm outline-none focus:border-teal-500" placeholder="Search name or ID..." value={search} onChange={e => setSearch(e.target.value)} />
+                        <SearchIcon className="absolute left-4 top-4 text-slate-400" />
+                    </div>
+                    <div className="grid gap-4">
+                        {filtered.map(p => (
+                            <button 
+                                key={p.id} 
+                                onClick={() => handlePatientClick(p)} 
+                                className={`w-full text-left bg-white p-6 rounded-lg border flex justify-between items-center transition-all cursor-pointer hover:bg-teal-50 ${step === 5 && p.id === 1 && mode === 'training' ? 'border-teal-500 shadow-md' : 'border-slate-200 opacity-80'}`}
+                            >
+                                <div className="flex items-center gap-4"><div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center font-bold text-slate-500">{p.avatar}</div><div><h3 className="font-bold text-slate-800">{p.name}</h3><p className="text-sm text-slate-500">{p.unit} • {p.bed}</p></div></div>
+                                <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${p.status === 'Critical' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>{p.status}</div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const PatientRecord = ({ patient, onInteraction, step, mode, currentScenario, onToggleProtocol }) => {
+            const [tab, setTab] = useState('summary');
+            
+            // --- STATE (Functional Simulation) ---
+            const [medsList, setMedsList] = useState([]);
+            const [notesList, setNotesList] = useState([]);
+            const [vitalsList, setVitalsList] = useState([]);
+
+            const [note, setNote] = useState({ text: '', shift: '', category: '' });
+            const [medForm, setMedForm] = useState({ drug: '', dose: '' });
+            const [vitals, setVitals] = useState({ temp: '', bp: '' });
+            const [isAddingMed, setIsAddingMed] = useState(false);
+            const [showNoteForm, setShowNoteForm] = useState(false); 
+            const [uploadOpen, setUploadOpen] = useState(false);
+            const [selectedDoc, setSelectedDoc] = useState(null); 
+            const [fieldError, setFieldError] = useState(''); 
+
+            useEffect(() => {
+                if (patient && patient.id === 1) { 
+                    setMedsList([{ name: 'Vancomycin', dose: '1g', route: 'IV', time: '08:00', status: 'GIVEN' }]);
+                } else {
+                    setMedsList([]);
+                }
+                setNotesList([]);
+                setVitalsList([]);
+                setTab('summary');
+                setShowNoteForm(false);
+                setFieldError('');
+                setSelectedDoc(null);
+            }, [patient]);
+
+            useEffect(() => {
+                if (mode === 'training' && step === 14) {
+                    setShowNoteForm(true);
+                }
+            }, [step, mode]);
+
+            const handleInputChange = (setter, field, value, targetStep, interactionId, neededValue) => {
+                setter(prev => ({...prev, [field]: value}));
+                setFieldError(''); 
+                
+                if (mode === 'training' && step === targetStep) {
+                    const normalizedInput = value.toLowerCase().trim();
+                    const normalizedNeeded = (neededValue || "").toLowerCase().trim();
+                    
+                    if (normalizedInput === normalizedNeeded) {
+                        onInteraction(interactionId, value);
+                    }
+                }
+            };
+
+            const handleBlurCheck = (value, neededValue) => {
+                if (mode === 'training' && value && neededValue) {
+                    if (value.toLowerCase().trim() !== neededValue.toLowerCase().trim()) {
+                         setFieldError(`Expected Value: ${neededValue}`);
+                    }
+                }
+            }
+
+            const handleSaveNote = () => {
+                if (mode === 'training') {
+                    if (step === 15) {
+                        if (note.shift && note.category) { 
+                            setNotesList(prev => [{ text: note.text, category: note.category, shift: note.shift, date: 'Now' }, ...prev]);
+                            onInteraction('btn_save_note_success_early'); 
+                            setShowNoteForm(false);
+                        } 
+                        else { onInteraction('btn_save_note_fail'); }
+                    } else if (step === 17) {
+                        if (note.shift && note.category) {
+                            setNotesList(prev => [{ text: note.text, category: note.category, shift: note.shift, date: 'Now' }, ...prev]);
+                            onInteraction('btn_save_note_success');
+                            setShowNoteForm(false);
+                        }
+                    }
+                } else {
+                    // KC Mode
+                    if (note.shift && note.category) {
+                        setNotesList(prev => [{ text: note.text, category: note.category, shift: note.shift, date: 'Now' }, ...prev]);
+                        onInteraction('kc_note_submit', { noteShift: note.shift, noteCategory: note.category, noteText: note.text });
+                        setShowNoteForm(false);
+                    }
+                }
+                if (mode === 'kc' || (note.shift && note.category)) setNote({ text: '', shift: '', category: '' });
+            };
+
+            const handleAddMedication = () => {
+                if (mode === 'training') {
+                    if (step === 11 && medForm.drug === 'Norepinephrine' && medForm.dose === '0.1') { 
+                        setIsAddingMed(false);
+                        setMedsList(prev => [...prev, { name: medForm.drug, dose: medForm.dose + ' mcg/kg/min', route: 'IV', time: 'Now', status: 'ORDERED' }]);
+                        onInteraction('btn_confirm_med'); 
+                    } else if (step === 11) {
+                         setFieldError("Check Drug and Dose. Expected: Norepinephrine 0.1");
+                    }
+                } else {
+                    // Unit logic: if user types "1g", keep "1g". If "500", make "500 mg".
+                    const hasUnit = /[a-zA-Z]/.test(medForm.dose);
+                    const finalDose = hasUnit ? medForm.dose : medForm.dose + ' mg';
+                    
+                    setIsAddingMed(false);
+                    setMedsList(prev => [...prev, { name: medForm.drug, dose: finalDose, route: 'IV', time: 'Now', status: 'ORDERED' }]);
+                    onInteraction('kc_med_add', { medName: medForm.drug, medDose: medForm.dose });
+                }
+            };
+
+            const handleVitalsSubmit = () => {
+                if(mode === 'training' && (step !== 21)) return; 
+                
+                setVitalsList(prev => [{ temp: vitals.temp, bp: vitals.bp, time: 'Now' }, ...prev]);
+                if(mode === 'training') { 
+                    if (step === 21) onInteraction('btn_submit_vitals'); 
+                } else { 
+                    onInteraction('kc_vitals', { temp: vitals.temp, bp: vitals.bp }); 
+                }
+            }
+            
+            if (!patient) return <div className="flex-1 p-8 text-center text-slate-400">Select a patient</div>;
+
+            return (
+                <div className="flex flex-col h-full bg-slate-50 animate-in">
+                    <div className="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center shadow-sm z-20">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-teal-600 text-white rounded-full flex items-center justify-center font-bold text-xl">{patient.avatar}</div>
+                            <div><h1 className="text-xl font-bold text-slate-800">{patient.name.toUpperCase()}</h1><p className="text-sm text-slate-500">ID: {patient.id_number} | {patient.age}y | {patient.unit}</p></div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div 
+                                role="button"
+                                tabIndex="0"
+                                className={`flex items-center gap-2 px-4 py-2 rounded border transition-all ${step === 6 && mode === 'training' ? 'bg-red-100 border-red-300 animate-pulse cursor-pointer' : 'bg-slate-100 border-slate-200'}`} 
+                                onMouseEnter={() => { if(step === 6) onInteraction('header_allergy'); if(mode === 'kc') onInteraction('kc_allergy'); }}
+                            >
+                                <AlertTriangle size={18} className="text-red-500" /><span className="text-red-700 font-bold text-sm uppercase">Allergy: {patient.allergy}</span>
+                            </div>
+                            
+                            {mode === 'kc' && (
+                                <button 
+                                    onClick={onToggleProtocol} 
+                                    className="bg-slate-800 text-white px-4 py-2 rounded shadow-sm flex items-center gap-2 text-sm font-bold border border-slate-600 hover:bg-slate-700 transition-all"
+                                >
+                                    <ListChecks size={18}/> Protocol
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    <div className="flex flex-1 overflow-hidden">
+                        <aside className="w-48 bg-white border-r border-slate-200 flex flex-col py-4">
+                            {[ {id:'summary', icon:<Clipboard size={18}/>}, {id:'meds', icon:<Pill size={18}/>}, {id:'notes', icon:<FileText size={18}/>}, {id:'vitals', icon:<Activity size={18}/>}, {id:'docs', icon:<FileText size={18}/>} ].map(item => (
+                                <button key={item.id} onClick={() => { setTab(item.id); if (step === 7 && item.id === 'meds') onInteraction('tab_meds'); if (step === 12 && item.id === 'notes') onInteraction('tab_notes'); if (step === 18 && item.id === 'vitals') onInteraction('tab_vitals'); if (step === 22 && item.id === 'docs') onInteraction('tab_docs'); }} className={`flex items-center gap-3 px-6 py-4 text-sm font-bold transition-all border-l-4 ${tab === item.id ? 'border-teal-600 text-teal-700 bg-teal-50' : 'border-transparent text-slate-500 hover:bg-slate-50'}`}>
+                                    {item.icon} {item.id.charAt(0).toUpperCase() + item.id.slice(1)}
+                                </button>
+                            ))}
+                        </aside>
+                        <main className="flex-1 p-8 overflow-y-auto">
+                            {tab === 'summary' && (
+                                <div className="max-w-5xl animate-in space-y-6">
+                                    <h2 className="text-lg font-bold text-slate-700 flex items-center gap-2"><Clipboard size={20} className="text-teal-600"/> PATIENT SUMMARY</h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div className="bg-white p-5 rounded border border-slate-200 shadow-sm">
+                                            <h3 className="text-xs font-bold text-slate-400 uppercase mb-3 border-b pb-1">Admission Info</h3>
+                                            <div className="space-y-2 text-sm"><div className="flex justify-between"><span>Admission Date:</span> <span className="font-bold text-slate-700">Today</span></div><div className="flex justify-between"><span>Source:</span> <span className="font-bold text-slate-700">Emergency</span></div></div>
+                                        </div>
+                                        <div className="bg-white p-5 rounded border border-slate-200 shadow-sm">
+                                            <h3 className="text-xs font-bold text-slate-400 uppercase mb-3 border-b pb-1">Profile</h3>
+                                            <div className="space-y-2 text-sm">
+                                                <div className="flex justify-between"><span>Weight:</span> <span className="font-bold text-slate-700">75 kg</span></div>
+                                                <div className="flex justify-between"><span>BMI:</span> <span className="font-bold text-slate-700">24.0</span></div>
+                                                <div className="flex justify-between pt-2 border-t border-slate-100 mt-2">
+                                                    <span className="text-red-500 font-bold">Allergies:</span> 
+                                                    <span className="font-bold text-red-600">{patient.allergy}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="bg-white p-5 rounded border border-slate-200 shadow-sm border-l-4 border-l-red-400">
+                                            <h3 className="text-xs font-bold text-slate-400 uppercase mb-3 border-b pb-1">Diagnosis</h3>
+                                            <div className="space-y-2 text-sm"><div><span className="text-xs text-slate-500 block">Primary:</span> <span className="font-bold text-red-700 text-base">{patient.id === 1 ? 'Septic Shock' : 'Acute Trauma'}</span></div></div>
+                                        </div>
+                                    </div>
+                                    <div className="bg-white p-6 rounded border border-slate-200 shadow-sm">
+                                        <h3 className="text-xs font-bold text-slate-400 uppercase mb-4">Latest Vitals Monitor (Live)</h3>
+                                        <div className="grid grid-cols-4 gap-2 text-center">
+                                            <div className="bg-slate-50 p-2 rounded"><p className="text-xs text-slate-400">HR</p><p className="font-mono font-bold text-lg text-slate-700">110</p></div>
+                                            <div className="bg-slate-50 p-2 rounded"><p className="text-xs text-slate-400">BP</p><p className="font-mono font-bold text-lg text-slate-700">140/90</p></div>
+                                            <div className="bg-slate-50 p-2 rounded"><p className="text-xs text-slate-400">Temp</p><p className="font-mono font-bold text-lg text-slate-700">37.0</p></div>
+                                            <div className="bg-slate-50 p-2 rounded"><p className="text-xs text-slate-400">SpO2</p><p className="font-mono font-bold text-lg text-slate-700">98%</p></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            {tab === 'meds' && (
+                                <div className="max-w-4xl animate-in">
+                                    <div className="flex justify-between items-center mb-6"><h2 className="text-lg font-bold text-slate-700 flex items-center gap-2"><Pill /> MEDICATIONS ORDER</h2><Button onClick={() => { setIsAddingMed(true); if(step===8) onInteraction('btn_add_med'); }} pulse={step === 8}>[ ADD MEDICATION ]</Button></div>
+                                    
+                                    <div className="bg-white border border-slate-200 rounded-lg overflow-hidden mb-4">
+                                        <div className="p-4 bg-slate-100 border-b text-xs font-bold uppercase text-slate-500 grid grid-cols-12">
+                                            <div className="col-span-4">Drug</div><div className="col-span-2">Dose</div><div className="col-span-2">Route</div><div className="col-span-2">Time</div><div className="col-span-2">Status</div>
+                                        </div>
+                                        {medsList.length > 0 ? medsList.map((m, i) => (
+                                            <div key={i} className="p-4 grid grid-cols-12 text-sm border-b last:border-0 hover:bg-slate-50">
+                                                <div className="col-span-4 font-bold">{m.name}</div><div className="col-span-2">{m.dose}</div><div className="col-span-2">{m.route}</div><div className="col-span-2">{m.time}</div><div className="col-span-2 text-teal-600 font-bold">{m.status}</div>
+                                            </div>
+                                        )) : <div className="p-4 text-sm text-slate-500 italic">No active prescriptions.</div>}
+                                    </div>
+
+                                    {isAddingMed && (
+                                        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center animate-in">
+                                            <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full">
+                                                <h3 className="font-bold text-lg mb-6 border-b pb-4">New Prescription</h3>
+                                                <div className="space-y-4 mb-6">
+                                                    <div>
+                                                        <label className="text-xs font-bold text-slate-500 uppercase">Medication</label>
+                                                        <select 
+                                                            className="w-full p-2 border rounded" 
+                                                            onChange={e => handleInputChange(setMedForm, 'drug', e.target.value, 9, 'input_drug_select', currentScenario?.valueNeeded)}
+                                                        >
+                                                            <option>Select...</option><option value="Norepinephrine">Norepinephrine</option><option value="Vancomycin">Vancomycin</option><option value="Dipyrone">Dipyrone</option><option value="Hydrocortisone">Hydrocortisone</option><option value="Amoxicillin">Amoxicillin</option>
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-xs font-bold text-slate-500 uppercase">Dosage</label>
+                                                        <input 
+                                                            type="text" 
+                                                            className="w-full p-2 border rounded" 
+                                                            placeholder="e.g. 0.1 or 500mg" 
+                                                            onChange={e => handleInputChange(setMedForm, 'dose', e.target.value, 10, 'input_drug_dose', currentScenario?.valueNeeded)}
+                                                            onBlur={(e) => handleBlurCheck(e.target.value, currentScenario?.valueNeeded)}
+                                                        />
+                                                    </div>
+                                                    {fieldError && <div className="text-xs text-red-600 font-bold animate-pulse">{fieldError}</div>}
+                                                </div>
+                                                <div className="flex justify-end gap-2"><Button variant="ghost" onClick={() => { setIsAddingMed(false); setFieldError(''); }}>Cancel</Button><Button onClick={handleAddMedication} disabled={mode === 'training' && step !== 11} pulse={step === 11}>[ CONFIRM ]</Button></div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                            {tab === 'notes' && (
+                                <div className="max-w-3xl animate-in">
+                                    <div className="flex justify-between items-center mb-6"><h2 className="text-lg font-bold text-slate-700">CLINICAL NOTES</h2><Button onClick={() => { setShowNoteForm(true); if(step===13) onInteraction('btn_add_note'); }} pulse={step === 13}><Plus size={16}/> ADD NOTE</Button></div>
+                                    
+                                    {showNoteForm && (
+                                        <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-lg mb-8 animate-in">
+                                            <h3 className="font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4">New Evolution</h3>
+                                            <div className="mb-4"><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Category <span className="text-red-500">*</span></label><select className="w-full border rounded p-2 text-sm bg-white" value={note.category} onChange={e => setNote({...note, category: e.target.value})}><option value="">Select...</option><option value="Nursing">Nursing</option><option value="Physician">Physician</option></select></div>
+                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Observation</label>
+                                            <textarea 
+                                                className="w-full border rounded p-3 text-sm mb-4 h-24" 
+                                                placeholder="Type here..." 
+                                                value={note.text} 
+                                                onChange={e => handleInputChange(setNote, 'text', e.target.value, 14, 'input_note_text', currentScenario?.valueNeeded)} 
+                                                onBlur={(e) => handleBlurCheck(e.target.value, currentScenario?.valueNeeded)}
+                                            />
+                                            {fieldError && <div className="text-xs text-red-600 font-bold animate-pulse mb-2">{fieldError}</div>}
+                                            <div className="mb-6"><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Shift <span className="text-red-500">*</span></label><select className="w-full border rounded p-2 text-sm bg-white" value={note.shift} onChange={e => setNote({...note, shift: e.target.value})}><option value="">Select...</option><option value="Morning">Morning</option><option value="Afternoon">Afternoon</option><option value="Night">Night</option></select></div>
+                                            <div className="flex justify-end gap-2"><Button variant="ghost" onClick={() => setShowNoteForm(false)}>Cancel</Button><Button onClick={handleSaveNote} pulse={step === 15 || step === 17}>[ SAVE ]</Button></div>
+                                        </div>
+                                    )}
+
+                                    <div className="space-y-4">
+                                        {notesList.map((n, i) => (
+                                            <div key={i} className="bg-slate-50 p-4 rounded border border-slate-200 animate-in">
+                                                <div className="flex gap-2 text-xs text-slate-400 font-bold mb-1"><span>{n.date}</span><span>•</span><span>{n.category}</span><span>•</span><span>{n.shift}</span></div>
+                                                <p className="text-slate-600 text-sm">{n.text}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            {tab === 'vitals' && (
+                                <div className="max-w-2xl animate-in">
+                                    <h2 className="text-lg font-bold text-slate-700 mb-6">VITAL SIGNS</h2>
+                                    <div className="bg-white p-8 rounded-lg border border-slate-200 shadow-sm mb-8">
+                                        <div className="grid grid-cols-2 gap-6 mb-8">
+                                            <div>
+                                                <label className="text-xs font-bold text-slate-500 uppercase block mb-1">Temp (ºC)</label>
+                                                <input 
+                                                    type="text" 
+                                                    className="w-full p-2 border rounded font-mono" 
+                                                    value={vitals.temp} 
+                                                    onChange={e => handleInputChange(setVitals, 'temp', e.target.value, 19, 'input_temp', currentScenario?.valueNeeded)} 
+                                                    onBlur={(e) => handleBlurCheck(e.target.value, currentScenario?.valueNeeded)}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-bold text-slate-500 uppercase block mb-1">BP</label>
+                                                <input 
+                                                    type="text" 
+                                                    className="w-full p-2 border rounded font-mono" 
+                                                    placeholder="___/___" 
+                                                    value={vitals.bp} 
+                                                    onChange={e => {
+                                                        let val = e.target.value.replace(/[^0-9]/g, '');
+                                                        if (val.length > 3) val = val.slice(0, 3) + '/' + val.slice(3, 6);
+                                                        handleInputChange(setVitals, 'bp', val, 20, 'input_bp', currentScenario?.valueNeeded);
+                                                    }} 
+                                                    onBlur={(e) => handleBlurCheck(e.target.value, currentScenario?.valueNeeded)}
+                                                />
+                                            </div>
+                                        </div>
+                                        {fieldError && <div className="text-xs text-red-600 font-bold animate-pulse mb-4 text-center">{fieldError}</div>}
+                                        <Button className="w-full" disabled={mode === 'training' && step !== 21} onClick={handleVitalsSubmit}>[ SUBMIT ]</Button>
+                                    </div>
+
+                                    {vitalsList.length > 0 && (
+                                        <div className="bg-white border border-slate-200 rounded overflow-hidden">
+                                            <table className="w-full text-sm">
+                                                <thead className="bg-slate-100 text-slate-500 uppercase text-xs"><tr><th className="p-3 text-left">Time</th><th className="p-3 text-left">Temp</th><th className="p-3 text-left">BP</th></tr></thead>
+                                                <tbody>
+                                                    {vitalsList.map((v, i) => (
+                                                        <tr key={i} className="border-b last:border-0"><td className="p-3">{v.time}</td><td className="p-3 font-bold">{v.temp}</td><td className="p-3 font-bold">{v.bp}</td></tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                            {tab === 'docs' && (
+                                <div className="max-w-3xl animate-in">
+                                    <div className="flex justify-between items-center mb-6"><h2 className="text-lg font-bold text-slate-700">DOCUMENTS</h2><Button onClick={() => { setUploadOpen(true); if(step===23) onInteraction('btn_add_doc'); }} pulse={step === 23}>[ ADD ]</Button></div>
+                                    {uploadOpen && (
+                                        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center animate-in">
+                                            <div className="bg-white p-6 rounded-lg shadow-2xl max-w-md w-full">
+                                                <h3 className="font-bold text-lg mb-4">Select File</h3>
+                                                <button 
+                                                    className={`w-full text-left border-2 rounded-lg p-6 mb-4 cursor-pointer transition-all ${selectedDoc === 'consent_form.pdf' ? 'border-teal-500 bg-teal-50 ring-2 ring-teal-200' : 'border-dashed border-slate-300 hover:bg-slate-50'}`} 
+                                                    onClick={() => { setSelectedDoc('consent_form.pdf'); if(step===24) onInteraction('file_select'); }}
+                                                >
+                                                    <div className="flex items-center gap-3"><FileText className={`transition-colors ${selectedDoc === 'consent_form.pdf' ? 'text-teal-600' : 'text-slate-400'}`} /><div><p className="font-bold text-sm text-slate-700">consent_form.pdf</p></div></div>
+                                                </button>
+                                                <div className="flex justify-end gap-2"><Button onClick={() => { setUploadOpen(false); if(mode==='training') onInteraction('btn_upload_confirm'); }} disabled={mode === 'training' && step !== 25}>Upload</Button></div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </main>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [step, setStep] = useState(0);
+            const [screen, setScreen] = useState('login');
+            const [selectedPatient, setSelectedPatient] = useState(null);
+            const [mode, setMode] = useState('training'); // training | kc | report | finished
+            const [isAudioEnabled, setIsAudioEnabled] = useState(true); // Novo estado para áudio
+            
+            const [kcData, setKcData] = useState({
+                patientId: null,
+                allergyChecked: false,
+                medName: '',
+                medDose: '',
+                noteShift: '',
+                noteCategory: '',
+                noteText: '',
+                vitalsTemp: '',
+                vitalsBP: ''
+            });
+
+            const [showChecklist, setShowChecklist] = useState(false);
+
+            const nextStep = (target) => {
+                if (step === 25 && target === undefined) { setStep(99); return; }
+                const next = target !== undefined ? target : step + 1;
+                setStep(next);
+            };
+
+            const handleInteraction = (actionId, data) => {
+                const safeData = data || {}; 
+
+                if (mode === 'training') {
+                    if (step === 15) {
+                        if (actionId === 'btn_save_note_success_early') { nextStep(18); return; }
+                        else if (actionId === 'btn_save_note_fail') { nextStep(16); return; }
+                    }
+                    const current = SCENARIO_STEPS[step];
+                    if (current && current.target === actionId) {
+                        if (actionId === 'card_alerts') setScreen('alerts');
+                        if (actionId === 'nav_patients') setScreen('patients');
+                        if (step === 5 && actionId === 'card_patient_1') {
+                             setSelectedPatient(PATIENTS_DATA.find(p => p.id === 1));
+                             setScreen('record');
+                        }
+                        nextStep();
+                    }
+                } else if (mode === 'kc') {
+                    // Accumulate Data for Report
+                    if (actionId === 'card_patient_1' && safeData.patientId) setKcData(prev => ({...prev, patientId: safeData.patientId}));
+                    if (actionId === 'kc_allergy') setKcData(prev => ({...prev, allergyChecked: true}));
+                    if (actionId === 'kc_med_add') setKcData(prev => ({...prev, medName: safeData.medName, medDose: safeData.medDose}));
+                    if (actionId === 'kc_note_submit') setKcData(prev => ({...prev, noteShift: safeData.noteShift, noteCategory: safeData.noteCategory, noteText: safeData.noteText}));
+                    if (actionId === 'kc_vitals') setKcData(prev => ({...prev, vitalsTemp: safeData.temp, vitalsBP: safeData.bp}));
+
+                    // Nav Logic
+                    if (actionId === 'card_patient_1') { 
+                        const p = PATIENTS_DATA.find(pat => pat.id === safeData.patientId);
+                        setSelectedPatient(p); 
+                        setScreen('record'); 
+                    }
+                    if (actionId === 'nav_patients') setScreen('patients');
+                    if (actionId === 'card_alerts') setScreen('alerts');
+                }
+            };
+
+            const startKC = () => {
+                setMode('kc');
+                setStep(100);
+                setScreen('dashboard');
+                setKcData({});
+            };
+
+            const startTraining = () => {
+                window.location.reload();
+            };
+
+            const restartKC = () => {
+                setMode('kc');
+                setStep(100);
+                setScreen('dashboard');
+                setKcData({});
+            };
+
+            const currentScenario = SCENARIO_STEPS[step];
+            
+            // Audio Logic
+            const audioRef = useRef(null);
+
+            useEffect(() => {
+                // Stop previous audio
+                if (audioRef.current) {
+                    audioRef.current.pause();
+                    audioRef.current.currentTime = 0;
+                }
+
+                // Play new audio if exists for this step in training mode AND audio is enabled
+                if (mode === 'training' && isAudioEnabled) { // Verificação de isAudioEnabled adicionada
+                    const currentStepData = SCENARIO_STEPS[step];
+                    if (currentStepData && currentStepData.audio) {
+                        // console.log("Tentando reproduzir:", currentStepData.audio); 
+                        const audio = new Audio(currentStepData.audio);
+                        audioRef.current = audio;
+                        
+                        // Error handling for loading (404)
+                        audio.addEventListener('error', (e) => {
+                             console.warn(`Ficheiro de áudio não encontrado ou erro de carregamento: ${currentStepData.audio}`);
+                        });
+
+                        // Play with promise handling for Autoplay policies
+                        const playPromise = audio.play();
+                        
+                        if (playPromise !== undefined) {
+                            playPromise
+                                .then(_ => {
+                                    // Automatic playback started!
+                                })
+                                .catch(error => {
+                                    if (error.name === 'NotAllowedError') {
+                                         console.warn("Autoplay bloqueado. O áudio será reproduzido após a interação do utilizador.");
+                                    } else {
+                                         console.warn("Erro na reprodução do áudio:", error);
+                                    }
+                                });
+                        }
+                    }
+                }
+            }, [step, mode, isAudioEnabled]); // isAudioEnabled adicionado às dependências
+
+            return (
+                <div className="h-screen flex bg-slate-100 font-sans text-slate-800 overflow-hidden relative">
+                    
+                    {/* Botão Fixo de Áudio */}
+                    <button
+                        onClick={() => setIsAudioEnabled(!isAudioEnabled)}
+                        className="fixed top-2 right-2 z-[60] bg-white p-2 rounded-full shadow-lg text-slate-700 hover:bg-slate-100 transition-all"
+                        title={isAudioEnabled ? "Disable Audio" : "Enable Audio"}
+                    >
+                        {isAudioEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+                    </button>
+
+                    {/* Botão Close Project (aparece apenas no final ou na avaliação) */}
+                    {(mode === 'report') && (
+                         <button className="fixed top-2 right-14 z-[60] bg-red-600 text-white px-4 py-2 text-sm rounded-lg font-bold shadow-lg hover:bg-red-700 transition-all flex items-center gap-2 animate-in">
+                            <LogOut size={16}/> Close Project
+                         </button>
+                    )}
+
+                    {screen !== 'login' && (
+                        <aside className="w-16 bg-teal-900 flex flex-col items-center py-6 gap-6 text-teal-300 shadow-xl z-30">
+                            <Stethoscope size={28} className="text-white mb-4" />
+                            <div className={`p-2 rounded cursor-pointer hover:text-white ${step === 4 ? 'bg-teal-700 text-white animate-pulse' : ''}`} onClick={() => handleInteraction('nav_patients')}><User /></div>
+                            <div className="p-2 cursor-pointer hover:text-white"><Clipboard /></div>
+                            <div className="p-2 cursor-pointer hover:text-white"><LogOut /></div>
+                        </aside>
+                    )}
+                    <main className="flex-1 relative flex flex-col overflow-hidden">
+                        
+                        {/* Nova Tela Inicial (Hero Screen) */}
+                        {mode === 'training' && step === 0 && (
+                            <div className="absolute inset-0 bg-gradient-to-br from-teal-900 to-slate-900 z-50 flex flex-col items-center justify-center text-white p-8 animate-in">
+                                <div className="w-32 h-32 bg-teal-800/50 rounded-full flex items-center justify-center mb-8 shadow-2xl">
+                                    <Stethoscope size={64} className="text-teal-300" />
+                                </div>
+                                <h1 className="text-5xl font-bold mb-4 tracking-tight text-center">Healthy Sys Advanced Simulation</h1>
+                                <p className="text-xl text-teal-200 mb-12 text-center max-w-md leading-relaxed">
+                                    We will now simulate a session within the Healthy Sys system. Click to start the simulation.
+                                </p>
+                                <Button onClick={() => { nextStep(); setScreen('login'); }} pulse size="lg" className="px-12 py-4 text-lg shadow-teal-500/30">
+                                    START SIMULATION
+                                </Button>
+                                <div className="absolute bottom-8 text-sm text-slate-400 flex items-center gap-2">
+                                    <Volume2 size={16}/> Audio recommended.
+                                </div>
+                            </div>
+                        )}
+
+                        {mode === 'training' && step === 3 && <div className="absolute inset-0 bg-black/40 z-50"><AvatarGuide text={currentScenario.text} onNext={() => { nextStep(); }} buttonLabel={currentScenario.button} /></div>}
+                        {mode === 'training' && step === 16 && <div className="absolute inset-0 bg-red-900/20 z-50 backdrop-blur-sm"><AvatarGuide text={currentScenario.text} onNext={() => nextStep()} buttonLabel={currentScenario.button} type="error" /></div>}
+                        {mode === 'training' && step === 99 && (
+                            <div className="absolute inset-0 bg-slate-900 z-[100] flex items-center justify-center animate-in">
+                                <div className="text-center text-white p-8 max-w-lg">
+                                    <Award size={64} className="mx-auto text-yellow-400 mb-6 animate-bounce" />
+                                    <h1 className="text-4xl font-bold mb-4">Training Completed!</h1>
+                                    <div className="text-left bg-white/10 p-6 rounded-lg mb-8 text-sm space-y-3">
+                                        <p className="font-bold text-lg text-teal-300 mb-2">Next Steps (Evaluation):</p>
+                                        <p>1. Click <span className="font-bold text-white"><ListChecks size={14} className="inline"/> Protocol</span> (top right) to read the case.</p>
+                                        <p>2. Perform actions in the record (Meds, Notes, etc).</p>
+                                        <p>3. When done, click <span className="font-bold text-green-400">COMPLETE SIMULATION</span> at the bottom.</p>
+                                    </div>
+                                    <button onClick={startKC} className="px-8 py-3 bg-teal-500 text-white font-bold rounded uppercase hover:bg-teal-600 transition-all shadow-lg hover:shadow-teal-500/50">START EVALUATION</button>
+                                </div>
+                            </div>
+                        )}
+                        
+                        {mode === 'kc' && (
+                            <>
+                                {showChecklist && <ProtocolModal onClose={() => setShowChecklist(false)} />}
+                                <div className="fixed bottom-0 left-0 w-full bg-slate-900 p-4 z-50 flex justify-between items-center border-t border-slate-700">
+                                    <div className="text-white text-xs"><span className="text-teal-400 font-bold">EVALUATION MODE:</span> Patient Liam Johnson</div>
+                                    <button onClick={() => setMode('report')} className="bg-green-600 text-white px-6 py-2 rounded font-bold uppercase text-sm hover:bg-green-700 transition-all">Complete Simulation</button>
+                                </div>
+                                
+                                {screen !== 'record' && (
+                                    <button 
+                                        onClick={() => setShowChecklist(!showChecklist)} 
+                                        className="fixed top-20 right-8 z-50 bg-slate-800 text-white px-4 py-2 rounded shadow-lg flex items-center gap-2 text-sm font-bold border border-slate-600 hover:bg-slate-700 transition-all"
+                                    >
+                                        <ListChecks size={18}/> Protocol
+                                    </button>
+                                )}
+                            </>
+                        )}
+
+                        {screen === 'login' && <LoginScreen onInteraction={(id) => { handleInteraction(id); setScreen('dashboard'); }} isActiveStep={step === 1 && mode === 'training'} />}
+                        {screen === 'dashboard' && <Dashboard step={step} onInteraction={handleInteraction} mode={mode} />}
+                        {screen === 'alerts' && <AlertsScreen onInteraction={handleInteraction} step={step} />}
+                        {screen === 'patients' && <PatientList step={step} onSelectPatient={(p) => { if (mode==='training') handleInteraction('card_patient_1'); else if (mode==='kc') handleInteraction('card_patient_1', { patientId: p.id }); }} onInteraction={handleInteraction} mode={mode} />}
+                        {screen === 'record' && <PatientRecord patient={selectedPatient} step={step} onInteraction={handleInteraction} mode={mode} currentScenario={currentScenario} onToggleProtocol={() => setShowChecklist(!showChecklist)} />}
+
+                        {mode === 'training' && currentScenario && currentScenario.type === 'interaction' && step !== 0 && (
+                            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-full max-w-2xl px-4">
+                                <div className="bg-slate-800 text-white px-6 py-4 rounded-full shadow-2xl flex items-center gap-4 border border-slate-600 animate-slide-up">
+                                    <div className="w-3 h-3 bg-teal-400 rounded-full animate-ping shrink-0"></div><p className="font-medium text-sm flex-1">{currentScenario.text}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {mode === 'report' && <ReportScreen data={kcData} onRestartTraining={startTraining} onRestartKC={restartKC} />}
+
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

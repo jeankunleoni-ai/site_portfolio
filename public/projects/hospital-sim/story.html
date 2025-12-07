@@ -37,7 +37,7 @@
       aid: 'aid|67cd3183-8606-4f10-9fb1-4795f7761832',
       cid: '8d0abc61-01f1-49f7-93d2-86bc439dea27',
       playerVersion: '3.101.34925.0',
-      publishTimestamp: '2025-12-04T20:42:47.3440208Z',
+      publishTimestamp: '2025-12-06T20:12:59.3596830Z',
       maxIosVideoElements: 10,
       connectionSettings: { message: 'You%20are%20offline.%20Trying%20to%20reconnect...', useDarkTheme: true, mode: 'disabled' },
       hasFeature: function(feature) {
@@ -473,6 +473,99 @@
   
 
   <link rel="stylesheet" href="html5/data/css/output.min.css" data-noprefix/>
+<!-- 
+Instruções: 
+1. Abra o arquivo 'story.html' (ou index.html) do seu pacote exportado do Storyline.
+2. Cole TODO este bloco de código logo antes da tag de fechamento </body>, lá no final do arquivo.
+-->
+
+<style>
+  /* --- INÍCIO DO ESTILO DO AVISO --- */
+  #rotate-overlay {
+    display: none; /* Oculto por padrão no Desktop */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.98); /* Fundo Escuro Quase Preto */
+    z-index: 999999; /* Garante que fique acima do Player do Storyline */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: "Open Sans", Arial, sans-serif;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
+  /* Ícone do Smartphone desenhado em CSS puro */
+  .phone-icon {
+    width: 50px;
+    height: 80px;
+    border: 4px solid #fff;
+    border-radius: 10px;
+    position: relative;
+    margin-bottom: 25px;
+    /* Animação */
+    animation: rotate-animation 2.5s infinite ease-in-out;
+  }
+  
+  /* Linha/Botão do celular */
+  .phone-icon::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 15px;
+    height: 3px;
+    background: #fff;
+    border-radius: 2px;
+  }
+
+  /* Texto */
+  #rotate-overlay h2 {
+    color: #fbbf24; /* Amber-400 */
+    font-size: 24px;
+    margin: 0 0 10px 0;
+    font-weight: bold;
+  }
+
+  #rotate-overlay p {
+    color: #cbd5e1; /* Slate-300 */
+    font-size: 16px;
+    line-height: 1.5;
+    max-width: 320px;
+    margin: 0;
+  }
+
+  /* ANIMAÇÃO DE GIRA */
+  @keyframes rotate-animation {
+    0% { transform: rotate(0deg); }
+    15% { transform: rotate(0deg); } /* Pausa em pé */
+    35% { transform: rotate(90deg); } /* Gira */
+    65% { transform: rotate(90deg); } /* Pausa deitado */
+    85% { transform: rotate(0deg); } /* Volta */
+    100% { transform: rotate(0deg); }
+  }
+
+  /* --- REGRA MÁGICA: SÓ MOSTRAR EM CELULAR EM PÉ --- */
+  /* Se a tela for menor que 900px E estiver na vertical (altura > largura) */
+  @media only screen and (max-width: 900px) and (orientation: portrait) {
+    #rotate-overlay {
+      display: flex !important;
+    }
+  }
+  /* --- FIM DO ESTILO --- */
+</style>
+
+<!-- ESTRUTURA HTML DO AVISO -->
+<div id="rotate-overlay">
+  <div class="phone-icon"></div>
+  <h2>Please rotate your device</h2>
+  <p>This course is optimized for landscape mode. Please turn your phone sideways to continue.</p>
+</div>
 </body>
 <script src="html5/lib/scripts/bootstrapper.min.js"></script>
 </html>

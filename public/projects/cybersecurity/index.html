@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cortex Security OS - Cyber Security Simulation</title>
     
     <!-- Tailwind CSS -->
@@ -65,7 +65,7 @@
 
     <style>
         /* Global Styles */
-        body { margin: 0; overflow: hidden; background-color: #0f172a; }
+        body { margin: 0; overflow: hidden; background-color: #000; }
         .glitch-text { text-shadow: 2px 0 #ff00c1, -2px 0 #00fff9; }
         
         /* Custom Scrollbar */
@@ -73,9 +73,26 @@
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        /* Rotation Warning */
+        #rotate-warning { display: none; }
+        #app-container { display: flex; }
+
+        @media screen and (orientation: portrait) {
+            #rotate-warning { display: flex !important; }
+            #app-container { display: none !important; }
+        }
     </style>
 </head>
 <body>
+    
+    <!-- Rotation Warning Screen (English) -->
+    <div id="rotate-warning" class="fixed inset-0 z-[9999] bg-slate-900 flex-col items-center justify-center text-white p-8 text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-6 animate-pulse text-cyan-400"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path><path d="M19 3v4"></path><path d="M21 5h-4"></path></svg>
+        <h2 class="text-2xl font-bold mb-2">Please rotate your device</h2>
+        <p class="text-slate-400">This simulation is optimized for landscape mode.</p>
+    </div>
+
     <div id="root"></div>
 
     <!-- Game Logic -->
@@ -89,14 +106,16 @@
             Printer, Smartphone, Power, Fingerprint, 
             CheckCircle, AlertCircle, ChevronRight, Briefcase, Coffee, Terminal,
             PhoneCall, PhoneOff, Info, Skull, FileCode, FileImage, Trash2, Share2, RefreshCcw,
-            DollarSign, UploadCloud, Users, Key, FileText, XCircle, ArrowRight
+            DollarSign, UploadCloud, Users, Key, FileText, XCircle, ArrowRight, RotateCcw
         } from 'lucide-react';
 
         // --- 1. CONFIG & STATIC DATA ---
 
         const CONFIG = {
             MAX_Z_INDEX: 50,
-            NOTIFICATION_DURATION: 10000, 
+            NOTIFICATION_DURATION: 10000,
+            GAME_WIDTH: 1280,
+            GAME_HEIGHT: 720
         };
 
         const WALLPAPER_URL = "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=2074&auto=format&fit=crop";
@@ -188,8 +207,9 @@
             const moveWindow = useCallback((id, newX, newY) => {
                 setWindows(prev => {
                 const win = prev[id];
-                const maxX = window.innerWidth - 50;
-                const maxY = window.innerHeight - 50;
+                // Constrain to the 1280x720 frame
+                const maxX = CONFIG.GAME_WIDTH - 50;
+                const maxY = CONFIG.GAME_HEIGHT - 50;
                 const clampedX = Math.max(-win.w + 50, Math.min(maxX, newX));
                 const clampedY = Math.max(0, Math.min(maxY, newY));
                 return { ...prev, [id]: { ...win, x: clampedX, y: clampedY } };
@@ -345,7 +365,8 @@
             </div>
         );
 
-        const Desktop = ({ activeHighlight, openWindow, wallpaperHacked, onRestoreWallpaper }) => (
+        // Updated Desktop Component - accepts riskLevel to handle wallpaper effects
+        const Desktop = ({ activeHighlight, openWindow, wallpaperHacked, onRestoreWallpaper, riskLevel = 0 }) => (
             <div className="absolute inset-0 z-0">
                 {/* Wallpaper Logic */}
                 {wallpaperHacked ? (
@@ -369,9 +390,16 @@
                     </button>
                 </div>
                 ) : (
-                <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url('${WALLPAPER_URL}')` }}>
+                <div 
+                    className="w-full h-full bg-cover bg-center transition-all duration-1000" 
+                    style={{ 
+                        backgroundImage: `url('${WALLPAPER_URL}')`,
+                        filter: `grayscale(${riskLevel}%) contrast(${100 + (riskLevel/2)}%)`
+                    }}
+                >
                     {/* Overlay to ensure icons are readable and make it subtle */}
-                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]"></div>
+                    <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-[1px] pointer-events-none"></div>
+                    {riskLevel > 50 && <div className="absolute inset-0 bg-rose-900/10 z-0 animate-pulse pointer-events-none mix-blend-overlay"></div>}
                 </div> 
                 )}
 
@@ -420,7 +448,7 @@
         // --- 4. SYSTEM SCREENS ---
 
         const BootScreen = () => (
-            <div className="h-screen w-full bg-black flex flex-col items-center justify-center text-slate-400 font-mono text-xs relative z-50">
+            <div className="h-full w-full bg-black flex flex-col items-center justify-center text-slate-400 font-mono text-xs relative z-50">
                 <div className="mb-4 text-cyan-500 animate-pulse">
                     <Terminal size={48} />
                 </div>
@@ -434,9 +462,8 @@
             </div>
         );
 
-        // IntroScreen is transparent to show the wallpaper
         const IntroScreen = ({ onStart }) => (
-            <div className="h-screen w-full flex items-center justify-center p-8 overflow-hidden relative font-sans z-10 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+            <div className="h-full w-full flex items-center justify-center p-8 overflow-hidden relative font-sans z-10 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
                 
                 <div className="z-10 w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                 <div className="space-y-8 animate-fade-in-up">
@@ -451,7 +478,6 @@
                         <p className="text-slate-400 text-lg leading-relaxed max-w-md border-l-2 border-slate-700 pl-6 bg-slate-900/50 p-4 rounded-r-lg backdrop-blur-sm">
                         Immersive incident simulation. Your decisions will be evaluated on:
                         </p>
-                        {/* Metrics Explained */}
                         <div className="grid grid-cols-3 gap-4 mt-6">
                         <div className="bg-slate-900/80 backdrop-blur p-3 rounded border border-cyan-500/30 text-center">
                             <div className="text-cyan-400 font-bold text-xl mb-1">100</div>
@@ -569,7 +595,7 @@
             const ending = ENDINGS[endingKey];
 
             return (
-                <div className="h-screen w-full bg-slate-950 flex items-center justify-center p-8 relative overflow-hidden font-mono z-50">
+                <div className="h-full w-full bg-slate-950 flex items-center justify-center p-8 relative overflow-hidden font-mono z-50">
                 {showReport && <ReportModal log={reportLog} onClose={() => setShowReport(false)} />}
                 
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"></div>
@@ -606,41 +632,74 @@
             );
         };
 
-        const DraggableWindow = ({ config, children, onClose, onMinimize, onFocus, onMove }) => {
+        const DraggableWindow = ({ config, children, onClose, onMinimize, onFocus, onMove, scale }) => {
             const [isDragging, setIsDragging] = useState(false);
-            const [offset, setOffset] = useState({ x: 0, y: 0 });
+            const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+            const [windowStart, setWindowStart] = useState({ x: 0, y: 0 });
 
-            const handleMouseDown = (e) => {
-                e.stopPropagation();
+            // Universal input handler (Mouse + Touch)
+            const handleStart = (clientX, clientY) => {
                 onFocus();
                 setIsDragging(true);
-                setOffset({
-                x: e.clientX - config.x,
-                y: e.clientY - config.y
-                });
+                setDragStart({ x: clientX, y: clientY });
+                setWindowStart({ x: config.x, y: config.y });
             };
 
-            const handleMouseMove = useCallback((e) => {
+            const handleMove = useCallback((clientX, clientY) => {
                 if (!isDragging) return;
-                e.preventDefault();
-                onMove(config.id, e.clientX - offset.x, e.clientY - offset.y);
-            }, [isDragging, config.id, onMove, offset]);
+                
+                // Calculate delta in "Game Pixels" (Scale adjusted)
+                const deltaX = (clientX - dragStart.x) / scale;
+                const deltaY = (clientY - dragStart.y) / scale;
 
-            const handleMouseUp = useCallback(() => setIsDragging(false), []);
+                onMove(config.id, windowStart.x + deltaX, windowStart.y + deltaY);
+            }, [isDragging, config.id, onMove, dragStart, windowStart, scale]);
 
+            const handleEnd = useCallback(() => setIsDragging(false), []);
+
+            // Mouse Events
+            const handleMouseDown = (e) => {
+                e.stopPropagation();
+                handleStart(e.clientX, e.clientY);
+            };
+
+            // Touch Events (For Mobile dragging)
+            const handleTouchStart = (e) => {
+                e.stopPropagation();
+                const touch = e.touches[0];
+                handleStart(touch.clientX, touch.clientY);
+            };
+
+            // Global Listeners
             useEffect(() => {
+                const onMouseMove = (e) => { e.preventDefault(); handleMove(e.clientX, e.clientY); };
+                const onMouseUp = () => handleEnd();
+                
+                const onTouchMove = (e) => { 
+                    // e.preventDefault(); // Prevents scrolling on mobile while dragging
+                    const touch = e.touches[0];
+                    handleMove(touch.clientX, touch.clientY); 
+                };
+                const onTouchEnd = () => handleEnd();
+
                 if (isDragging) {
-                window.addEventListener('mousemove', handleMouseMove);
-                window.addEventListener('mouseup', handleMouseUp);
+                    window.addEventListener('mousemove', onMouseMove);
+                    window.addEventListener('mouseup', onMouseUp);
+                    window.addEventListener('touchmove', onTouchMove, { passive: false });
+                    window.addEventListener('touchend', onTouchEnd);
                 } else {
-                window.removeEventListener('mousemove', handleMouseMove);
-                window.removeEventListener('mouseup', handleMouseUp);
+                    window.removeEventListener('mousemove', onMouseMove);
+                    window.removeEventListener('mouseup', onMouseUp);
+                    window.removeEventListener('touchmove', onTouchMove);
+                    window.removeEventListener('touchend', onTouchEnd);
                 }
                 return () => {
-                window.removeEventListener('mousemove', handleMouseMove);
-                window.removeEventListener('mouseup', handleMouseUp);
+                    window.removeEventListener('mousemove', onMouseMove);
+                    window.removeEventListener('mouseup', onMouseUp);
+                    window.removeEventListener('touchmove', onTouchMove);
+                    window.removeEventListener('touchend', onTouchEnd);
                 };
-            }, [isDragging, handleMouseMove, handleMouseUp]);
+            }, [isDragging, handleMove, handleEnd]);
 
             return (
                 <div 
@@ -655,31 +714,32 @@
                     boxShadow: isDragging ? '0 20px 50px rgba(0,0,0,0.5)' : '0 10px 30px rgba(0,0,0,0.3)'
                 }}
                 onMouseDown={onFocus}
+                onTouchStart={handleTouchStart} 
                 role="dialog"
                 aria-labelledby={`window-title-${config.id}`}
                 >
                 <div 
                     className={`h-10 border-b border-white/5 flex items-center justify-between px-4 cursor-move select-none ${isDragging ? 'bg-slate-800' : 'bg-slate-800/50'}`}
                     onMouseDown={handleMouseDown}
+                    onTouchStart={handleTouchStart}
                 >
                     <div id={`window-title-${config.id}`} className="flex items-center gap-3 text-slate-300 text-xs font-bold uppercase tracking-wider font-mono">
                     {config.icon} {config.title}
                     </div>
                     {/* Windows Style Buttons */}
                     <div className="flex">
-                    <button onClick={(e) => {e.stopPropagation(); onMinimize()}} aria-label="Minimize" className="w-10 h-10 flex items-center justify-center hover:bg-white/10 transition-colors text-slate-400 hover:text-white">
+                    <button onClick={(e) => {e.stopPropagation(); onMinimize()}} onTouchEnd={(e) => {e.stopPropagation(); onMinimize()}} aria-label="Minimize" className="w-10 h-10 flex items-center justify-center hover:bg-white/10 transition-colors text-slate-400 hover:text-white">
                         <Minus size={14} />
                     </button>
-                    {/* Fake Maximize Button */}
                     <button onClick={(e) => {e.stopPropagation()}} aria-label="Maximize" className="w-10 h-10 flex items-center justify-center hover:bg-white/10 transition-colors text-slate-400 hover:text-white cursor-default">
                         <Square size={12} />
                     </button>
-                    <button onClick={(e) => {e.stopPropagation(); onClose()}} aria-label="Close" className="w-10 h-10 flex items-center justify-center hover:bg-red-600 transition-colors text-slate-400 hover:text-white">
+                    <button onClick={(e) => {e.stopPropagation(); onClose()}} onTouchEnd={(e) => {e.stopPropagation(); onClose()}} aria-label="Close" className="w-10 h-10 flex items-center justify-center hover:bg-red-600 transition-colors text-slate-400 hover:text-white">
                         <X size={16} />
                     </button>
                     </div>
                 </div>
-                <div className="flex-1 overflow-hidden relative">
+                <div className="flex-1 overflow-hidden relative" onTouchStart={(e) => e.stopPropagation()}>
                     {children}
                 </div>
                 </div>
@@ -691,11 +751,26 @@
         function SecurityImmersive() {
             const [module, setModule] = useState(0); 
             const [step, setStep] = useState(0); 
-            // Real Clock
             const [time, setTime] = useState(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
             const [isRebooting, setIsRebooting] = useState(false);
             const [wallpaperHacked, setWallpaperHacked] = useState(false);
+            const [appScale, setAppScale] = useState(1);
             
+            // Scaling Logic for 1280x720 Frame
+            useEffect(() => {
+                const handleResize = () => {
+                    const scaleX = window.innerWidth / CONFIG.GAME_WIDTH;
+                    const scaleY = window.innerHeight / CONFIG.GAME_HEIGHT;
+                    // Scale to Fit (contain)
+                    const scale = Math.min(scaleX, scaleY);
+                    setAppScale(scale);
+                };
+                
+                window.addEventListener('resize', handleResize);
+                handleResize(); // Initial calculation
+                return () => window.removeEventListener('resize', handleResize);
+            }, []);
+
             // Custom Hooks
             const { riskLevel, socialCredit, score, notifications, addNotification, adjustMetric, setRiskLevel, logDecision, reportLog } = useGameMetrics();
             
@@ -1126,361 +1201,372 @@
                 }
             }
 
-            // --- RENDER ---
+            // --- RENDER CONTENT SELECTION ---
+            // This decouples the nested ternary logic from the JSX return, solving parser issues.
+            let content;
+            if (isRebooting) {
+                content = <BootScreen />;
+            } else if (module === 0) {
+                content = <IntroScreen onStart={() => setModule(1)} />;
+            } else if (module === 2) {
+                content = <EndScreen score={score} riskLevel={riskLevel} socialCredit={socialCredit} reportLog={reportLog} />;
+            } else {
+                content = (
+                    <>
+                        <NotificationToast notifications={notifications} />
 
-            if (isRebooting) return <BootScreen />;
-            if (module === 0) return <IntroScreen onStart={() => setModule(1)} />;
-            if (module === 2) return <EndScreen score={score} riskLevel={riskLevel} socialCredit={socialCredit} reportLog={reportLog} />;
+                        {/* RENDER VISUAL CONSEQUENCES */}
+                        {Object.keys(consequenceState).map(key => (
+                            consequenceState[key] && <ConsequenceAlert key={key} type={key} />
+                        ))}
 
-            return (
-                // DEFAULT WALLPAPER IS HERE TO PERSIST BETWEEN MODULES
-                <div 
-                    className={`h-screen w-full overflow-hidden relative select-none font-sans bg-cover bg-center transition-all duration-1000`} 
-                    style={{ 
-                        filter: `grayscale(${riskLevel}%) contrast(${100 + (riskLevel/2)}%)`,
-                        backgroundImage: `url('${WALLPAPER_URL}')`
-                    }}
-                >
-                    {/* Default overlay for readability */}
-                    <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-[1px] pointer-events-none"></div>
-                    
-                    {riskLevel > 50 && <div className="absolute inset-0 bg-rose-900/10 z-0 animate-pulse pointer-events-none mix-blend-overlay"></div>}
-
-                    {/* CLOCK */}
-                    <div className="absolute bottom-8 right-8 text-right z-0 pointer-events-none select-none text-white drop-shadow-md">
-                        <div className="text-6xl font-thin font-mono tracking-tighter opacity-90">{time}</div>
-                        <div className="text-xs text-cyan-200 font-bold tracking-[0.3em] uppercase mt-1">SecurOS v5.2</div>
-                    </div>
-
-                    <NotificationToast notifications={notifications} />
-
-                    {/* RENDER VISUAL CONSEQUENCES - ITERATING OVER STATE */}
-                    {Object.keys(consequenceState).map(key => (
-                        consequenceState[key] && <ConsequenceAlert key={key} type={key} />
-                    ))}
-
-                    <Desktop activeHighlight={activeHighlight} openWindow={openWindow} wallpaperHacked={wallpaperHacked} onRestoreWallpaper={restoreWallpaper} />
-                    <Taskbar windows={windows} activeHighlight={activeHighlight} openWindow={openWindow} ransomwareActive={ransomwareActive} />
-
-                    {/* SYSTEM MODALS */}
-                    
-                    {modalState.wifi && (
-                        <Modal title="Public Network Detected" type="wifi">
-                        <div className="text-center space-y-6">
-                            <div className="w-20 h-20 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto animate-pulse border border-amber-500/50">
-                            <Wifi size={40} className="text-amber-500" />
-                            </div>
-                            <div>
-                            <h2 className="text-xl font-bold text-white mb-2">Cortex_Free_WiFi</h2>
-                            <p className="text-sm text-slate-400">Open network detected. Strong signal, no encryption.</p>
-                            </div>
-                            <div className="flex flex-col gap-2">
-                            <button onClick={() => handleWifiAction('connect')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700 transition-colors">Connect</button>
-                            <button onClick={() => handleWifiAction('tethering')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700 transition-colors">Use Personal Hotspot</button>
-                            <button onClick={() => handleWifiAction('ignore')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700 transition-colors">Ignore</button>
-                            </div>
+                        <Desktop activeHighlight={activeHighlight} openWindow={openWindow} wallpaperHacked={wallpaperHacked} onRestoreWallpaper={restoreWallpaper} riskLevel={riskLevel} />
+                        
+                        {/* CLOCK - MOVED HERE TO BE ON TOP */}
+                        <div className="absolute bottom-8 right-8 text-right z-0 pointer-events-none select-none text-white drop-shadow-md">
+                            <div className="text-6xl font-thin font-mono tracking-tighter opacity-90">{time}</div>
+                            <div className="text-xs text-cyan-200 font-bold tracking-[0.3em] uppercase mt-1">SecurOS v5.2</div>
                         </div>
-                        </Modal>
-                    )}
 
-                    {modalState.lock && (
-                        <Modal title="Coffee Break" danger={false}>
-                        <div className="text-center space-y-6">
-                            <Coffee size={48} className="mx-auto text-slate-400" />
-                            <div>
-                            <h2 className="text-lg font-bold text-white">Break Required</h2>
-                            <p className="text-sm text-slate-400">You need to leave your desk for 15 minutes.</p>
-                            </div>
-                            <div className="flex flex-col gap-2">
-                            <button onClick={() => handleLockAction('leave')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Just Leave</button>
-                            <button onClick={() => handleLockAction('lock')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Lock Screen (Win+L)</button>
-                            <button onClick={() => handleLockAction('shutdown')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Shutdown Machine</button>
-                            </div>
-                        </div>
-                        </Modal>
-                    )}
+                        <Taskbar windows={windows} activeHighlight={activeHighlight} openWindow={openWindow} ransomwareActive={ransomwareActive} />
 
-                    {modalState.usb && (
-                        <div className="absolute top-24 right-8 z-[100] bg-slate-900/90 border-l-4 border-amber-500 p-6 rounded-r-xl shadow-2xl w-96 animate-slide-in-right backdrop-blur-md">
-                        <div className="flex gap-4">
-                            <div className="text-amber-500 bg-amber-500/10 p-2 rounded h-fit"><AlertTriangle size={24} /></div>
-                            <div className="flex-1">
-                            <h4 className="font-bold text-white text-sm tracking-wide">REMOVABLE MEDIA DETECTED</h4>
-                            {usbStage === 0 ? (
-                                <>
-                                    <p className="text-xs text-slate-400 mb-4 mt-1">Drive 'E: BOARD_SALARIES.xlsx'. What to do?</p>
-                                    <div className="flex gap-2 flex-col">
-                                        <button onClick={() => handleUsbAction('open')} className="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded text-white text-left transition-colors">Open</button>
-                                        <button onClick={() => handleUsbAction('ignore')} className="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded text-white text-left transition-colors">Ignore</button>
-                                        <button onClick={() => handleUsbAction('deliver')} className="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded text-white font-bold text-left transition-colors">Hand over to IT</button>
+                        {/* SYSTEM MODALS */}
+                        {modalState.wifi && (
+                            <Modal title="Public Network Detected" type="wifi">
+                                <div className="text-center space-y-6">
+                                    <div className="w-20 h-20 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto animate-pulse border border-amber-500/50">
+                                    <Wifi size={40} className="text-amber-500" />
                                     </div>
-                                </>
-                            ) : (
-                                <>
-                                    <p className="text-xs text-slate-400 mb-4 mt-1 animate-fade-in">Drive E: Content:</p>
-                                    <div className="flex flex-col gap-2 animate-fade-in">
-                                        <button onClick={() => handleUsbAction('malware')} className="flex items-center gap-2 text-xs bg-slate-800 hover:bg-slate-700 p-2 rounded text-white border border-slate-700">
-                                        <FileCode size={16} className="text-slate-400"/> Salaries_2024.exe
-                                        </button>
-                                        <button onClick={() => handleUsbAction('photos')} className="flex items-center gap-2 text-xs bg-slate-800 hover:bg-slate-700 p-2 rounded text-white border border-slate-700">
-                                        <FileImage size={16} className="text-slate-400"/> Party_Photos.jpg
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                            </div>
-                        </div>
-                        </div>
-                    )}
-
-                    {modalState.printer && (
-                        <Modal title="Hallway Printer">
-                        <div className="text-center space-y-6">
-                            <Printer size={48} className="mx-auto text-cyan-200" />
-                            {printerStage === 0 ? (
-                                <>
                                     <div>
-                                        <h2 className="text-lg font-bold text-white">Forgotten Documents</h2>
-                                        <p className="text-sm text-slate-400">Someone left a payroll sheet on the output tray.</p>
+                                    <h2 className="text-xl font-bold text-white mb-2">Cortex_Free_WiFi</h2>
+                                    <p className="text-sm text-slate-400">Open network detected. Strong signal, no encryption.</p>
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <button onClick={() => handlePrinterAction('read')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Read</button>
-                                        <button onClick={() => handlePrinterAction('ignore')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Ignore</button>
-                                        <button onClick={() => handlePrinterAction('secure')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-white font-bold text-xs">Collect & Shred</button>
-                                    </div>
-                                </>
-                            ) : (
-                                <div className="animate-fade-in">
-                                    <div className="bg-white text-black p-4 rounded text-left text-xs font-mono mb-4 shadow-inner">
-                                        <p className="font-bold border-b border-black mb-2">CONFIDENTIAL: SALARIES</p>
-                                        <p>CEO: $ 85,000.00</p>
-                                        <p>DIRECTOR: $ 45,000.00</p>
-                                        <p>YOU: $ 3,500.00</p>
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <button onClick={() => handlePrinterAction('gossip')} className="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded text-white font-bold text-xs"><Share2 size={14}/> Take pic & share</button>
-                                        <button onClick={() => handlePrinterAction('shred')} className="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs"><Trash2 size={14}/> Shred immediately</button>
-                                        <button onClick={() => handlePrinterAction('leave')} className="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs">Leave it (pretend didn't see)</button>
+                                    <button onClick={() => handleWifiAction('connect')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700 transition-colors">Connect</button>
+                                    <button onClick={() => handleWifiAction('tethering')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700 transition-colors">Use Personal Hotspot</button>
+                                    <button onClick={() => handleWifiAction('ignore')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700 transition-colors">Ignore</button>
                                     </div>
                                 </div>
-                            )}
-                        </div>
-                        </Modal>
-                    )}
+                            </Modal>
+                        )}
 
-                    {modalState.phone && (
-                        <Modal title={callActive ? "In Call" : "External Call"}>
-                        <div className="text-center py-6">
-                            {!callActive ? (
-                            <>
-                                <div className="relative w-24 h-24 mx-auto mb-6">
-                                    <div className="absolute inset-0 bg-cyan-500 rounded-full animate-ping opacity-20"></div>
-                                    <div className="relative w-full h-full bg-slate-800 rounded-full flex items-center justify-center border-2 border-cyan-500 shadow-xl shadow-cyan-500/20">
-                                    <Phone size={32} className="text-cyan-400" />
-                                    </div>
-                                </div>
-                                <h2 className="text-2xl font-bold text-white mb-1">Unknown Number</h2>
-                                <p className="text-xs text-slate-500 mb-8 font-mono">00:00</p>
-                                <div className="flex justify-center gap-8">
-                                <button onClick={() => handlePhoneResponse('reject')} className="bg-rose-500 hover:bg-rose-600 p-4 rounded-full text-white shadow-lg transition-transform hover:scale-110"><PhoneOff size={24}/></button>
-                                <button onClick={() => handlePhoneResponse('accept')} className="bg-emerald-500 hover:bg-emerald-600 p-4 rounded-full text-white shadow-lg transition-transform hover:scale-110"><PhoneCall size={24}/></button>
-                                </div>
-                            </>
-                            ) : (
-                                <div className="text-left space-y-6 animate-fade-in">
-                                <div className="p-4 bg-slate-800/50 rounded-lg border-l-4 border-amber-500 text-amber-100 text-sm italic relative">
-                                    <span className="absolute -top-3 -left-2 bg-amber-500 text-black text-[10px] font-bold px-2 py-0.5 rounded">Voice</span>
-                                    "Hello? This is Microsoft Technical Support. We detected anomalous behavior on your IP. I need you to confirm your SSN/Employee ID so we don't lock your machine right now."
+                        {modalState.lock && (
+                            <Modal title="Coffee Break" danger={false}>
+                            <div className="text-center space-y-6">
+                                <Coffee size={48} className="mx-auto text-slate-400" />
+                                <div>
+                                <h2 className="text-lg font-bold text-white">Break Required</h2>
+                                <p className="text-sm text-slate-400">You need to leave your desk for 15 minutes.</p>
                                 </div>
                                 <div className="flex flex-col gap-2">
-                                    <button onClick={() => handlePhoneResponse('give_info_active')} className="w-full text-left p-3 text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-colors">A. "Oh no! My SSN is 002-33-..."</button>
-                                    <button onClick={() => handlePhoneResponse('hangup_active')} className="w-full text-left p-3 text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-colors">B. Hang up immediately</button>
-                                    <button onClick={() => handlePhoneResponse('hangup_active')} className="w-full text-left p-3 text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-colors">C. "I'll check your ticket internally."</button>
+                                <button onClick={() => handleLockAction('leave')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Just Leave</button>
+                                <button onClick={() => handleLockAction('lock')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Lock Screen (Win+L)</button>
+                                <button onClick={() => handleLockAction('shutdown')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Shutdown Machine</button>
                                 </div>
-                                </div>
-                            )}
-                        </div>
-                        </Modal>
-                    )}
-
-                    {/* APP WINDOWS (Reusing DraggableWindow component) */}
-
-                    {windows.mail.open && !windows.mail.minimized && (
-                        <DraggableWindow config={windows.mail} onClose={() => closeWindow('mail')} onMinimize={() => minimizeWindow('mail')} onFocus={() => focusWindow('mail')} onMove={moveWindow}>
-                        <div className="flex h-full flex-col bg-slate-50 text-slate-900">
-                            <div className="bg-[#0078D4] text-white p-3 text-xs font-bold flex justify-between items-center shadow-md z-10">
-                                <span className="flex items-center gap-2"><Mail size={14}/> Inbox</span>
-                                <span className="bg-white/20 px-2 py-0.5 rounded text-[10px]">{emails.filter(e => !e.read).length} unread</span>
                             </div>
-                            <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-slate-100/50">
-                            {emails.map(e => (
-                                <div key={e.id} 
-                                    className={`p-4 bg-white border-b border-l-4 ${e.read ? 'border-l-transparent' : 'border-l-[#0078D4]'} hover:bg-slate-50 transition-all cursor-pointer relative overflow-hidden group ${expandedEmailId === e.id ? 'bg-blue-50/50' : ''}`}
-                                    onClick={() => handleEmailAction(e, 'expand')}
-                                >
-                                    <div className="flex justify-between items-center mb-1 pointer-events-none">
-                                    <span className={`${e.read ? 'font-normal text-slate-600' : 'font-bold text-slate-800'} text-xs flex items-center gap-2`}>
-                                        <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] text-slate-500">{e.from[0]}</div>
-                                        {e.from}
-                                    </span>
-                                    <span className="text-[10px] text-slate-400 font-mono">{e.time}</span>
-                                    </div>
-                                    <div className={`${e.read ? 'font-normal text-slate-600' : 'font-bold text-[#0078D4]'} text-sm mb-2 pl-8 pointer-events-none`}>{e.subject}</div>
-                                    
-                                    {expandedEmailId !== e.id && <p className="text-xs text-slate-500 mb-1 pl-8 leading-relaxed line-clamp-2 pointer-events-none">{e.body}</p>}
+                            </Modal>
+                        )}
 
-                                    {expandedEmailId === e.id && (
-                                        <div className="pl-8 mt-2 animate-fade-in cursor-default" onClick={ev => ev.stopPropagation()}>
-                                            <div className="bg-slate-50 p-2 rounded mb-3 text-[10px] text-slate-500 border border-slate-100">
-                                                <p><span className="font-bold">From:</span> {e.from} &lt;{e.fromEmail}&gt;</p>
-                                                <p><span className="font-bold">To:</span> You &lt;admin.security@cortex-corp.internal&gt;</p>
-                                                <p><span className="font-bold">Date:</span> Today, {e.time}</p>
-                                            </div>
-                                            <p className="text-xs text-slate-700 mb-4 leading-relaxed">{e.body}</p>
-                                            
-                                            <div className="flex gap-2">
-                                                <button 
-                                                    onClick={() => handleEmailAction(e, 'click')} 
-                                                    className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-[10px] text-slate-600 hover:bg-slate-100 transition-colors"
-                                                >
-                                                    {e.attachment ? "Download Attachment" : "Access Link"}
-                                                </button>
-                                                <button 
-                                                    onClick={() => handleEmailAction(e, 'ask')} 
-                                                    className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-[10px] text-slate-600 hover:bg-slate-100 transition-colors"
-                                                >
-                                                    Ask in Chat
-                                                </button>
-                                                <button 
-                                                    onClick={() => handleEmailAction(e, 'report')} 
-                                                    className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-[10px] text-slate-600 hover:bg-slate-100 transition-colors"
-                                                >
-                                                    Report
-                                                </button>
-                                            </div>
+                        {modalState.usb && (
+                            <div className="absolute top-24 right-8 z-[100] bg-slate-900/90 border-l-4 border-amber-500 p-6 rounded-r-xl shadow-2xl w-96 animate-slide-in-right backdrop-blur-md">
+                            <div className="flex gap-4">
+                                <div className="text-amber-500 bg-amber-500/10 p-2 rounded h-fit"><AlertTriangle size={24} /></div>
+                                <div className="flex-1">
+                                <h4 className="font-bold text-white text-sm tracking-wide">REMOVABLE MEDIA DETECTED</h4>
+                                {usbStage === 0 ? (
+                                    <>
+                                        <p className="text-xs text-slate-400 mb-4 mt-1">Drive 'E: BOARD_SALARIES.xlsx'. What to do?</p>
+                                        <div className="flex gap-2 flex-col">
+                                            <button onClick={() => handleUsbAction('open')} className="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded text-white text-left transition-colors">Open</button>
+                                            <button onClick={() => handleUsbAction('ignore')} className="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded text-white text-left transition-colors">Ignore</button>
+                                            <button onClick={() => handleUsbAction('deliver')} className="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded text-white font-bold text-left transition-colors">Hand over to IT</button>
                                         </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="text-xs text-slate-400 mb-4 mt-1 animate-fade-in">Drive E: Content:</p>
+                                        <div className="flex flex-col gap-2 animate-fade-in">
+                                            <button onClick={() => handleUsbAction('malware')} className="flex items-center gap-2 text-xs bg-slate-800 hover:bg-slate-700 p-2 rounded text-white border border-slate-700">
+                                            <FileCode size={16} className="text-slate-400"/> Salaries_2024.exe
+                                            </button>
+                                            <button onClick={() => handleUsbAction('photos')} className="flex items-center gap-2 text-xs bg-slate-800 hover:bg-slate-700 p-2 rounded text-white border border-slate-700">
+                                            <FileImage size={16} className="text-slate-400"/> Party_Photos.jpg
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                                </div>
+                            </div>
+                            </div>
+                        )}
+
+                        {modalState.printer && (
+                            <Modal title="Hallway Printer">
+                            <div className="text-center space-y-6">
+                                <Printer size={48} className="mx-auto text-cyan-200" />
+                                {printerStage === 0 ? (
+                                    <>
+                                        <div>
+                                            <h2 className="text-lg font-bold text-white">Forgotten Documents</h2>
+                                            <p className="text-sm text-slate-400">Someone left a payroll sheet on the output tray.</p>
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                            <button onClick={() => handlePrinterAction('read')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Read</button>
+                                            <button onClick={() => handlePrinterAction('ignore')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs border border-slate-700">Ignore</button>
+                                            <button onClick={() => handlePrinterAction('secure')} className="p-3 bg-slate-800 hover:bg-slate-700 rounded text-white font-bold text-xs">Collect & Shred</button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="animate-fade-in">
+                                        <div className="bg-white text-black p-4 rounded text-left text-xs font-mono mb-4 shadow-inner">
+                                            <p className="font-bold border-b border-black mb-2">CONFIDENTIAL: SALARIES</p>
+                                            <p>CEO: $ 85,000.00</p>
+                                            <p>DIRECTOR: $ 45,000.00</p>
+                                            <p>YOU: $ 3,500.00</p>
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                            <button onClick={() => handlePrinterAction('gossip')} className="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded text-white font-bold text-xs"><Share2 size={14}/> Take pic & share</button>
+                                            <button onClick={() => handlePrinterAction('shred')} className="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs"><Trash2 size={14}/> Shred immediately</button>
+                                            <button onClick={() => handlePrinterAction('leave')} className="flex items-center justify-center gap-2 p-3 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs">Leave it (pretend didn't see)</button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            </Modal>
+                        )}
+
+                        {modalState.phone && (
+                            <Modal title={callActive ? "In Call" : "External Call"}>
+                            <div className="text-center py-6">
+                                {!callActive ? (
+                                <>
+                                    <div className="relative w-24 h-24 mx-auto mb-6">
+                                        <div className="absolute inset-0 bg-cyan-500 rounded-full animate-ping opacity-20"></div>
+                                        <div className="relative w-full h-full bg-slate-800 rounded-full flex items-center justify-center border-2 border-cyan-500 shadow-xl shadow-cyan-500/20">
+                                        <Phone size={32} className="text-cyan-400" />
+                                        </div>
+                                    </div>
+                                    <h2 className="text-2xl font-bold text-white mb-1">Unknown Number</h2>
+                                    <p className="text-xs text-slate-500 mb-8 font-mono">00:00</p>
+                                    <div className="flex justify-center gap-8">
+                                    <button onClick={() => handlePhoneResponse('reject')} className="bg-rose-500 hover:bg-rose-600 p-4 rounded-full text-white shadow-lg transition-transform hover:scale-110"><PhoneOff size={24}/></button>
+                                    <button onClick={() => handlePhoneResponse('accept')} className="bg-emerald-500 hover:bg-emerald-600 p-4 rounded-full text-white shadow-lg transition-transform hover:scale-110"><PhoneCall size={24}/></button>
+                                    </div>
+                                </>
+                                ) : (
+                                    <div className="text-left space-y-6 animate-fade-in">
+                                    <div className="p-4 bg-slate-800/50 rounded-lg border-l-4 border-amber-500 text-amber-100 text-sm italic relative">
+                                        <span className="absolute -top-3 -left-2 bg-amber-500 text-black text-[10px] font-bold px-2 py-0.5 rounded">Voice</span>
+                                        "Hello? This is Microsoft Technical Support. We detected anomalous behavior on your IP. I need you to confirm your SSN/Employee ID so we don't lock your machine right now."
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <button onClick={() => handlePhoneResponse('give_info_active')} className="w-full text-left p-3 text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-colors">A. "Oh no! My SSN is 002-33-..."</button>
+                                        <button onClick={() => handlePhoneResponse('hangup_active')} className="w-full text-left p-3 text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-colors">B. Hang up immediately</button>
+                                        <button onClick={() => handlePhoneResponse('hangup_active')} className="w-full text-left p-3 text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-colors">C. "I'll check your ticket internally."</button>
+                                    </div>
+                                    </div>
+                                )}
+                            </div>
+                            </Modal>
+                        )}
+
+                        {/* APP WINDOWS (Reusing DraggableWindow component) */}
+
+                        {windows.mail.open && !windows.mail.minimized && (
+                            <DraggableWindow config={windows.mail} scale={appScale} onClose={() => closeWindow('mail')} onMinimize={() => minimizeWindow('mail')} onFocus={() => focusWindow('mail')} onMove={moveWindow}>
+                            <div className="flex h-full flex-col bg-slate-50 text-slate-900">
+                                <div className="bg-[#0078D4] text-white p-3 text-xs font-bold flex justify-between items-center shadow-md z-10">
+                                    <span className="flex items-center gap-2"><Mail size={14}/> Inbox</span>
+                                    <span className="bg-white/20 px-2 py-0.5 rounded text-[10px]">{emails.filter(e => !e.read).length} unread</span>
+                                </div>
+                                <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-slate-100/50">
+                                {emails.map(e => (
+                                    <div key={e.id} 
+                                        className={`p-4 bg-white border-b border-l-4 ${e.read ? 'border-l-transparent' : 'border-l-[#0078D4]'} hover:bg-slate-50 transition-all cursor-pointer relative overflow-hidden group ${expandedEmailId === e.id ? 'bg-blue-50/50' : ''}`}
+                                        onClick={() => handleEmailAction(e, 'expand')}
+                                    >
+                                        <div className="flex justify-between items-center mb-1 pointer-events-none">
+                                        <span className={`${e.read ? 'font-normal text-slate-600' : 'font-bold text-slate-800'} text-xs flex items-center gap-2`}>
+                                            <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] text-slate-500">{e.from[0]}</div>
+                                            {e.from}
+                                        </span>
+                                        <span className="text-[10px] text-slate-400 font-mono">{e.time}</span>
+                                        </div>
+                                        <div className={`${e.read ? 'font-normal text-slate-600' : 'font-bold text-[#0078D4]'} text-sm mb-2 pl-8 pointer-events-none`}>{e.subject}</div>
+                                        
+                                        {expandedEmailId !== e.id && <p className="text-xs text-slate-500 mb-1 pl-8 leading-relaxed line-clamp-2 pointer-events-none">{e.body}</p>}
+
+                                        {expandedEmailId === e.id && (
+                                            <div className="pl-8 mt-2 animate-fade-in cursor-default" onClick={ev => ev.stopPropagation()}>
+                                                <div className="bg-slate-50 p-2 rounded mb-3 text-[10px] text-slate-500 border border-slate-100">
+                                                    <p><span className="font-bold">From:</span> {e.from} &lt;{e.fromEmail}&gt;</p>
+                                                    <p><span className="font-bold">To:</span> You &lt;admin.security@cortex-corp.internal&gt;</p>
+                                                    <p><span className="font-bold">Date:</span> Today, {e.time}</p>
+                                                </div>
+                                                <p className="text-xs text-slate-700 mb-4 leading-relaxed">{e.body}</p>
+                                                
+                                                <div className="flex gap-2">
+                                                    <button 
+                                                        onClick={() => handleEmailAction(e, 'click')} 
+                                                        className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-[10px] text-slate-600 hover:bg-slate-100 transition-colors"
+                                                    >
+                                                        {e.attachment ? "Download Attachment" : "Access Link"}
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleEmailAction(e, 'ask')} 
+                                                        className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-[10px] text-slate-600 hover:bg-slate-100 transition-colors"
+                                                    >
+                                                        Ask in Chat
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleEmailAction(e, 'report')} 
+                                                        className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-[10px] text-slate-600 hover:bg-slate-100 transition-colors"
+                                                    >
+                                                        Report
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                                {emails.length === 0 && (
+                                    <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-2 opacity-50">
+                                        <CheckCircle size={48} className="text-emerald-500"/>
+                                        <span className="text-xs uppercase tracking-widest font-bold">All clear</span>
+                                    </div>
+                                )}
+                                </div>
+                            </div>
+                            </DraggableWindow>
+                        )}
+
+                        {windows.chat.open && !windows.chat.minimized && (
+                            <DraggableWindow config={windows.chat} scale={appScale} onClose={() => closeWindow('chat')} onMinimize={() => minimizeWindow('chat')} onFocus={() => focusWindow('chat')} onMove={moveWindow}>
+                            <div className="flex flex-col h-full bg-[#f3f2f1] text-slate-900">
+                                <div className="bg-white border-b p-3 shadow-sm flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                                    <span className="text-xs font-bold text-slate-700">Corporate Chat</span>
+                                    </div>
+                                    <div className="text-[10px] text-slate-400">Online</div>
+                                </div>
+                                <div className="flex-1 p-4 space-y-4 overflow-y-auto bg-slate-50/50" onTouchStart={(e) => e.stopPropagation()}>
+                                    {chatHistory.map(c => (
+                                    <div key={c.id} className={`flex flex-col ${c.user === 'You' ? 'items-end' : 'items-start'} animate-fade-in`}>
+                                        <div className={`p-3 rounded-2xl max-w-[85%] text-xs shadow-sm relative ${c.user === 'You' ? 'bg-[#6264A7] text-white rounded-tr-sm' : 'bg-white border border-slate-200 text-slate-700 rounded-tl-sm'}`}>
+                                        <div className={`font-bold text-[9px] uppercase mb-1 opacity-70 ${c.user === 'You' ? 'text-indigo-200 text-right' : 'text-slate-400'}`}>{c.user}</div>
+                                        {c.text}
+                                        </div>
+                                    </div>
+                                    ))}
+                                    <div ref={logsEndRef}/>
+                                    
+                                    {/* CHAT BRANCHING LOGIC */}
+                                    {step === 3 && shadowITStage === 0 && chatHistory[chatHistory.length-1].user === "Luke (Dev)" && (
+                                    <div className="flex flex-col gap-2 mt-4 p-2 bg-white/50 rounded border border-slate-200 animate-slide-in-up">
+                                        <div className="text-[10px] text-center text-slate-400 uppercase tracking-widest mb-1">How to reply?</div>
+                                        <button onClick={() => handleShadowITAction('allow')} className="w-full text-left text-xs bg-white border border-slate-200 p-2 rounded hover:bg-slate-100 hover:border-slate-300 hover:shadow-sm text-slate-600 transition-all">"Go ahead."</button>
+                                        <button onClick={() => handleShadowITAction('deny')} className="w-full text-left text-xs bg-white border border-slate-200 p-2 rounded hover:bg-slate-100 hover:border-slate-300 hover:shadow-sm text-slate-600 transition-all">"Negative. Blocked."</button>
+                                        <button onClick={() => handleShadowITAction('alternative')} className="w-full text-left text-xs bg-white border border-slate-200 p-2 rounded hover:bg-slate-100 hover:border-slate-300 hover:shadow-sm text-slate-600 transition-all">"Use Internal FileDrop."</button>
+                                    </div>
+                                    )}
+                                    {step === 3 && shadowITStage === 1 && chatHistory[chatHistory.length-1].user === "Luke (Dev)" && (
+                                    <div className="flex flex-col gap-2 mt-4 p-2 bg-rose-50 rounded border border-rose-200 animate-slide-in-up">
+                                        <div className="text-[10px] text-center text-rose-400 uppercase tracking-widest mb-1">He insisted. Now what?</div>
+                                        <button onClick={() => handleShadowITAction('rude')} className="w-full text-left text-xs bg-white border border-rose-200 p-2 rounded hover:bg-rose-50 hover:border-rose-300 hover:shadow-sm text-rose-700 transition-all">"Your problem. Rules are rules."</button>
+                                        <button onClick={() => handleShadowITAction('educate')} className="w-full text-left text-xs bg-white border border-emerald-200 p-2 rounded hover:bg-emerald-50 hover:border-emerald-300 hover:shadow-sm text-emerald-700 transition-all">"Let's open an emergency ticket."</button>
+                                    </div>
                                     )}
                                 </div>
-                            ))}
-                            {emails.length === 0 && (
-                                <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-2 opacity-50">
-                                    <CheckCircle size={48} className="text-emerald-500"/>
-                                    <span className="text-xs uppercase tracking-widest font-bold">All clear</span>
-                                </div>
-                            )}
                             </div>
-                        </div>
-                        </DraggableWindow>
-                    )}
+                            </DraggableWindow>
+                        )}
 
-                    {windows.chat.open && !windows.chat.minimized && (
-                        <DraggableWindow config={windows.chat} onClose={() => closeWindow('chat')} onMinimize={() => minimizeWindow('chat')} onFocus={() => focusWindow('chat')} onMove={moveWindow}>
-                        <div className="flex flex-col h-full bg-[#f3f2f1] text-slate-900">
-                            <div className="bg-white border-b p-3 shadow-sm flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                                <span className="text-xs font-bold text-slate-700">Corporate Chat</span>
-                                </div>
-                                <div className="text-[10px] text-slate-400">Online</div>
-                            </div>
-                            <div className="flex-1 p-4 space-y-4 overflow-y-auto bg-slate-50/50">
-                                {chatHistory.map(c => (
-                                <div key={c.id} className={`flex flex-col ${c.user === 'You' ? 'items-end' : 'items-start'} animate-fade-in`}>
-                                    <div className={`p-3 rounded-2xl max-w-[85%] text-xs shadow-sm relative ${c.user === 'You' ? 'bg-[#6264A7] text-white rounded-tr-sm' : 'bg-white border border-slate-200 text-slate-700 rounded-tl-sm'}`}>
-                                    <div className={`font-bold text-[9px] uppercase mb-1 opacity-70 ${c.user === 'You' ? 'text-indigo-200 text-right' : 'text-slate-400'}`}>{c.user}</div>
-                                    {c.text}
+                        {windows.browser.open && !windows.browser.minimized && (
+                            <DraggableWindow config={windows.browser} scale={appScale} onClose={() => closeWindow('browser')} onMinimize={() => minimizeWindow('browser')} onFocus={() => focusWindow('browser')} onMove={moveWindow}>
+                            <div className="flex flex-col h-full bg-white text-slate-900">
+                                <div className="bg-slate-100 p-2 border-b flex items-center justify-center relative">
+                                    <div className="bg-white border px-3 py-1 rounded-full text-xs text-slate-500 font-mono flex items-center gap-2 shadow-sm w-3/4">
+                                        <Lock size={10} className="text-slate-400"/> 
+                                        https://gov-validation.com/login 
                                     </div>
                                 </div>
-                                ))}
-                                <div ref={logsEndRef}/>
-                                
-                                {/* CHAT BRANCHING LOGIC */}
-                                {step === 3 && shadowITStage === 0 && chatHistory[chatHistory.length-1].user === "Luke (Dev)" && (
-                                <div className="flex flex-col gap-2 mt-4 p-2 bg-white/50 rounded border border-slate-200 animate-slide-in-up">
-                                    <div className="text-[10px] text-center text-slate-400 uppercase tracking-widest mb-1">How to reply?</div>
-                                    <button onClick={() => handleShadowITAction('allow')} className="w-full text-left text-xs bg-white border border-slate-200 p-2 rounded hover:bg-slate-100 hover:border-slate-300 hover:shadow-sm text-slate-600 transition-all">"Go ahead."</button>
-                                    <button onClick={() => handleShadowITAction('deny')} className="w-full text-left text-xs bg-white border border-slate-200 p-2 rounded hover:bg-slate-100 hover:border-slate-300 hover:shadow-sm text-slate-600 transition-all">"Negative. Blocked."</button>
-                                    <button onClick={() => handleShadowITAction('alternative')} className="w-full text-left text-xs bg-white border border-slate-200 p-2 rounded hover:bg-slate-100 hover:border-slate-300 hover:shadow-sm text-slate-600 transition-all">"Use Internal FileDrop."</button>
-                                </div>
-                                )}
-                                {step === 3 && shadowITStage === 1 && chatHistory[chatHistory.length-1].user === "Luke (Dev)" && (
-                                <div className="flex flex-col gap-2 mt-4 p-2 bg-rose-50 rounded border border-rose-200 animate-slide-in-up">
-                                    <div className="text-[10px] text-center text-rose-400 uppercase tracking-widest mb-1">He insisted. Now what?</div>
-                                    <button onClick={() => handleShadowITAction('rude')} className="w-full text-left text-xs bg-white border border-rose-200 p-2 rounded hover:bg-rose-50 hover:border-rose-300 hover:shadow-sm text-rose-700 transition-all">"Your problem. Rules are rules."</button>
-                                    <button onClick={() => handleShadowITAction('educate')} className="w-full text-left text-xs bg-white border border-emerald-200 p-2 rounded hover:bg-emerald-50 hover:border-emerald-300 hover:shadow-sm text-emerald-700 transition-all">"Let's open an emergency ticket."</button>
-                                </div>
-                                )}
-                            </div>
-                        </div>
-                        </DraggableWindow>
-                    )}
-
-                    {windows.browser.open && !windows.browser.minimized && (
-                        <DraggableWindow config={windows.browser} onClose={() => closeWindow('browser')} onMinimize={() => minimizeWindow('browser')} onFocus={() => focusWindow('browser')} onMove={moveWindow}>
-                        <div className="flex flex-col h-full bg-white text-slate-900">
-                            <div className="bg-slate-100 p-2 border-b flex items-center justify-center relative">
-                                <div className="bg-white border px-3 py-1 rounded-full text-xs text-slate-500 font-mono flex items-center gap-2 shadow-sm w-3/4">
-                                    <Lock size={10} className="text-slate-400"/> 
-                                    https://gov-validation.com/login 
-                                </div>
-                            </div>
-                            <div className="flex-1 flex items-center justify-center bg-slate-50 relative overflow-hidden">
-                                <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
-                                <div className="bg-white p-8 rounded-xl shadow-2xl border w-72 text-center relative z-10">
-                                    <div className="w-16 h-16 bg-blue-600 rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg shadow-blue-600/30"><Globe size={32} className="text-white"/></div>
-                                    <h3 className="font-bold text-slate-800 mb-6 text-lg">Employee Portal</h3>
-                                    <input className="w-full border p-3 text-xs rounded mb-3 bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500 transition-all" disabled placeholder="Corporate User"/>
-                                    <input className="w-full border p-3 text-xs rounded mb-6 bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500 transition-all" disabled placeholder="Network Password"/>
-                                    
-                                    <div className="space-y-2">
-                                    <button onClick={() => handleBrowserAction('login')} className="w-full bg-blue-600 text-white py-3 rounded text-xs font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">Login</button>
-                                    <button onClick={() => handleBrowserAction('check')} className="w-full bg-slate-100 text-slate-600 py-3 rounded text-xs hover:bg-slate-200 transition-colors">Check Certificate</button>
-                                    <button onClick={() => handleBrowserAction('close')} className="w-full text-rose-500 text-[10px] hover:underline mt-2">Close Page</button>
+                                <div className="flex-1 flex items-center justify-center bg-slate-50 relative overflow-hidden">
+                                    <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+                                    <div className="bg-white p-8 rounded-xl shadow-2xl border w-72 text-center relative z-10">
+                                        <div className="w-16 h-16 bg-blue-600 rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg shadow-blue-600/30"><Globe size={32} className="text-white"/></div>
+                                        <h3 className="font-bold text-slate-800 mb-6 text-lg">Employee Portal</h3>
+                                        <input className="w-full border p-3 text-xs rounded mb-3 bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500 transition-all" disabled placeholder="Corporate User"/>
+                                        <input className="w-full border p-3 text-xs rounded mb-6 bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500 transition-all" disabled placeholder="Network Password"/>
+                                        
+                                        <div className="space-y-2">
+                                        <button onClick={() => handleBrowserAction('login')} className="w-full bg-blue-600 text-white py-3 rounded text-xs font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">Login</button>
+                                        <button onClick={() => handleBrowserAction('check')} className="w-full bg-slate-100 text-slate-600 py-3 rounded text-xs hover:bg-slate-200 transition-colors">Check Certificate</button>
+                                        <button onClick={() => handleBrowserAction('close')} className="w-full text-rose-500 text-[10px] hover:underline mt-2">Close Page</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        </DraggableWindow>
-                    )}
+                            </DraggableWindow>
+                        )}
 
-                    {windows.soc.open && !windows.soc.minimized && (
-                        <DraggableWindow config={windows.soc} onClose={() => closeWindow('soc')} onMinimize={() => minimizeWindow('soc')} onFocus={() => focusWindow('soc')} onMove={moveWindow}>
-                        <div className="h-full bg-slate-950 text-cyan-500 font-mono flex flex-col p-1 border-2 border-slate-800">
-                            <div className="border-b border-cyan-900/50 p-2 flex justify-between items-center bg-cyan-900/10">
-                                <div className="font-bold flex items-center gap-2 text-sm tracking-widest"><AlertTriangle size={14}/> CORTEX SENTINEL</div>
-                                <div className="text-[10px] animate-pulse text-emerald-500 bg-emerald-950/50 px-2 py-0.5 rounded border border-emerald-500/30">LIVE FEED</div>
-                            </div>
-                            <div className="flex-1 bg-black/50 p-4 flex flex-col items-center justify-center relative overflow-hidden">
-                                {ransomwareActive ? (
-                                <div className="text-center z-10 animate-scale-in">
-                                    <Lock size={80} className="text-rose-600 mx-auto mb-6 animate-pulse" />
-                                    <h1 className="text-5xl font-bold text-rose-600 tracking-tighter mb-2 glitch-text">LOCKDOWN</h1>
-                                    <p className="text-rose-400 mt-2 font-mono border border-rose-500/30 bg-rose-950/50 px-4 py-1 rounded inline-block">RANSOMWARE DETECTED: CRYPT_X</p>
-                                    
-                                    <div className="grid grid-cols-3 gap-4 mt-8 w-full max-w-2xl">
-                                        <button onClick={() => handleSocAction('shutdown')} className="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded transition-colors flex flex-col items-center gap-2 text-xs">
-                                            <Power size={20}/> SHUTDOWN ALL
-                                        </button>
-                                        <button onClick={() => handleSocAction('isolate')} className="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded transition-colors flex flex-col items-center gap-2 text-xs">
-                                            <Shield size={20}/> ISOLATE HOSTS
-                                        </button>
-                                        <button onClick={() => handleSocAction('trace')} className="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded transition-colors flex flex-col items-center gap-2 text-xs">
-                                            <Fingerprint size={20}/> TRACE ORIGIN
-                                        </button>
-                                    </div>
+                        {windows.soc.open && !windows.soc.minimized && (
+                            <DraggableWindow config={windows.soc} scale={appScale} onClose={() => closeWindow('soc')} onMinimize={() => minimizeWindow('soc')} onFocus={() => focusWindow('soc')} onMove={moveWindow}>
+                            <div className="h-full bg-slate-950 text-cyan-500 font-mono flex flex-col p-1 border-2 border-slate-800">
+                                <div className="border-b border-cyan-900/50 p-2 flex justify-between items-center bg-cyan-900/10">
+                                    <div className="font-bold flex items-center gap-2 text-sm tracking-widest"><AlertTriangle size={14}/> CORTEX SENTINEL</div>
+                                    <div className="text-[10px] animate-pulse text-emerald-500 bg-emerald-950/50 px-2 py-0.5 rounded border border-emerald-500/30">LIVE FEED</div>
                                 </div>
-                                ) : (
-                                    <div className="text-center opacity-30">
-                                    <Globe size={100} className="mx-auto mb-6 text-cyan-600" />
-                                    <p className="tracking-[0.5em] text-sm">SYSTEM MONITORING ACTIVE</p>
+                                <div className="flex-1 bg-black/50 p-4 flex flex-col items-center justify-center relative overflow-hidden">
+                                    {ransomwareActive ? (
+                                    <div className="text-center z-10 animate-scale-in">
+                                        <Lock size={80} className="text-rose-600 mx-auto mb-6 animate-pulse" />
+                                        <h1 className="text-5xl font-bold text-rose-600 tracking-tighter mb-2 glitch-text">LOCKDOWN</h1>
+                                        <p className="text-rose-400 mt-2 font-mono border border-rose-500/30 bg-rose-950/50 px-4 py-1 rounded inline-block">RANSOMWARE DETECTED: CRYPT_X</p>
+                                        
+                                        <div className="grid grid-cols-3 gap-4 mt-8 w-full max-w-2xl">
+                                            <button onClick={() => handleSocAction('shutdown')} className="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded transition-colors flex flex-col items-center gap-2 text-xs">
+                                                <Power size={20}/> SHUTDOWN ALL
+                                            </button>
+                                            <button onClick={() => handleSocAction('isolate')} className="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded transition-colors flex flex-col items-center gap-2 text-xs">
+                                                <Shield size={20}/> ISOLATE HOSTS
+                                            </button>
+                                            <button onClick={() => handleSocAction('trace')} className="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded transition-colors flex flex-col items-center gap-2 text-xs">
+                                                <Fingerprint size={20}/> TRACE ORIGIN
+                                            </button>
+                                        </div>
                                     </div>
-                                )}
-                                <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.1)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none"></div>
+                                    ) : (
+                                        <div className="text-center opacity-30">
+                                        <Globe size={100} className="mx-auto mb-6 text-cyan-600" />
+                                        <p className="tracking-[0.5em] text-sm">SYSTEM MONITORING ACTIVE</p>
+                                        </div>
+                                    )}
+                                    <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.1)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none"></div>
+                                </div>
                             </div>
-                        </div>
-                        </DraggableWindow>
-                    )}
+                            </DraggableWindow>
+                        )}
+                    </>
+                );
+            }
 
+            return (
+                <div 
+                    id="app-container"
+                    className="w-full h-screen flex items-center justify-center bg-black overflow-hidden"
+                >
+                    <div 
+                        style={{
+                            width: `${CONFIG.GAME_WIDTH}px`,
+                            height: `${CONFIG.GAME_HEIGHT}px`,
+                            transform: `scale(${appScale})`,
+                            transformOrigin: 'center center'
+                        }}
+                        className="relative bg-black overflow-hidden shadow-2xl"
+                    >
+                        {content}
+                    </div>
                 </div>
             );
         }
